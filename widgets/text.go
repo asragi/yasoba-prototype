@@ -5,6 +5,7 @@ import (
 	"github.com/asragi/yasoba-prototype/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"strings"
 )
 
 type Text struct {
@@ -23,27 +24,57 @@ type TextOptions struct {
 }
 
 func NewText(textString string, options *TextOptions) *Text {
-	characters := utils.SplitString(textString)
-	textSize := len(characters)
+	// TODO: characterSizeX should be calculated from font size
+	characterSizeX := 14
+	lineHeight := 16
+	charactersSet, sizes, textSize := func() ([][]string, []int, int) {
+		texts := strings.Split(textString, "\n")
+		textSize := 0
+		characters := make([][]string, len(texts))
+		sizes := make([]int, len(texts))
+		for i, t := range texts {
+			characters[i] = utils.SplitString(t)
+			sizes[i] = len(characters[i])
+			textSize += sizes[i]
+		}
+		return characters, sizes, textSize
+	}()
+	drawText := func(
+		characters []string,
+		currentIndex int,
+		parentPosition *core.Vector,
+		line int,
+		drawFunc core.DrawFunc,
+	) {
+		characterPosition := func() []*core.Vector {
+			result := make([]*core.Vector, textSize)
+			for i := 0; i < textSize; i++ {
+				result[i] = &core.Vector{
+					X: options.RelativePosition.X + float64(i*characterSizeX),
+					Y: options.RelativePosition.Y,
+				}
+			}
+			return result
+		}()
+		for i := 0; i < currentIndex; i++ {
+			op := &text.DrawOptions{}
+			x := characterPosition[i].X + parentPosition.X
+			y := characterPosition[i].Y + parentPosition.Y + float64(line*lineHeight)
+			op.GeoM.Translate(x, y)
+			targetCharacter := characters[i]
+			drawFunc(
+				func(screen *ebiten.Image) {
+					text.Draw(screen, targetCharacter, options.TextFace, op)
+				}, options.Depth,
+			)
+		}
+	}
 	currentIndex := 0
 	frameCounter := 0
 	parentPosition := &core.Vector{}
 	if options.DisplayAll {
 		currentIndex = textSize
 	}
-
-	// TODO: characterSizeX should be calculated from font size
-	characterSizeX := 14
-	characterPosition := func() []*core.Vector {
-		result := make([]*core.Vector, textSize)
-		for i := 0; i < textSize; i++ {
-			result[i] = &core.Vector{
-				X: options.RelativePosition.X + float64(i*characterSizeX),
-				Y: options.RelativePosition.Y,
-			}
-		}
-		return result
-	}()
 
 	forceComplete := func() {
 		currentIndex = textSize
@@ -56,17 +87,13 @@ func NewText(textString string, options *TextOptions) *Text {
 	}
 
 	draw := func(drawFunc core.DrawFunc) {
-		for i := 0; i < currentIndex; i++ {
-			op := &text.DrawOptions{}
-			x := characterPosition[i].X + parentPosition.X
-			y := characterPosition[i].Y + parentPosition.Y
-			op.GeoM.Translate(x, y)
-			targetCharacter := characters[i]
-			drawFunc(
-				func(screen *ebiten.Image) {
-					text.Draw(screen, targetCharacter, options.TextFace, op)
-				}, options.Depth,
-			)
+		for i := 0; i < len(charactersSet); i++ {
+			tmpCurrentIndex := currentIndex
+			for j := 0; j < i; j++ {
+				tmpCurrentIndex -= sizes[j]
+			}
+			tmpCurrentIndex = utils.ClampInt(tmpCurrentIndex, 0, sizes[i])
+			drawText(charactersSet[i], tmpCurrentIndex, parentPosition, i, drawFunc)
 		}
 	}
 

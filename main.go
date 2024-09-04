@@ -40,7 +40,7 @@ func init() {
 			RelativePosition: &core.Vector{X: 192, Y: 0},
 			Size: &core.Vector{
 				X: 292,
-				Y: 44,
+				Y: 62,
 			},
 			Depth:   core.DepthWindow,
 			Pivot:   core.PivotTopCenter,
@@ -48,12 +48,13 @@ func init() {
 		},
 	)
 	testText = widgets.NewText(
-		"これはテストメッセージです！", &widgets.TextOptions{
+		"あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市",
+		&widgets.TextOptions{
 			RelativePosition: &core.Vector{X: 0, Y: 0},
 			Pivot:            core.PivotTopLeft,
 			TextFace:         &text.GoTextFace{Source: fontSource, Size: 12},
 			DisplayAll:       false,
-			Speed:            8,
+			Speed:            6,
 			Depth:            core.DepthWindow,
 		},
 	)
@@ -64,7 +65,6 @@ type Game struct{}
 func (g *Game) Update() error {
 	window.Update(&core.Vector{X: 0, Y: 0})
 	testText.Update(window.GetContentUpperLeft())
-	log.Printf("%f", window.GetContentUpperLeft().X)
 	return nil
 }
 
