@@ -32,12 +32,10 @@ func (o *WindowOption) Validation() error {
 	return nil
 }
 
-type UpdateWindowFunc func(parentPosition *core.Vector)
-type DrawWindowFunc func(core.DrawFunc)
-
 type Window struct {
-	Update UpdateWindowFunc
-	Draw   DrawWindowFunc
+	MoveTo func(relativePosition *core.Vector)
+	Update func(parentPosition *core.Vector)
+	Draw   func(core.DrawFunc)
 }
 
 func NewWindow(option *WindowOption) *Window {
@@ -45,6 +43,7 @@ func NewWindow(option *WindowOption) *Window {
 		panic(err)
 	}
 	img := option.Image
+	relativePosition := option.RelativePosition
 	type rect struct {
 		x0 int
 		y0 int
@@ -71,6 +70,10 @@ func NewWindow(option *WindowOption) *Window {
 	}
 
 	var parentPosition *core.Vector
+	moveTo := func(passedPosition *core.Vector) {
+		relativePosition = passedPosition
+	}
+
 	update := func(passedPosition *core.Vector) {
 		parentPosition = passedPosition
 	}
@@ -78,8 +81,8 @@ func NewWindow(option *WindowOption) *Window {
 	drawWindow := func(drawing core.DrawFunc) {
 		for i, v := range corners {
 			op := &ebiten.DrawImageOptions{}
-			x := cornerPosition[i].X + option.RelativePosition.X - pivotDiff.X + parentPosition.X
-			y := cornerPosition[i].Y + option.RelativePosition.Y - pivotDiff.Y + parentPosition.Y
+			x := cornerPosition[i].X + relativePosition.X - pivotDiff.X + parentPosition.X
+			y := cornerPosition[i].Y + relativePosition.Y - pivotDiff.Y + parentPosition.Y
 			op.GeoM.Translate(x, y)
 			subImage := img.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
 			drawing(
@@ -91,6 +94,7 @@ func NewWindow(option *WindowOption) *Window {
 	}
 
 	return &Window{
+		MoveTo: moveTo,
 		Update: update,
 		Draw:   drawWindow,
 	}

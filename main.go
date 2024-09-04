@@ -49,6 +49,8 @@ func init() {
 
 type Game struct{}
 
+var tmp = 0.0
+
 func (g *Game) Update() error {
 	window.Update(&core.Vector{X: 0, Y: 0})
 	return nil
