@@ -39,11 +39,13 @@ type Window struct {
 }
 
 func NewWindow(option *WindowOption) *Window {
+	var parentPosition *core.Vector
+	relativePosition := option.RelativePosition
+
 	if err := option.Validation(); err != nil {
 		panic(err)
 	}
 	img := option.Image
-	relativePosition := option.RelativePosition
 	type rect struct {
 		x0 int
 		y0 int
@@ -51,6 +53,8 @@ func NewWindow(option *WindowOption) *Window {
 		y1 int
 	}
 	pivotDiff := option.Pivot.ApplyToSize(option.Size)
+	textureWidth := img.Bounds().Dx()
+	textureHeight := img.Bounds().Dy()
 	corners := []*rect{
 		{0, 0, option.CornerSize, option.CornerSize},
 		{img.Bounds().Dx() - option.CornerSize, 0, img.Bounds().Dx(), option.CornerSize},
@@ -62,14 +66,45 @@ func NewWindow(option *WindowOption) *Window {
 			img.Bounds().Dy(),
 		},
 	}
+	sides := []*rect{
+		{option.CornerSize, 0, img.Bounds().Dx() - option.CornerSize, option.CornerSize},
+		{
+			img.Bounds().Dx() - option.CornerSize,
+			option.CornerSize,
+			img.Bounds().Dx(),
+			img.Bounds().Dy() - option.CornerSize,
+		},
+		{0, option.CornerSize, option.CornerSize, img.Bounds().Dy() - option.CornerSize},
+		{
+			option.CornerSize,
+			img.Bounds().Dy() - option.CornerSize,
+			img.Bounds().Dx() - option.CornerSize,
+			img.Bounds().Dy(),
+		},
+	}
 	cornerPosition := []*core.Vector{
 		{0, 0},
 		{option.Size.X - float64(option.CornerSize), 0},
 		{0, option.Size.Y - float64(option.CornerSize)},
 		{option.Size.X - float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
 	}
+	sidePosition := []*core.Vector{
+		{float64(option.CornerSize), 0},
+		{option.Size.X - float64(option.CornerSize), float64(option.CornerSize)},
+		{0, float64(option.CornerSize)},
+		{float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
+	}
+	sideXSize := float64(textureWidth - option.CornerSize*2)
+	targetXSize := option.Size.X - float64(option.CornerSize*2)
+	sideYSize := float64(textureHeight - option.CornerSize*2)
+	targetYSize := option.Size.Y - float64(option.CornerSize*2)
+	sideScales := []*core.Vector{
+		{targetXSize / sideXSize, 1},
+		{1, targetYSize / sideYSize},
+		{1, targetYSize / sideYSize},
+		{targetXSize / sideXSize, 1},
+	}
 
-	var parentPosition *core.Vector
 	moveTo := func(passedPosition *core.Vector) {
 		relativePosition = passedPosition
 	}
@@ -91,6 +126,41 @@ func NewWindow(option *WindowOption) *Window {
 				}, option.Depth,
 			)
 		}
+		for i, v := range sides {
+			op := &ebiten.DrawImageOptions{}
+			x := sidePosition[i].X + relativePosition.X - pivotDiff.X + parentPosition.X
+			y := sidePosition[i].Y + relativePosition.Y - pivotDiff.Y + parentPosition.Y
+			op.GeoM.Scale(sideScales[i].X, sideScales[i].Y)
+			op.GeoM.Translate(x, y)
+			subImage := img.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
+			drawing(
+				func(screen *ebiten.Image) {
+					screen.DrawImage(subImage, op)
+				}, option.Depth,
+			)
+		}
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(
+			targetXSize/float64(textureWidth-option.CornerSize*2),
+			targetYSize/float64(textureHeight-option.CornerSize*2),
+		)
+		op.GeoM.Translate(
+			relativePosition.X-pivotDiff.X+parentPosition.X+float64(option.CornerSize),
+			relativePosition.Y-pivotDiff.Y+parentPosition.Y+float64(option.CornerSize),
+		)
+		subImage := img.SubImage(
+			image.Rect(
+				option.CornerSize,
+				option.CornerSize,
+				textureWidth-option.CornerSize,
+				textureHeight-option.CornerSize,
+			),
+		).(*ebiten.Image)
+		drawing(
+			func(screen *ebiten.Image) {
+				screen.DrawImage(subImage, op)
+			}, option.Depth,
+		)
 	}
 
 	return &Window{
