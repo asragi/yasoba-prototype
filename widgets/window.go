@@ -13,7 +13,7 @@ type WindowOption struct {
 	RelativePosition *core.Vector
 	Size             *core.Vector
 	Depth            core.Depth
-	Pivot            core.Pivot
+	Pivot            *core.Pivot
 }
 
 func (o *WindowOption) Validation() error {

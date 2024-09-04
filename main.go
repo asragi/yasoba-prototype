@@ -18,6 +18,7 @@ var (
 	fontSource   *text.GoTextFaceSource
 	windowSource *ebiten.Image
 	window       *widgets.Window
+	testText     *widgets.Text
 )
 
 func init() {
@@ -45,12 +46,23 @@ func init() {
 			Pivot: core.PivotBottomRight,
 		},
 	)
+	testText = widgets.NewText(
+		"これはテストメッセージです！", &widgets.TextOptions{
+			RelativePosition: &core.Vector{X: 0, Y: 0},
+			Pivot:            core.PivotTopLeft,
+			TextFace:         &text.GoTextFace{Source: fontSource, Size: 12},
+			DisplayAll:       false,
+			Speed:            8,
+			Depth:            core.DepthWindow,
+		},
+	)
 }
 
 type Game struct{}
 
 func (g *Game) Update() error {
 	window.Update(&core.Vector{X: 0, Y: 0})
+	testText.Update(&core.Vector{X: 0, Y: 0})
 	return nil
 }
 
@@ -58,16 +70,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op := &text.DrawOptions{}
 	op.ColorScale.ScaleWithColor(color.White)
 	op.Filter = ebiten.FilterLinear
-	drawing.Draw(
-		func(screen *ebiten.Image) {
-			text.Draw(
-				screen, "こんにちは世界", &text.GoTextFace{
-					Source: fontSource,
-					Size:   12,
-				}, op,
-			)
-		}, core.DepthDebug,
-	)
+	testText.Draw(drawing.Draw)
 	window.Draw(drawing.Draw)
 	drawing.DrawEnd(screen)
 }
