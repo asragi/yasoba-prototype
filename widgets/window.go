@@ -14,6 +14,7 @@ type WindowOption struct {
 	Size             *core.Vector
 	Depth            core.Depth
 	Pivot            *core.Pivot
+	Padding          *core.Vector
 }
 
 func (o *WindowOption) Validation() error {
@@ -33,9 +34,10 @@ func (o *WindowOption) Validation() error {
 }
 
 type Window struct {
-	MoveTo func(relativePosition *core.Vector)
-	Update func(parentPosition *core.Vector)
-	Draw   func(core.DrawFunc)
+	GetContentUpperLeft func() *core.Vector
+	MoveTo              func(relativePosition *core.Vector)
+	Update              func(parentPosition *core.Vector)
+	Draw                func(core.DrawFunc)
 }
 
 func NewWindow(option *WindowOption) *Window {
@@ -163,9 +165,17 @@ func NewWindow(option *WindowOption) *Window {
 		)
 	}
 
+	getContentPosition := func() *core.Vector {
+		return &core.Vector{
+			X: relativePosition.X - pivotDiff.X + parentPosition.X + option.Padding.X,
+			Y: relativePosition.Y - pivotDiff.Y + parentPosition.Y + option.Padding.Y,
+		}
+	}
+
 	return &Window{
-		MoveTo: moveTo,
-		Update: update,
-		Draw:   drawWindow,
+		GetContentUpperLeft: getContentPosition,
+		MoveTo:              moveTo,
+		Update:              update,
+		Draw:                drawWindow,
 	}
 }

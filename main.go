@@ -37,13 +37,14 @@ func init() {
 		&widgets.WindowOption{
 			Image:            windowSource,
 			CornerSize:       6,
-			RelativePosition: &core.Vector{X: 384, Y: 288},
+			RelativePosition: &core.Vector{X: 192, Y: 0},
 			Size: &core.Vector{
-				X: 300,
-				Y: 200,
+				X: 292,
+				Y: 44,
 			},
-			Depth: core.DepthWindow,
-			Pivot: core.PivotBottomRight,
+			Depth:   core.DepthWindow,
+			Pivot:   core.PivotTopCenter,
+			Padding: &core.Vector{X: 16, Y: 8},
 		},
 	)
 	testText = widgets.NewText(
@@ -62,7 +63,8 @@ type Game struct{}
 
 func (g *Game) Update() error {
 	window.Update(&core.Vector{X: 0, Y: 0})
-	testText.Update(&core.Vector{X: 0, Y: 0})
+	testText.Update(window.GetContentUpperLeft())
+	log.Printf("%f", window.GetContentUpperLeft().X)
 	return nil
 }
 
@@ -70,8 +72,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op := &text.DrawOptions{}
 	op.ColorScale.ScaleWithColor(color.White)
 	op.Filter = ebiten.FilterLinear
-	testText.Draw(drawing.Draw)
 	window.Draw(drawing.Draw)
+	testText.Draw(drawing.Draw)
 	drawing.DrawEnd(screen)
 }
 

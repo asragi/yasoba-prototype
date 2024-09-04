@@ -5,7 +5,6 @@ import (
 	"github.com/asragi/yasoba-prototype/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"log"
 )
 
 type Text struct {
@@ -53,6 +52,7 @@ func NewText(textString string, options *TextOptions) *Text {
 	update := func(passedParentPosition *core.Vector) {
 		frameCounter++
 		currentIndex = utils.ClampInt(frameCounter/options.Speed, currentIndex, textSize)
+		parentPosition = passedParentPosition
 	}
 
 	draw := func(drawFunc core.DrawFunc) {
@@ -67,9 +67,6 @@ func NewText(textString string, options *TextOptions) *Text {
 					text.Draw(screen, targetCharacter, options.TextFace, op)
 				}, options.Depth,
 			)
-		}
-		if currentIndex == textSize {
-			log.Printf("Drawing completed: %s", textString)
 		}
 	}
 
