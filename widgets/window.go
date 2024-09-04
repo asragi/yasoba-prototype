@@ -1,24 +1,49 @@
 package widgets
 
 import (
+	"errors"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 )
 
 type WindowOption struct {
-	Image      *ebiten.Image
-	CornerSize int
-	Size       *core.Vector
+	Image            *ebiten.Image
+	CornerSize       int
+	RelativePosition *core.Vector
+	Size             *core.Vector
+	Depth            core.Depth
+	Pivot            core.Pivot
 }
 
-type DrawWindowFunc func(*ebiten.Image)
+func (o *WindowOption) Validation() error {
+	if o.Image == nil {
+		return errors.New("image is required")
+	}
+	if o.CornerSize <= 0 {
+		return errors.New("corner size must be greater than 0")
+	}
+	if o.Size == nil {
+		return errors.New("size is required")
+	}
+	if o.Depth == core.Zero {
+		return errors.New("depth is required")
+	}
+	return nil
+}
+
+type UpdateWindowFunc func(parentPosition *core.Vector)
+type DrawWindowFunc func(core.DrawFunc)
 
 type Window struct {
-	Draw DrawWindowFunc
+	Update UpdateWindowFunc
+	Draw   DrawWindowFunc
 }
 
 func NewWindow(option *WindowOption) *Window {
+	if err := option.Validation(); err != nil {
+		panic(err)
+	}
 	img := option.Image
 	type rect struct {
 		x0 int
@@ -26,6 +51,7 @@ func NewWindow(option *WindowOption) *Window {
 		x1 int
 		y1 int
 	}
+	pivotDiff := option.Pivot.ApplyToSize(option.Size)
 	corners := []*rect{
 		{0, 0, option.CornerSize, option.CornerSize},
 		{img.Bounds().Dx() - option.CornerSize, 0, img.Bounds().Dx(), option.CornerSize},
@@ -44,16 +70,28 @@ func NewWindow(option *WindowOption) *Window {
 		{option.Size.X - float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
 	}
 
-	drawWindow := func(screen *ebiten.Image) {
+	var parentPosition *core.Vector
+	update := func(passedPosition *core.Vector) {
+		parentPosition = passedPosition
+	}
+
+	drawWindow := func(drawing core.DrawFunc) {
 		for i, v := range corners {
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(cornerPosition[i].X, cornerPosition[i].Y)
+			x := cornerPosition[i].X + option.RelativePosition.X - pivotDiff.X + parentPosition.X
+			y := cornerPosition[i].Y + option.RelativePosition.Y - pivotDiff.Y + parentPosition.Y
+			op.GeoM.Translate(x, y)
 			subImage := img.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
-			screen.DrawImage(subImage, op)
+			drawing(
+				func(screen *ebiten.Image) {
+					screen.DrawImage(subImage, op)
+				}, option.Depth,
+			)
 		}
 	}
 
 	return &Window{
-		Draw: drawWindow,
+		Update: update,
+		Draw:   drawWindow,
 	}
 }
