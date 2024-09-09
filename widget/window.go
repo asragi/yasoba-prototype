@@ -15,6 +15,7 @@ type WindowOption struct {
 	Depth            frontend.Depth
 	Pivot            *frontend.Pivot
 	Padding          *frontend.Vector
+	Shake            frontend.PositionDelta
 }
 
 func (o *WindowOption) Validation() error {
@@ -112,8 +113,15 @@ func NewWindow(option *WindowOption) *Window {
 		relativePosition = passedPosition
 	}
 
+	shakePosition := func() *frontend.Vector {
+		if option.Shake == nil {
+			return frontend.VectorZero
+		}
+		return option.Shake.Delta()
+	}
+
 	update := func(passedPosition *frontend.Vector) {
-		parentPosition = passedPosition
+		parentPosition = passedPosition.Add(shakePosition())
 	}
 
 	drawWindow := func(drawing frontend.DrawFunc) {

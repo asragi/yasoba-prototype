@@ -4,8 +4,7 @@ import (
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"image/color"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"log"
 )
 
@@ -35,13 +34,13 @@ type Game struct{}
 
 func (g *Game) Update() error {
 	messageWindow.Update(frontend.VectorZero)
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		messageWindow.Shake(2, 10)
+	}
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	op := &text.DrawOptions{}
-	op.ColorScale.ScaleWithColor(color.White)
-	op.Filter = ebiten.FilterLinear
 	messageWindow.Draw(drawing.Draw)
 	drawing.DrawEnd(screen)
 }
