@@ -9,25 +9,21 @@ import (
 )
 
 type Text struct {
-	ForceComplete func()
-	Update        func(parentPosition *frontend.Vector)
-	Draw          func(frontend.DrawFunc)
+	currentIndex   int
+	characterSet   [][]string
+	sizes          []int
+	textSize       int
+	frameCounter   int
+	options        *TextOptions
+	parentPosition *frontend.Vector
 }
 
-type TextOptions struct {
-	RelativePosition *frontend.Vector
-	Pivot            *frontend.Pivot
-	TextFace         *text.GoTextFace
-	DisplayAll       bool
-	Speed            int
-	Depth            frontend.Depth
+func (t *Text) ForceComplete() {
+	t.currentIndex = t.textSize
 }
 
-func NewText(textString string, options *TextOptions) *Text {
-	// TODO: characterSizeX should be calculated from font size
-	characterSizeX := 14
-	lineHeight := 16
-	charactersSet, sizes, textSize := func() ([][]string, []int, int) {
+func (t *Text) SetText(textString string, displayAll bool) {
+	charactersSet, sizes, textSize := func(textString string) ([][]string, []int, int) {
 		texts := strings.Split(textString, "\n")
 		textSize := 0
 		characters := make([][]string, len(texts))
@@ -38,68 +34,85 @@ func NewText(textString string, options *TextOptions) *Text {
 			textSize += sizes[i]
 		}
 		return characters, sizes, textSize
+	}(textString)
+	t.frameCounter = 0
+	t.currentIndex = func() int {
+		if displayAll {
+			return textSize
+		}
+		return 0
 	}()
-	drawText := func(
-		characters []string,
-		currentIndex int,
-		parentPosition *frontend.Vector,
-		line int,
-		drawFunc frontend.DrawFunc,
-	) {
-		characterPosition := func() []*frontend.Vector {
-			result := make([]*frontend.Vector, textSize)
-			for i := 0; i < textSize; i++ {
-				result[i] = &frontend.Vector{
-					X: options.RelativePosition.X + float64(i*characterSizeX),
-					Y: options.RelativePosition.Y,
-				}
-			}
-			return result
-		}()
-		for i := 0; i < currentIndex; i++ {
-			op := &text.DrawOptions{}
-			x := characterPosition[i].X + parentPosition.X
-			y := characterPosition[i].Y + parentPosition.Y + float64(line*lineHeight)
-			op.GeoM.Translate(x, y)
-			targetCharacter := characters[i]
-			drawFunc(
-				func(screen *ebiten.Image) {
-					text.Draw(screen, targetCharacter, options.TextFace, op)
-				}, options.Depth,
-			)
+	t.characterSet = charactersSet
+	t.sizes = sizes
+	t.textSize = textSize
+}
+
+func (t *Text) Update(parentPosition *frontend.Vector) {
+	t.frameCounter++
+	t.currentIndex = util.ClampInt(t.frameCounter/t.options.Speed, t.currentIndex, t.textSize)
+	t.parentPosition = parentPosition
+}
+
+func (t *Text) Draw(drawFunc frontend.DrawFunc) {
+	for i := 0; i < len(t.characterSet); i++ {
+		tmpCurrentIndex := t.currentIndex
+		for j := 0; j < i; j++ {
+			tmpCurrentIndex -= t.sizes[j]
 		}
+		tmpCurrentIndex = util.ClampInt(tmpCurrentIndex, 0, t.sizes[i])
+		t.drawText(t.characterSet[i], tmpCurrentIndex, t.parentPosition, i, drawFunc)
 	}
-	currentIndex := 0
-	frameCounter := 0
-	parentPosition := &frontend.Vector{}
-	if options.DisplayAll {
-		currentIndex = textSize
-	}
+}
 
-	forceComplete := func() {
-		currentIndex = textSize
-	}
-
-	update := func(passedParentPosition *frontend.Vector) {
-		frameCounter++
-		currentIndex = util.ClampInt(frameCounter/options.Speed, currentIndex, textSize)
-		parentPosition = passedParentPosition
-	}
-
-	draw := func(drawFunc frontend.DrawFunc) {
-		for i := 0; i < len(charactersSet); i++ {
-			tmpCurrentIndex := currentIndex
-			for j := 0; j < i; j++ {
-				tmpCurrentIndex -= sizes[j]
+func (t *Text) drawText(
+	characters []string,
+	currentIndex int,
+	parentPosition *frontend.Vector,
+	line int,
+	drawFunc frontend.DrawFunc,
+) {
+	// TODO: characterSizeX should be calculated from font size
+	const characterSizeX = 14
+	const lineHeight = 16
+	characterPosition := func() []*frontend.Vector {
+		result := make([]*frontend.Vector, t.textSize)
+		for i := 0; i < t.textSize; i++ {
+			result[i] = &frontend.Vector{
+				X: t.options.RelativePosition.X + float64(i*characterSizeX),
+				Y: t.options.RelativePosition.Y,
 			}
-			tmpCurrentIndex = util.ClampInt(tmpCurrentIndex, 0, sizes[i])
-			drawText(charactersSet[i], tmpCurrentIndex, parentPosition, i, drawFunc)
 		}
+		return result
+	}()
+	for i := 0; i < currentIndex; i++ {
+		op := &text.DrawOptions{}
+		x := characterPosition[i].X + parentPosition.X
+		y := characterPosition[i].Y + parentPosition.Y + float64(line*lineHeight)
+		op.GeoM.Translate(x, y)
+		targetCharacter := characters[i]
+		drawFunc(
+			func(screen *ebiten.Image) {
+				text.Draw(screen, targetCharacter, t.options.TextFace, op)
+			}, t.options.Depth,
+		)
 	}
+}
 
+type TextOptions struct {
+	RelativePosition *frontend.Vector
+	Pivot            *frontend.Pivot
+	TextFace         *text.GoTextFace
+	Speed            int
+	Depth            frontend.Depth
+}
+
+func NewText(options *TextOptions) *Text {
 	return &Text{
-		ForceComplete: forceComplete,
-		Update:        update,
-		Draw:          draw,
+		currentIndex: 0,
+		characterSet: nil,
+		sizes:        nil,
+		textSize:     0,
+		frameCounter: 0,
+		options:      options,
 	}
 }

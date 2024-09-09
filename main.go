@@ -27,13 +27,14 @@ func init() {
 		frontend.DepthWindow,
 		frontend.PivotTopCenter,
 	)
-	// testString := "あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市"
+	testString := "あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市"
+	messageWindow.SetText(testString, false)
 }
 
 type Game struct{}
 
 func (g *Game) Update() error {
-	messageWindow.Update(&frontend.Vector{X: 0, Y: 0})
+	messageWindow.Update(frontend.VectorZero)
 	return nil
 }
 

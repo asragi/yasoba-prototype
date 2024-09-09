@@ -5,7 +5,7 @@ type Vector struct {
 }
 
 var (
-	VectorZero = Vector{0, 0}
+	VectorZero = &Vector{0, 0}
 )
 
 type Pivot struct {

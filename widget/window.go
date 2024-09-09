@@ -34,14 +34,15 @@ func (o *WindowOption) Validation() error {
 }
 
 type Window struct {
-	GetContentUpperLeft func() *frontend.Vector
-	MoveTo              func(relativePosition *frontend.Vector)
-	Update              func(parentPosition *frontend.Vector)
-	Draw                func(frontend.DrawFunc)
+	GetPositionUpperLeft func() *frontend.Vector
+	GetContentUpperLeft  func() *frontend.Vector
+	MoveTo               func(relativePosition *frontend.Vector)
+	Update               func(parentPosition *frontend.Vector)
+	Draw                 func(frontend.DrawFunc)
 }
 
 func NewWindow(option *WindowOption) *Window {
-	parentPosition := &frontend.VectorZero
+	parentPosition := frontend.VectorZero
 	relativePosition := option.RelativePosition
 
 	if err := option.Validation(); err != nil {
@@ -166,16 +167,27 @@ func NewWindow(option *WindowOption) *Window {
 	}
 
 	getContentPosition := func() *frontend.Vector {
+		return option.Padding
+		/*
+			return &frontend.Vector{
+				X: relativePosition.X - pivotDiff.X + parentPosition.X + option.Padding.X,
+				Y: relativePosition.Y - pivotDiff.Y + parentPosition.Y + option.Padding.Y,
+			}
+		*/
+	}
+
+	getPositionUpperLeft := func() *frontend.Vector {
 		return &frontend.Vector{
-			X: relativePosition.X - pivotDiff.X + parentPosition.X + option.Padding.X,
-			Y: relativePosition.Y - pivotDiff.Y + parentPosition.Y + option.Padding.Y,
+			X: relativePosition.X + parentPosition.X - pivotDiff.X,
+			Y: relativePosition.Y + parentPosition.Y - pivotDiff.Y,
 		}
 	}
 
 	return &Window{
-		GetContentUpperLeft: getContentPosition,
-		MoveTo:              moveTo,
-		Update:              update,
-		Draw:                drawWindow,
+		GetPositionUpperLeft: getPositionUpperLeft,
+		GetContentUpperLeft:  getContentPosition,
+		MoveTo:               moveTo,
+		Update:               update,
+		Draw:                 drawWindow,
 	}
 }

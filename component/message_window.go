@@ -10,9 +10,13 @@ type MessageWindow struct {
 	window *widget.Window
 }
 
+func (m *MessageWindow) SetText(textString string, displayAll bool) {
+	m.text.SetText(textString, displayAll)
+}
+
 func (m *MessageWindow) Update(parentPosition *frontend.Vector) {
 	m.window.Update(parentPosition)
-	m.text.Update(m.window.GetContentUpperLeft())
+	m.text.Update(m.window.GetPositionUpperLeft())
 }
 
 func (m *MessageWindow) Draw(drawFunc frontend.DrawFunc) {
@@ -52,12 +56,10 @@ func StandByNewMessageWindow(resource *frontend.ResourceManager) NewMessageWindo
 		)
 
 		text := widget.NewText(
-			"",
 			&widget.TextOptions{
 				RelativePosition: window.GetContentUpperLeft(),
 				Pivot:            frontend.PivotTopLeft,
 				TextFace:         font,
-				DisplayAll:       false,
 				Speed:            speed,
 				Depth:            depth,
 			},
