@@ -1,8 +1,8 @@
-package widgets
+package widget
 
 import (
 	"errors"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 )
@@ -10,11 +10,11 @@ import (
 type WindowOption struct {
 	Image            *ebiten.Image
 	CornerSize       int
-	RelativePosition *core.Vector
-	Size             *core.Vector
-	Depth            core.Depth
-	Pivot            *core.Pivot
-	Padding          *core.Vector
+	RelativePosition *frontend.Vector
+	Size             *frontend.Vector
+	Depth            frontend.Depth
+	Pivot            *frontend.Pivot
+	Padding          *frontend.Vector
 }
 
 func (o *WindowOption) Validation() error {
@@ -27,21 +27,21 @@ func (o *WindowOption) Validation() error {
 	if o.Size == nil {
 		return errors.New("size is required")
 	}
-	if o.Depth == core.Zero {
+	if o.Depth == frontend.Zero {
 		return errors.New("depth is required")
 	}
 	return nil
 }
 
 type Window struct {
-	GetContentUpperLeft func() *core.Vector
-	MoveTo              func(relativePosition *core.Vector)
-	Update              func(parentPosition *core.Vector)
-	Draw                func(core.DrawFunc)
+	GetContentUpperLeft func() *frontend.Vector
+	MoveTo              func(relativePosition *frontend.Vector)
+	Update              func(parentPosition *frontend.Vector)
+	Draw                func(frontend.DrawFunc)
 }
 
 func NewWindow(option *WindowOption) *Window {
-	var parentPosition *core.Vector
+	var parentPosition *frontend.Vector
 	relativePosition := option.RelativePosition
 
 	if err := option.Validation(); err != nil {
@@ -84,13 +84,13 @@ func NewWindow(option *WindowOption) *Window {
 			img.Bounds().Dy(),
 		},
 	}
-	cornerPosition := []*core.Vector{
+	cornerPosition := []*frontend.Vector{
 		{0, 0},
 		{option.Size.X - float64(option.CornerSize), 0},
 		{0, option.Size.Y - float64(option.CornerSize)},
 		{option.Size.X - float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
 	}
-	sidePosition := []*core.Vector{
+	sidePosition := []*frontend.Vector{
 		{float64(option.CornerSize), 0},
 		{option.Size.X - float64(option.CornerSize), float64(option.CornerSize)},
 		{0, float64(option.CornerSize)},
@@ -100,22 +100,22 @@ func NewWindow(option *WindowOption) *Window {
 	targetXSize := option.Size.X - float64(option.CornerSize*2)
 	sideYSize := float64(textureHeight - option.CornerSize*2)
 	targetYSize := option.Size.Y - float64(option.CornerSize*2)
-	sideScales := []*core.Vector{
+	sideScales := []*frontend.Vector{
 		{targetXSize / sideXSize, 1},
 		{1, targetYSize / sideYSize},
 		{1, targetYSize / sideYSize},
 		{targetXSize / sideXSize, 1},
 	}
 
-	moveTo := func(passedPosition *core.Vector) {
+	moveTo := func(passedPosition *frontend.Vector) {
 		relativePosition = passedPosition
 	}
 
-	update := func(passedPosition *core.Vector) {
+	update := func(passedPosition *frontend.Vector) {
 		parentPosition = passedPosition
 	}
 
-	drawWindow := func(drawing core.DrawFunc) {
+	drawWindow := func(drawing frontend.DrawFunc) {
 		for i, v := range corners {
 			op := &ebiten.DrawImageOptions{}
 			x := cornerPosition[i].X + relativePosition.X - pivotDiff.X + parentPosition.X
@@ -165,8 +165,8 @@ func NewWindow(option *WindowOption) *Window {
 		)
 	}
 
-	getContentPosition := func() *core.Vector {
-		return &core.Vector{
+	getContentPosition := func() *frontend.Vector {
+		return &frontend.Vector{
 			X: relativePosition.X - pivotDiff.X + parentPosition.X + option.Padding.X,
 			Y: relativePosition.Y - pivotDiff.Y + parentPosition.Y + option.Padding.Y,
 		}

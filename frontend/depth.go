@@ -1,4 +1,4 @@
-package core
+package frontend
 
 type Depth int
 

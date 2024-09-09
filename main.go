@@ -1,61 +1,49 @@
 package main
 
 import (
-	"bytes"
-	"github.com/asragi/yasoba-prototype/core"
-	"github.com/asragi/yasoba-prototype/fonts"
-	"github.com/asragi/yasoba-prototype/images"
-	"github.com/asragi/yasoba-prototype/widgets"
+	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"image"
 	"image/color"
 	"log"
 )
 
 var (
-	drawing      *core.Drawing
-	fontSource   *text.GoTextFaceSource
-	windowSource *ebiten.Image
-	window       *widgets.Window
-	testText     *widgets.Text
+	drawing  *frontend.Drawing
+	window   *widget.Window
+	testText *widget.Text
 )
 
 func init() {
-	drawing = core.NewDrawing()
-	s, err := text.NewGoTextFaceSource(bytes.NewReader(fonts.MaruMinya))
+	drawing = frontend.NewDrawing()
+	resource, err := frontend.CreateResourceManager()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fontSource = s
-	w, _, err := image.Decode(bytes.NewReader(images.Window))
-	if err != nil {
-		log.Fatal(err)
-	}
-	windowSource = ebiten.NewImageFromImage(w)
-	window = widgets.NewWindow(
-		&widgets.WindowOption{
-			Image:            windowSource,
+	window = widget.NewWindow(
+		&widget.WindowOption{
+			Image:            resource.GetTexture(frontend.TextureWindow),
 			CornerSize:       6,
-			RelativePosition: &core.Vector{X: 192, Y: 0},
-			Size: &core.Vector{
+			RelativePosition: &frontend.Vector{X: 192, Y: 0},
+			Size: &frontend.Vector{
 				X: 292,
 				Y: 62,
 			},
-			Depth:   core.DepthWindow,
-			Pivot:   core.PivotTopCenter,
-			Padding: &core.Vector{X: 16, Y: 8},
+			Depth:   frontend.DepthWindow,
+			Pivot:   frontend.PivotTopCenter,
+			Padding: &frontend.Vector{X: 16, Y: 8},
 		},
 	)
-	testText = widgets.NewText(
+	testText = widget.NewText(
 		"あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市",
-		&widgets.TextOptions{
-			RelativePosition: &core.Vector{X: 0, Y: 0},
-			Pivot:            core.PivotTopLeft,
-			TextFace:         &text.GoTextFace{Source: fontSource, Size: 12},
+		&widget.TextOptions{
+			RelativePosition: &frontend.Vector{X: 0, Y: 0},
+			Pivot:            frontend.PivotTopLeft,
+			TextFace:         resource.GetFont(frontend.MaruMinya),
 			DisplayAll:       false,
 			Speed:            6,
-			Depth:            core.DepthWindow,
+			Depth:            frontend.DepthWindow,
 		},
 	)
 }
@@ -63,7 +51,7 @@ func init() {
 type Game struct{}
 
 func (g *Game) Update() error {
-	window.Update(&core.Vector{X: 0, Y: 0})
+	window.Update(&frontend.Vector{X: 0, Y: 0})
 	testText.Update(window.GetContentUpperLeft())
 	return nil
 }

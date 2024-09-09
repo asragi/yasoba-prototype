@@ -1,4 +1,4 @@
-package utils
+package util
 
 func Clamp(value, min, max float64) float64 {
 	if value < min {

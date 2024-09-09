@@ -1,4 +1,4 @@
-package utils
+package util
 
 func SplitString(s string) []string {
 	runes := []rune(s)
