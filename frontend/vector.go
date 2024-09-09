@@ -4,6 +4,10 @@ type Vector struct {
 	X, Y float64
 }
 
+var (
+	VectorZero = Vector{0, 0}
+)
+
 type Pivot struct {
 	X, Y float64
 }

@@ -20,38 +20,52 @@ func (m *MessageWindow) Draw(drawFunc frontend.DrawFunc) {
 	m.text.Draw(drawFunc)
 }
 
-func NewMessageWindow(
-	relativePosition *frontend.Vector,
-	size *frontend.Vector,
-	depth frontend.Depth,
-	pivot *frontend.Pivot,
-) *MessageWindow {
-	window := widget.NewWindow(
-		&widget.WindowOption{
-			Image:            nil,
-			CornerSize:       6,
-			RelativePosition: relativePosition,
-			Size:             size,
-			Depth:            depth,
-			Pivot:            pivot,
-			Padding:          &frontend.Vector{X: 16, Y: 8},
-		},
-	)
+type NewMessageWindowFunc func(
+	*frontend.Vector,
+	*frontend.Vector,
+	frontend.Depth,
+	*frontend.Pivot,
+) *MessageWindow
 
-	text := widget.NewText(
-		"",
-		&widget.TextOptions{
-			RelativePosition: window.GetContentUpperLeft(),
-			Pivot:            frontend.PivotTopLeft,
-			TextFace:         nil,
-			DisplayAll:       false,
-			Speed:            6,
-			Depth:            depth,
-		},
-	)
+func StandByNewMessageWindow(resource *frontend.ResourceManager) NewMessageWindowFunc {
+	image := resource.GetTexture(frontend.TextureWindow)
+	cornerSize := 6
+	padding := &frontend.Vector{X: 16, Y: 8}
+	font := resource.GetFont(frontend.MaruMinya)
+	speed := 6
+	return func(
+		relativePosition *frontend.Vector,
+		size *frontend.Vector,
+		depth frontend.Depth,
+		pivot *frontend.Pivot,
+	) *MessageWindow {
+		window := widget.NewWindow(
+			&widget.WindowOption{
+				Image:            image,
+				CornerSize:       cornerSize,
+				RelativePosition: relativePosition,
+				Size:             size,
+				Depth:            depth,
+				Pivot:            pivot,
+				Padding:          padding,
+			},
+		)
 
-	return &MessageWindow{
-		text:   text,
-		window: window,
+		text := widget.NewText(
+			"",
+			&widget.TextOptions{
+				RelativePosition: window.GetContentUpperLeft(),
+				Pivot:            frontend.PivotTopLeft,
+				TextFace:         font,
+				DisplayAll:       false,
+				Speed:            speed,
+				Depth:            depth,
+			},
+		)
+
+		return &MessageWindow{
+			text:   text,
+			window: window,
+		}
 	}
 }

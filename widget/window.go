@@ -41,7 +41,7 @@ type Window struct {
 }
 
 func NewWindow(option *WindowOption) *Window {
-	var parentPosition *frontend.Vector
+	parentPosition := &frontend.VectorZero
 	relativePosition := option.RelativePosition
 
 	if err := option.Validation(); err != nil {
