@@ -36,6 +36,7 @@ func (o *WindowOption) Validation() error {
 
 type Window struct {
 	GetPositionUpperLeft func() *frontend.Vector
+	GetPositionCenter    func() *frontend.Vector
 	GetContentUpperLeft  func() *frontend.Vector
 	MoveTo               func(relativePosition *frontend.Vector)
 	Update               func(parentPosition *frontend.Vector)
@@ -191,9 +192,17 @@ func NewWindow(option *WindowOption) *Window {
 		}
 	}
 
+	getPositionCenter := func() *frontend.Vector {
+		return &frontend.Vector{
+			X: relativePosition.X + parentPosition.X - pivotDiff.X + option.Size.X/2,
+			Y: relativePosition.Y + parentPosition.Y - pivotDiff.Y + option.Size.Y/2,
+		}
+	}
+
 	return &Window{
 		GetPositionUpperLeft: getPositionUpperLeft,
 		GetContentUpperLeft:  getContentPosition,
+		GetPositionCenter:    getPositionCenter,
 		MoveTo:               moveTo,
 		Update:               update,
 		Draw:                 drawWindow,

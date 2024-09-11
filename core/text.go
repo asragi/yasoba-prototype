@@ -21,9 +21,9 @@ func CreateServeTextData() ServeTextDataFunc {
 
 	register("battle_command_attack", "こうげき")
 	register("battle_command_fire", "まほう")
-	register("battle_command_thunder", "Thunder")
-	register("battle_command_barrier", "Barrier")
-	register("battle_command_wind", "Wind")
+	register("battle_command_thunder", "まほう２")
+	register("battle_command_barrier", "まほう３")
+	register("battle_command_wind", "まほう４")
 	register("battle_command_focus", "おちつく")
 	register("battle_command_defend", "まもる")
 

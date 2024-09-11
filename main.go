@@ -13,6 +13,7 @@ var (
 	drawing            *frontend.Drawing
 	messageWindow      *component.MessageWindow
 	battleSelectWindow *component.BattleSelectWindow
+	faceWindow         *component.FaceWindow
 )
 
 func init() {
@@ -39,18 +40,30 @@ func init() {
 		[]component.BattleCommand{
 			component.BattleCommandAttack,
 			component.BattleCommandFire,
+			/*
+				component.BattleCommandThunder,
+				component.BattleCommandBarrier,
+				component.BattleCommandWind,
+			*/
 			component.BattleCommandFocus,
 			component.BattleCommandDefend,
 		},
 	)
 	battleSelectWindow.Open()
+	newFaceWindow := component.StandByNewFaceWindow(resource)
+	faceWindow = newFaceWindow(
+		&frontend.Vector{X: 0, Y: 0},
+		frontend.DepthWindow,
+		frontend.PivotBottomLeft,
+	)
 }
 
 type Game struct{}
 
 func (g *Game) Update() error {
 	messageWindow.Update(frontend.VectorZero)
-	battleSelectWindow.Update(&frontend.Vector{X: 0, Y: 288})
+	faceWindow.Update(&frontend.Vector{X: 0, Y: 288})
+	battleSelectWindow.Update(faceWindow.GetTopLeftPosition())
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		messageWindow.Shake(2, 10)
 	}
@@ -66,6 +79,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	messageWindow.Draw(drawing.Draw)
 	battleSelectWindow.Draw(drawing.Draw)
+	faceWindow.Draw(drawing.Draw)
 	drawing.DrawEnd(screen)
 }
 

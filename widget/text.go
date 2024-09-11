@@ -72,7 +72,7 @@ func (t *Text) drawText(
 	drawFunc frontend.DrawFunc,
 ) {
 	// TODO: characterSizeX should be calculated from font Size
-	const characterSizeX = 14
+	const characterSizeX = 13
 	const lineHeight = 16
 	characterPosition := func() []*frontend.Vector {
 		result := make([]*frontend.Vector, t.textSize)

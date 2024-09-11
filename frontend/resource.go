@@ -15,6 +15,8 @@ type TextureId int
 const (
 	TextureWindow TextureId = iota
 	TextureCursor
+	TextureFaceLuneNormal
+	TextureFaceSunnyNormal
 )
 
 type FontId int
@@ -53,6 +55,12 @@ func CreateResourceManager() (*ResourceManager, error) {
 		return handleError(err)
 	}
 	if err := loadTexture(load.Cursor, TextureCursor); err != nil {
+		return handleError(err)
+	}
+	if err := loadTexture(load.FaceLuneNormal, TextureFaceLuneNormal); err != nil {
+		return handleError(err)
+	}
+	if err := loadTexture(load.FaceSunnyNormal, TextureFaceSunnyNormal); err != nil {
 		return handleError(err)
 	}
 
