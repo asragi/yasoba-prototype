@@ -1,50 +1,120 @@
 package core
 
+import "math"
+
 type SkillId string
+type SkillType int
+
+const (
+	SkillTypePhysical SkillType = iota
+	SkillTypeMagical
+)
+
+type SkillPower float64
+type SkillTargetType int
 
 type ServeSkillData func(id SkillId) *SkillData
 
+type SkillDataRow interface{}
+
+type SkillSingleAttackRow struct {
+	Power SkillPower
+	Type  SkillType
+}
+
+type SkillSingleAttackResult struct {
+	ActorId  ActorId
+	TargetId ActorId
+	SkillId  SkillId
+	Damage   Damage
+}
+
 type SkillData struct {
-	Id         SkillId
-	Name       TextId
-	SequenceId EventSequenceId
+	Id   SkillId
+	Rows []SkillDataRow
 }
 
-type EventSequenceId string
-
-type BattleEventRow interface {
-	IsActive(frame int) bool
+type SkillApplyArgs struct {
+	Id       SkillId
+	Actor    ActorId
+	SubActor ActorId
+	Target   []ActorId
 }
 
-type BattleEventSequence struct {
-	Id   EventSequenceId
-	Rows []BattleEventRow
+type SkillApplyResultRow interface{}
+type SkillApplyResult struct {
+	Rows []SkillApplyResultRow
 }
 
-type ServeBattleEventSequenceFunc func(id EventSequenceId) *BattleEventSequence
+type SkillApplyFunc func(*SkillApplyArgs) *SkillApplyResult
 
-type DisplayMessageEvent struct {
-	Frame int
-	Text  TextId
-}
-
-func (e *DisplayMessageEvent) IsActive(frame int) bool {
-	return e.Frame == frame
-}
-
-func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
-	dict := map[EventSequenceId]*BattleEventSequence{}
-	testData := []BattleEventRow{
-		&DisplayMessageEvent{
-			Frame: 0,
-			Text:  "test-text",
-		},
+func CreateSkillApply(
+	skillServer ServeSkillData,
+	actorServer ActorServer,
+) SkillApplyFunc {
+	return func(args *SkillApplyArgs) *SkillApplyResult {
+		result := make([]SkillApplyResultRow, 0)
+		data := skillServer(args.Id)
+		for _, row := range data.Rows {
+			switch r := row.(type) {
+			case *SkillSingleAttackRow:
+				actor := actorServer.Get(args.Actor)
+				target := actorServer.Get(args.Target[0])
+				damage := calculateNormalAttackDamage(
+					actor.ATK,
+					actor.MAG,
+					target.DEF,
+					target.MAG,
+					r.Power,
+					r.Type,
+				)
+				result = append(
+					result, &SkillSingleAttackResult{
+						ActorId:  args.Actor,
+						TargetId: args.Target[0],
+						SkillId:  args.Id,
+						Damage:   damage,
+					},
+				)
+			}
+		}
+		return &SkillApplyResult{Rows: result}
 	}
-	dict["test"] = &BattleEventSequence{
-		Id:   "test",
-		Rows: testData,
-	}
-	return func(id EventSequenceId) *BattleEventSequence {
-		return dict[id]
-	}
+}
+
+type SkillResultRow interface{}
+
+type SkillResult struct {
+	Rows []SkillResultRow
+}
+
+type Damage int
+
+func calculateNormalAttackDamage(
+	attackerATK ATK,
+	attackerMAG MAG,
+	defenderDEF DEF,
+	defenderMAG MAG,
+	power SkillPower,
+	attackType SkillType,
+) Damage {
+	// 同パラメータのキャラクターがPower=1.0の攻撃を受けた場合に失うHPの割合を表す係数
+	const damageRate = 0.3
+	// うまいことやって出た数字
+	const baseValue = 4.0
+	attackValue := func() int {
+		if attackType == SkillTypePhysical {
+			return int(attackerATK)
+		}
+		return int(attackerMAG)
+	}()
+	defenderValue := func() int {
+		if attackType == SkillTypePhysical {
+			return int(defenderDEF)
+		}
+		return int(defenderMAG)
+	}()
+	estimatedHP := attackValue * 10
+	ratio := float64(attackValue) / float64(defenderValue)
+	return Damage(int(float64(estimatedHP) * damageRate * float64(power) * math.Pow(baseValue, ratio-1)))
 }

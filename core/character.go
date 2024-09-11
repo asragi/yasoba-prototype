@@ -1,6 +1,12 @@
 package core
 
 type CharacterId string
+
+const (
+	CharacterLuneId  CharacterId = "lune"
+	CharacterSunnyId CharacterId = "sunny"
+)
+
 type MaxHP int
 type HP int
 type ATK int
