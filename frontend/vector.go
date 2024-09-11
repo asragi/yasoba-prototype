@@ -15,6 +15,13 @@ func (v *Vector) Add(v2 *Vector) *Vector {
 	}
 }
 
+func (v *Vector) Sub(v2 *Vector) *Vector {
+	return &Vector{
+		X: v.X - v2.X,
+		Y: v.Y - v2.Y,
+	}
+}
+
 type Pivot struct {
 	X, Y float64
 }

@@ -14,6 +14,7 @@ type TextureId int
 
 const (
 	TextureWindow TextureId = iota
+	TextureCursor
 )
 
 type FontId int
@@ -40,11 +41,20 @@ func CreateResourceManager() (*ResourceManager, error) {
 		return nil, fmt.Errorf("failed to create resource manager: %w", err)
 	}
 	textureDict := map[TextureId]*ebiten.Image{}
-	w, _, err := image.Decode(bytes.NewReader(load.Window))
-	if err != nil {
+	loadTexture := func(data []byte, id TextureId) error {
+		img, _, err := image.Decode(bytes.NewReader(data))
+		if err != nil {
+			return err
+		}
+		textureDict[id] = ebiten.NewImageFromImage(img)
+		return nil
+	}
+	if err := loadTexture(load.Window, TextureWindow); err != nil {
 		return handleError(err)
 	}
-	textureDict[TextureWindow] = ebiten.NewImageFromImage(w)
+	if err := loadTexture(load.Cursor, TextureCursor); err != nil {
+		return handleError(err)
+	}
 
 	fontDict := map[FontId]*text.GoTextFace{}
 	s, err := text.NewGoTextFaceSource(bytes.NewReader(font.MaruMinya))

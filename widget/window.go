@@ -23,10 +23,10 @@ func (o *WindowOption) Validation() error {
 		return errors.New("image is required")
 	}
 	if o.CornerSize <= 0 {
-		return errors.New("corner size must be greater than 0")
+		return errors.New("corner Size must be greater than 0")
 	}
 	if o.Size == nil {
-		return errors.New("size is required")
+		return errors.New("Size is required")
 	}
 	if o.Depth == frontend.Zero {
 		return errors.New("depth is required")

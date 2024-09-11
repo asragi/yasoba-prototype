@@ -54,6 +54,12 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		messageWindow.Shake(2, 10)
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
+		battleSelectWindow.MoveCursorDown()
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+		battleSelectWindow.MoveCursorUp()
+	}
 	return nil
 }
 
