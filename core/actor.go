@@ -1,45 +1,65 @@
 package core
 
+import "fmt"
+
 type ActorId string
 
 const (
-	ActorLuneId  = ActorId("lune")
-	ActorSunnyId = ActorId("sunny")
+	ActorEmptyId ActorId = "empty"
+	ActorLuneId          = ActorId("lune")
+	ActorSunnyId         = ActorId("sunny")
 )
 
+type ActorSide int
+
+const (
+	ActorSidePlayer ActorSide = iota
+	ActorSideEnemy
+)
+
+// Actor is a parameter set for a character in a battle.
 type Actor struct {
-	Id          ActorId
-	CharacterId CharacterId
-	MaxHP       MaxHP
-	HP          HP
-	ATK         ATK
-	MAG         MAG
-	DEF         DEF
-	SPD         SPD
+	Id    ActorId
+	MaxHP MaxHP
+	HP    HP
+	ATK   ATK
+	MAG   MAG
+	DEF   DEF
+	SPD   SPD
+	Side  ActorSide
 }
 
 type ServeActorCharacterFunc func(CharacterId) *Actor
 
-func CreateServeActorCharacter(
-	serveCharacter ServeCharacterFunc,
-) ServeActorCharacterFunc {
-	return func(id CharacterId) *Actor {
-		character := serveCharacter(id)
-		return &Actor{
-			CharacterId: id,
-			MaxHP:       character.MaxHP,
-			HP:          character.HP,
-			ATK:         character.ATK,
-			MAG:         character.MAG,
-			DEF:         character.DEF,
-			SPD:         character.SPD,
-		}
+func characterToActor(character *CharacterData, id ActorId) *Actor {
+	return &Actor{
+		Id:    id,
+		MaxHP: character.MaxHP,
+		HP:    character.HP,
+		ATK:   character.ATK,
+		MAG:   character.MAG,
+		DEF:   character.DEF,
+		SPD:   character.SPD,
+	}
+}
+
+func enemyToActor(enemy *EnemyData, id ActorId) *Actor {
+	return &Actor{
+		Id:    id,
+		MaxHP: enemy.MaxHP,
+		HP:    enemy.MaxHP.ToHP(),
+		ATK:   enemy.Atk,
+		MAG:   enemy.Mag,
+		DEF:   enemy.Def,
+		SPD:   enemy.Spd,
 	}
 }
 
 type ActorServer interface {
 	Get(ActorId) *Actor
+	GetAllActor() []*Actor
 	Upsert(*Actor)
+	ClearAll()
 }
 
 type InMemoryActorServer struct {
@@ -47,18 +67,7 @@ type InMemoryActorServer struct {
 }
 
 func NewInMemoryActorServer() *InMemoryActorServer {
-	actors := map[ActorId]*Actor{
-		ActorLuneId: {
-			Id:          ActorLuneId,
-			CharacterId: CharacterLuneId,
-			MaxHP:       40,
-			HP:          40,
-			ATK:         5,
-			MAG:         30,
-			DEF:         6,
-			SPD:         6,
-		},
-	}
+	actors := map[ActorId]*Actor{}
 	return &InMemoryActorServer{
 		actors: actors,
 	}
@@ -70,4 +79,59 @@ func (s *InMemoryActorServer) Get(id ActorId) *Actor {
 
 func (s *InMemoryActorServer) Upsert(actor *Actor) {
 	s.actors[actor.Id] = actor
+}
+
+type PrepareActorArgs struct {
+	MainActorCharacterId CharacterId
+	SubActorCharacterId  CharacterId
+	EnemyIds             []EnemyId
+}
+
+type enemyIdPair struct {
+	EnemyId EnemyId
+	ActorId ActorId
+}
+
+type PrepareActorResult struct {
+	MainActorId ActorId
+	SubActorId  ActorId
+	EnemyIds    []*enemyIdPair
+}
+
+type PrepareActorService func(*PrepareActorArgs) *PrepareActorResult
+
+func CreatePrepareActorService(
+	serveCharacter ServeCharacterFunc,
+	serveEnemy ServeEnemyData,
+	actorServer ActorServer,
+) PrepareActorService {
+	const MainActorId = ActorLuneId
+	const SubActorId = ActorSunnyId
+	return func(args *PrepareActorArgs) *PrepareActorResult {
+		actorServer.ClearAll()
+		mainCharacter := serveCharacter(args.MainActorCharacterId)
+		mainActor := characterToActor(mainCharacter, MainActorId)
+		actorServer.Upsert(mainActor)
+		if args.SubActorCharacterId != CharacterEmptyId {
+			subCharacter := serveCharacter(args.SubActorCharacterId)
+			subActor := characterToActor(subCharacter, SubActorId)
+			actorServer.Upsert(subActor)
+		}
+		result := make([]*enemyIdPair, len(args.EnemyIds))
+		for i, id := range args.EnemyIds {
+			enemyData := serveEnemy(id)
+			actorId := ActorId(fmt.Sprintf("%s_%d", enemyData.Id, i))
+			result[i] = &enemyIdPair{
+				EnemyId: id,
+				ActorId: actorId,
+			}
+			actorServer.Upsert(enemyToActor(serveEnemy(id), actorId))
+		}
+
+		return &PrepareActorResult{
+			MainActorId: MainActorId,
+			SubActorId:  SubActorId,
+			EnemyIds:    result,
+		}
+	}
 }

@@ -3,6 +3,14 @@ package core
 import "math"
 
 type SkillId string
+
+const (
+	SkillIdLuneAttack       SkillId = "lune-attack"
+	SkillIdLuneFireEnemy    SkillId = "lune-fire-enemy"
+	SkillIdLuneFireAlly     SkillId = "lune-fire-ally"
+	SkillIdLuneThunderEnemy SkillId = "lune-thunder-enemy"
+)
+
 type SkillType int
 
 const (
@@ -14,6 +22,27 @@ type SkillPower float64
 type SkillTargetType int
 
 type ServeSkillData func(id SkillId) *SkillData
+
+func NewSkillServer() ServeSkillData {
+	dict := map[SkillId]*SkillData{}
+	register := func(id SkillId, rows []SkillDataRow) {
+		dict[id] = &SkillData{
+			Id:   id,
+			Rows: rows,
+		}
+	}
+	register(
+		SkillIdLuneAttack, []SkillDataRow{
+			&SkillSingleAttackRow{
+				Power: 0.6,
+				Type:  SkillTypePhysical,
+			},
+		},
+	)
+	return func(id SkillId) *SkillData {
+		return dict[id]
+	}
+}
 
 type SkillDataRow interface{}
 
@@ -34,7 +63,7 @@ type SkillData struct {
 	Rows []SkillDataRow
 }
 
-type SkillApplyArgs struct {
+type SelectedAction struct {
 	Id       SkillId
 	Actor    ActorId
 	SubActor ActorId
@@ -46,13 +75,13 @@ type SkillApplyResult struct {
 	Rows []SkillApplyResultRow
 }
 
-type SkillApplyFunc func(*SkillApplyArgs) *SkillApplyResult
+type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
 
 func CreateSkillApply(
 	skillServer ServeSkillData,
 	actorServer ActorServer,
 ) SkillApplyFunc {
-	return func(args *SkillApplyArgs) *SkillApplyResult {
+	return func(args *SelectedAction) *SkillApplyResult {
 		result := make([]SkillApplyResultRow, 0)
 		data := skillServer(args.Id)
 		for _, row := range data.Rows {

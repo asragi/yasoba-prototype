@@ -1,28 +1,131 @@
 package core
 
-type ActionId string
+import (
+	"github.com/asragi/yasoba-prototype/util"
+)
 
-type ActionCommand struct {
-	ActionId ActionId
+type BattleService struct {
+	actorServer ActorServer
+}
+
+type PlayerCommand int
+
+const (
+	PlayerCommandAttack PlayerCommand = iota
+	PlayerCommandFire
+	PlayerCommandThunder
+	PlayerCommandBarrier
+	PlayerCommandWind
+	PlayerCommandFocus
+	PlayerCommandDefend
+)
+
+type BattlePlayerCommandResult struct {
+	SkillApplyArgs *SelectedAction
+}
+
+type ProcessPlayerCommandFunc func(*PostCommandRequest) *BattlePlayerCommandResult
+
+func CreateProcessPlayerCommand(actorServer ActorServer) ProcessPlayerCommandFunc {
+	isToEnemy := func(targets []ActorId) bool {
+		if len(targets) == 0 {
+			return false
+		}
+		target := actorServer.Get(targets[0])
+		return target.Side == ActorSideEnemy
+	}
+	return func(command *PostCommandRequest) *BattlePlayerCommandResult {
+		decidedSkillId := func() SkillId {
+			if isToEnemy(command.TargetId) {
+				switch command.Command {
+				case PlayerCommandAttack:
+					return SkillIdLuneAttack
+				case PlayerCommandFire:
+					return SkillIdLuneFireEnemy
+				default:
+					panic("not implemented")
+				}
+			}
+			// TODO: implement
+			return SkillIdLuneAttack
+		}()
+		return &BattlePlayerCommandResult{
+			SkillApplyArgs: &SelectedAction{
+				Id:       decidedSkillId,
+				Actor:    command.ActorId,
+				SubActor: ActorEmptyId,
+				Target:   command.TargetId,
+			},
+		}
+	}
+}
+
+func decideActionOrder(actorServer ActorServer) []ActorId {
+	var result []ActorId
+	mainActorId := ActorLuneId
+	actors := actorServer.GetAllActor()
+	actorSet := util.NewSet(actors)
+	subActor, err := actorSet.Find(func(a *Actor) bool { return a.Id != mainActorId && a.Side == ActorSidePlayer })
+	if err == nil {
+		result = append(result, subActor.Id)
+	}
+	result = append(result, mainActorId)
+	enemies := actorSet.Filter(func(a *Actor) bool { return a.Side == ActorSideEnemy })
+	enemyIds := util.SetSelect(enemies, func(a *Actor) ActorId { return a.Id })
+	result = append(result, enemyIds.ToArray()...)
+	return result
+}
+
+type InitializeBattleRequest struct {
+	MainActorCharacterId CharacterId
+	SubActorCharacterId  CharacterId
+	EnemyIds             []EnemyId
+}
+
+type InitializeBattleResponse struct {
+	MainActorId ActorId
+	SubActorId  ActorId
+	EnemyIds    []*enemyIdPair
+}
+
+func CreateInitializeBattle(
+	prepareActorService PrepareActorService,
+) func(*InitializeBattleRequest) *InitializeBattleResponse {
+	return func(option *InitializeBattleRequest) *InitializeBattleResponse {
+		prepareResult := prepareActorService(
+			&PrepareActorArgs{
+				MainActorCharacterId: option.MainActorCharacterId,
+				SubActorCharacterId:  option.SubActorCharacterId,
+				EnemyIds:             option.EnemyIds,
+			},
+		)
+		return &InitializeBattleResponse{
+			MainActorId: prepareResult.MainActorId,
+			SubActorId:  prepareResult.SubActorId,
+			EnemyIds:    prepareResult.EnemyIds,
+		}
+	}
+}
+
+type PostCommandRequest struct {
 	ActorId  ActorId
 	TargetId []ActorId
-	SkillId  SkillId
+	Command  PlayerCommand
 }
 
-type ActionResult struct {
-	ActionId           ActionId
-	CombinationActorId ActorId
-	IsCombination      bool
-	ActorId            ActorId
+type PostCommandResponse struct {
+	Actions []*SelectedAction
 }
 
-type ExecuteActionFunc func(*ActionCommand) *ActionResult
+type PostCommandFunc func(*PostCommandRequest) *PostCommandResponse
 
-func ExecuteAction(
-	actorServer ActorServer,
-) ExecuteActionFunc {
-	return func(command *ActionCommand) *ActionResult {
-		actor := actorServer.Get(command.ActorId)
-		return &ActionResult{ActorId: actor.Id}
+func CreatePostCommand(
+	processPlayerCommand ProcessPlayerCommandFunc,
+) PostCommandFunc {
+	return func(command *PostCommandRequest) *PostCommandResponse {
+		result := processPlayerCommand(command)
+		return &PostCommandResponse{
+			Actions: []*SelectedAction{result.SkillApplyArgs},
+		}
 	}
 }

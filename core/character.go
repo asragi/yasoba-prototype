@@ -3,11 +3,17 @@ package core
 type CharacterId string
 
 const (
+	CharacterEmptyId CharacterId = "empty"
 	CharacterLuneId  CharacterId = "lune"
 	CharacterSunnyId CharacterId = "sunny"
 )
 
 type MaxHP int
+
+func (h MaxHP) ToHP() HP {
+	return HP(h)
+}
+
 type HP int
 type ATK int
 type MAG int

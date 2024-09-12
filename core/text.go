@@ -2,6 +2,19 @@ package core
 
 type TextId string
 
+const (
+	TextIdBattleCommandAttack  TextId = "battle_command_attack"
+	TextIdBattleCommandFire    TextId = "battle_command_fire"
+	TextIdBattleCommandThunder TextId = "battle_command_thunder"
+	TextIdBattleCommandBarrier TextId = "battle_command_barrier"
+	TextIdBattleCommandWind    TextId = "battle_command_wind"
+	TextIdBattleCommandFocus   TextId = "battle_command_focus"
+	TextIdBattleCommandDefend  TextId = "battle_command_defend"
+	TextIdLuneName             TextId = "lune_name"
+	TextIdSunnyName            TextId = "sunny_name"
+	TextIdPunchingBagName      TextId = "enemy_punching_bag_name"
+)
+
 type ServeTextDataFunc func(id TextId) *TextData
 
 type TextData struct {
@@ -19,13 +32,16 @@ func CreateServeTextData() ServeTextDataFunc {
 		}
 	}
 
-	register("battle_command_attack", "こうげき")
-	register("battle_command_fire", "まほう")
-	register("battle_command_thunder", "まほう２")
-	register("battle_command_barrier", "まほう３")
-	register("battle_command_wind", "まほう４")
-	register("battle_command_focus", "おちつく")
-	register("battle_command_defend", "まもる")
+	register(TextIdBattleCommandAttack, "こうげき")
+	register(TextIdBattleCommandFire, "ファイア")
+	register(TextIdBattleCommandThunder, "サンダー")
+	register(TextIdBattleCommandBarrier, "バリア")
+	register(TextIdBattleCommandWind, "ウィンド")
+	register(TextIdBattleCommandFocus, "おちつく")
+	register(TextIdBattleCommandDefend, "まもる")
+	register(TextIdLuneName, "ルーネ")
+	register(TextIdSunnyName, "サニー")
+	register(TextIdPunchingBagName, "デバグ")
 
 	return func(id TextId) *TextData {
 		return dict[id]
