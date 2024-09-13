@@ -14,6 +14,7 @@ type NewFaceWindowFunc func(
 	*frontend.Vector,
 	frontend.Depth,
 	*frontend.Pivot,
+	frontend.TextureId,
 ) *FaceWindow
 
 func (f *FaceWindow) Update(parentPosition *frontend.Vector) {
@@ -35,13 +36,14 @@ func StandByNewFaceWindow(resource *frontend.ResourceManager) NewFaceWindowFunc 
 		relativePosition *frontend.Vector,
 		depth frontend.Depth,
 		pivot *frontend.Pivot,
+		texture frontend.TextureId,
 	) *FaceWindow {
 		const padding = 6
 		face := widget.NewImage(
 			frontend.VectorZero,
 			frontend.PivotCenter,
 			depth,
-			resource.GetTexture(frontend.TextureFaceLuneNormal),
+			resource.GetTexture(texture),
 		)
 		face.SetScaleBySize(&frontend.Vector{X: 74, Y: 74})
 		window := widget.NewWindow(

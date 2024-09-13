@@ -22,16 +22,42 @@ type SPD int
 
 type ServeCharacterFunc func(CharacterId) *CharacterData
 
+func CreateCharacterServer() ServeCharacterFunc {
+	dict := make(map[CharacterId]*CharacterData)
+	dict[CharacterLuneId] = &CharacterData{
+		Id:    CharacterLuneId,
+		Name:  TextIdLuneName,
+		MaxHP: 100,
+		HP:    100,
+		ATK:   10,
+		MAG:   10,
+		DEF:   10,
+		SPD:   10,
+	}
+	dict[CharacterSunnyId] = &CharacterData{
+		Id:    CharacterSunnyId,
+		Name:  TextIdSunnyName,
+		MaxHP: 100,
+		HP:    100,
+		ATK:   10,
+		MAG:   10,
+		DEF:   10,
+		SPD:   10,
+	}
+	return func(id CharacterId) *CharacterData {
+		return dict[id]
+	}
+}
+
 type CharacterData struct {
-	Id     CharacterId
-	Name   TextId
-	MaxHP  MaxHP
-	HP     HP
-	ATK    ATK
-	MAG    MAG
-	DEF    DEF
-	SPD    SPD
-	Skills []SkillId
+	Id    CharacterId
+	Name  TextId
+	MaxHP MaxHP
+	HP    HP
+	ATK   ATK
+	MAG   MAG
+	DEF   DEF
+	SPD   SPD
 }
 
 type InitialMP int

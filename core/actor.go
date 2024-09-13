@@ -55,6 +55,8 @@ func enemyToActor(enemy *EnemyData, id ActorId) *Actor {
 	}
 }
 
+type ActorSupplier func(ActorId) *Actor
+
 type ActorServer interface {
 	Get(ActorId) *Actor
 	GetAllActor() []*Actor
@@ -81,13 +83,17 @@ func (s *InMemoryActorServer) Upsert(actor *Actor) {
 	s.actors[actor.Id] = actor
 }
 
+func (s *InMemoryActorServer) ClearAll() {
+	s.actors = map[ActorId]*Actor{}
+}
+
 type PrepareActorArgs struct {
 	MainActorCharacterId CharacterId
 	SubActorCharacterId  CharacterId
 	EnemyIds             []EnemyId
 }
 
-type enemyIdPair struct {
+type EnemyIdPair struct {
 	EnemyId EnemyId
 	ActorId ActorId
 }
@@ -95,15 +101,20 @@ type enemyIdPair struct {
 type PrepareActorResult struct {
 	MainActorId ActorId
 	SubActorId  ActorId
-	EnemyIds    []*enemyIdPair
+	EnemyIds    []*EnemyIdPair
 }
 
 type PrepareActorService func(*PrepareActorArgs) *PrepareActorResult
 
+type actorInserter interface {
+	ClearAll()
+	Upsert(actor *Actor)
+}
+
 func CreatePrepareActorService(
 	serveCharacter ServeCharacterFunc,
 	serveEnemy ServeEnemyData,
-	actorServer ActorServer,
+	actorServer actorInserter,
 ) PrepareActorService {
 	const MainActorId = ActorLuneId
 	const SubActorId = ActorSunnyId
@@ -117,11 +128,11 @@ func CreatePrepareActorService(
 			subActor := characterToActor(subCharacter, SubActorId)
 			actorServer.Upsert(subActor)
 		}
-		result := make([]*enemyIdPair, len(args.EnemyIds))
+		result := make([]*EnemyIdPair, len(args.EnemyIds))
 		for i, id := range args.EnemyIds {
 			enemyData := serveEnemy(id)
 			actorId := ActorId(fmt.Sprintf("%s_%d", enemyData.Id, i))
-			result[i] = &enemyIdPair{
+			result[i] = &EnemyIdPair{
 				EnemyId: id,
 				ActorId: actorId,
 			}

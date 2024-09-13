@@ -2,7 +2,9 @@ package scene
 
 import (
 	"github.com/asragi/yasoba-prototype/component"
+	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/game"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -15,10 +17,6 @@ const (
 	battlePhaseCommand
 	battlePhaseEnd
 )
-
-type BattleOption struct {
-	OnEnd OnEndBattle
-}
 
 type BattleSequence struct {
 	frame           int
@@ -82,11 +80,14 @@ type BattleScene struct {
 	messageWindow      *component.MessageWindow
 	battleSelectWindow *component.BattleSelectWindow
 	faceWindow         *component.FaceWindow
+	faceSubWindow      *component.FaceWindow
+	enemyData          []*core.EnemyIdPair
 }
 
 func (s *BattleScene) Update() {
 	s.messageWindow.Update(frontend.VectorZero)
 	s.faceWindow.Update(&frontend.Vector{X: 0, Y: 288})
+	s.faceSubWindow.Update(&frontend.Vector{X: 384, Y: 288})
 	s.battleSelectWindow.Update(s.faceWindow.GetTopLeftPosition())
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		s.messageWindow.Shake(2, 10)
@@ -103,16 +104,41 @@ func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.messageWindow.Draw(drawFunc)
 	s.battleSelectWindow.Draw(drawFunc)
 	s.faceWindow.Draw(drawFunc)
+	s.faceSubWindow.Draw(drawFunc)
 }
 
-type NewBattleScene func() *BattleScene
+type BattleOption struct {
+	OnEnd           OnEndBattle
+	BattleSettingId game.BattleSettingId
+}
+
+type NewBattleScene func(*BattleOption) *BattleScene
 
 func StandByNewBattleScene(
 	newMessageWindow component.NewMessageWindowFunc,
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
 	newFaceWindow component.NewFaceWindowFunc,
+	initializeBattle core.InitializeBattleFunc,
+	postCommand core.PostCommandFunc,
+	getBattleSetting game.ServeBattleSetting,
 ) NewBattleScene {
-	return func() *BattleScene {
+	return func(option *BattleOption) *BattleScene {
+		battleSetting := getBattleSetting(option.BattleSettingId)
+		enemyIds := func() []core.EnemyId {
+			ids := make([]core.EnemyId, len(battleSetting.Enemies))
+			for i, set := range battleSetting.Enemies {
+				ids[i] = set.EnemyId
+			}
+			return ids
+		}()
+		initializeRequest := &core.InitializeBattleRequest{
+			// TODO: variables must be provided by args
+			MainActorCharacterId: core.CharacterLuneId,
+			SubActorCharacterId:  core.CharacterSunnyId,
+			EnemyIds:             enemyIds,
+		}
+		battleResponse := initializeBattle(initializeRequest)
+
 		messageWindow := newMessageWindow(
 			&frontend.Vector{X: 192, Y: 0},
 			&frontend.Vector{X: 292, Y: 62},
@@ -142,11 +168,20 @@ func StandByNewBattleScene(
 			&frontend.Vector{X: 0, Y: 0},
 			frontend.DepthWindow,
 			frontend.PivotBottomLeft,
+			frontend.TextureFaceLuneNormal,
+		)
+		faceSubWindow := newFaceWindow(
+			&frontend.Vector{X: 0, Y: 0},
+			frontend.DepthWindow,
+			frontend.PivotBottomRight,
+			frontend.TextureFaceSunnyNormal,
 		)
 		return &BattleScene{
 			messageWindow:      messageWindow,
 			battleSelectWindow: battleSelectWindow,
 			faceWindow:         faceWindow,
+			faceSubWindow:      faceSubWindow,
+			enemyData:          battleResponse.EnemyIds,
 		}
 	}
 }

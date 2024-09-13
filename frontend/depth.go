@@ -5,7 +5,6 @@ type Depth int
 const (
 	Zero Depth = iota
 	DepthWindow
-
 	DepthDebug
 )
 

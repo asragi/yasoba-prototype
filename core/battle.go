@@ -4,10 +4,6 @@ import (
 	"github.com/asragi/yasoba-prototype/util"
 )
 
-type BattleService struct {
-	actorServer ActorServer
-}
-
 type PlayerCommand int
 
 const (
@@ -26,12 +22,12 @@ type BattlePlayerCommandResult struct {
 
 type ProcessPlayerCommandFunc func(*PostCommandRequest) *BattlePlayerCommandResult
 
-func CreateProcessPlayerCommand(actorServer ActorServer) ProcessPlayerCommandFunc {
+func CreateProcessPlayerCommand(supplyActor ActorSupplier) ProcessPlayerCommandFunc {
 	isToEnemy := func(targets []ActorId) bool {
 		if len(targets) == 0 {
 			return false
 		}
-		target := actorServer.Get(targets[0])
+		target := supplyActor(targets[0])
 		return target.Side == ActorSideEnemy
 	}
 	return func(command *PostCommandRequest) *BattlePlayerCommandResult {
@@ -85,8 +81,10 @@ type InitializeBattleRequest struct {
 type InitializeBattleResponse struct {
 	MainActorId ActorId
 	SubActorId  ActorId
-	EnemyIds    []*enemyIdPair
+	EnemyIds    []*EnemyIdPair
 }
+
+type InitializeBattleFunc func(*InitializeBattleRequest) *InitializeBattleResponse
 
 func CreateInitializeBattle(
 	prepareActorService PrepareActorService,

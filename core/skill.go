@@ -79,7 +79,7 @@ type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
 
 func CreateSkillApply(
 	skillServer ServeSkillData,
-	actorServer ActorServer,
+	supplyActor ActorSupplier,
 ) SkillApplyFunc {
 	return func(args *SelectedAction) *SkillApplyResult {
 		result := make([]SkillApplyResultRow, 0)
@@ -87,8 +87,8 @@ func CreateSkillApply(
 		for _, row := range data.Rows {
 			switch r := row.(type) {
 			case *SkillSingleAttackRow:
-				actor := actorServer.Get(args.Actor)
-				target := actorServer.Get(args.Target[0])
+				actor := supplyActor(args.Actor)
+				target := supplyActor(args.Target[0])
 				damage := calculateNormalAttackDamage(
 					actor.ATK,
 					actor.MAG,
