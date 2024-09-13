@@ -11,4 +11,6 @@ var (
 	FaceLuneNormal []byte
 	//go:embed face_sunny_normal.png
 	FaceSunnyNormal []byte
+	//go:embed marshmallow_normal.png
+	MarshmallowNormal []byte
 )

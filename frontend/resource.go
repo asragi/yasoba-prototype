@@ -17,6 +17,7 @@ const (
 	TextureCursor
 	TextureFaceLuneNormal
 	TextureFaceSunnyNormal
+	TextureMarshmallowNormal
 )
 
 type FontId int
@@ -51,6 +52,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 		textureDict[id] = ebiten.NewImageFromImage(img)
 		return nil
 	}
+	// TODO: この辺の処理go:generateとかで自動生成したいね
 	if err := loadTexture(load.Window, TextureWindow); err != nil {
 		return handleError(err)
 	}
@@ -61,6 +63,9 @@ func CreateResourceManager() (*ResourceManager, error) {
 		return handleError(err)
 	}
 	if err := loadTexture(load.FaceSunnyNormal, TextureFaceSunnyNormal); err != nil {
+		return handleError(err)
+	}
+	if err := loadTexture(load.MarshmallowNormal, TextureMarshmallowNormal); err != nil {
 		return handleError(err)
 	}
 
