@@ -3,6 +3,7 @@ package widget
 import (
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/hajimehoshi/ebiten/v2"
+	"image"
 )
 
 type Image struct {
@@ -12,6 +13,7 @@ type Image struct {
 	image            *ebiten.Image
 	depth            frontend.Depth
 	scale            *frontend.Vector
+	rect             *image.Rectangle
 }
 
 func (i *Image) Update(passedPosition *frontend.Vector) {
@@ -32,17 +34,22 @@ func (i *Image) Draw(drawFunc frontend.DrawFunc) {
 		i.parentPosition.X+i.relativePosition.X-pivotModification.X,
 		i.parentPosition.Y+i.relativePosition.Y-pivotModification.Y,
 	)
+	imageToDraw := i.image.SubImage(*i.rect).(*ebiten.Image)
 	drawFunc(
 		func(screen *ebiten.Image) {
-			screen.DrawImage(i.image, op)
+			screen.DrawImage(imageToDraw, op)
 		}, i.depth,
 	)
 }
 
+func (i *Image) SetRect(rect image.Rectangle) {
+	i.rect = &rect
+}
+
 func (i *Image) Size() *frontend.Vector {
 	return &frontend.Vector{
-		X: float64(i.image.Bounds().Dx()) * i.scale.X,
-		Y: float64(i.image.Bounds().Dy()) * i.scale.Y,
+		X: float64(i.rect.Dx()) * i.scale.X,
+		Y: float64(i.rect.Dy()) * i.scale.Y,
 	}
 }
 
@@ -61,13 +68,15 @@ func NewImage(
 	relativePosition *frontend.Vector,
 	pivot *frontend.Pivot,
 	depth frontend.Depth,
-	image *ebiten.Image,
+	imageData *ebiten.Image,
 ) *Image {
+	rect := image.Rect(0, 0, imageData.Bounds().Dx(), imageData.Bounds().Dy())
 	return &Image{
 		relativePosition: relativePosition,
 		pivot:            pivot,
-		image:            image,
+		image:            imageData,
 		depth:            depth,
 		scale:            &frontend.Vector{X: 1, Y: 1},
+		rect:             &rect,
 	}
 }

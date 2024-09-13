@@ -8,6 +8,7 @@ import (
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
+	"image"
 	"log"
 )
 
@@ -55,6 +56,7 @@ func init() {
 		frontend.DepthWindow,
 		resource.GetTexture(frontend.TextureMarshmallowNormal),
 	)
+	marshmallow.SetRect(image.Rect(0, 0, 100, 100))
 }
 
 type Game struct{}
