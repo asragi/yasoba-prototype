@@ -8,14 +8,13 @@ import (
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
-	"image"
 	"log"
 )
 
 var (
 	drawing     *frontend.Drawing
 	battleScene *scene.BattleScene
-	marshmallow *widget.Image
+	marshmallow *widget.Animation
 )
 
 func init() {
@@ -50,13 +49,19 @@ func init() {
 			BattleSettingId: game.BattleSettingTest,
 		},
 	)
-	marshmallow = widget.NewImage(
+	marshmallow = widget.NewAnimation(
 		frontend.VectorZero,
 		frontend.PivotCenter,
 		frontend.DepthWindow,
 		resource.GetTexture(frontend.TextureMarshmallowNormal),
+		&widget.AnimationData{
+			RowCount:       1,
+			ColumnCount:    2,
+			AnimationCount: 2,
+			Duration:       20,
+			IsLoop:         true,
+		},
 	)
-	marshmallow.SetRect(image.Rect(0, 0, 100, 100))
 }
 
 type Game struct{}

@@ -53,6 +53,13 @@ func (i *Image) Size() *frontend.Vector {
 	}
 }
 
+func (i *Image) TextureSize() *frontend.Vector {
+	return &frontend.Vector{
+		X: float64(i.image.Bounds().Dx()),
+		Y: float64(i.image.Bounds().Dy()),
+	}
+}
+
 func (i *Image) SetScaleBySize(size *frontend.Vector) {
 	i.scale = &frontend.Vector{
 		X: size.X / float64(i.image.Bounds().Dx()),
