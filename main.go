@@ -44,8 +44,10 @@ func init() {
 	battleSettingServer := game.CreateServeBattleSetting()
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
+		newSelectWindow,
 		newBattleSelectWindow,
 		newFaceWindow,
+		core.CreateEnemyNameServer(),
 		initializeBattle,
 		postCommand,
 		battleSettingServer,

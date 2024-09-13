@@ -41,7 +41,7 @@ func CreateServeTextData() ServeTextDataFunc {
 	register(TextIdBattleCommandDefend, "まもる")
 	register(TextIdLuneName, "ルーネ")
 	register(TextIdSunnyName, "サニー")
-	register(TextIdPunchingBagName, "デバグ")
+	register(TextIdPunchingBagName, "マシュマロス")
 
 	return func(id TextId) *TextData {
 		return dict[id]

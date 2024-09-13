@@ -83,6 +83,8 @@ type BattleScene struct {
 	faceWindow         *component.FaceWindow
 	faceSubWindow      *component.FaceWindow
 	enemyData          []*core.EnemyIdPair
+	actorNames         map[core.ActorId]core.TextId
+	targetSelectWindow *component.SelectWindow
 }
 
 func (s *BattleScene) Update() {
@@ -90,6 +92,7 @@ func (s *BattleScene) Update() {
 	s.faceWindow.Update(&frontend.Vector{X: 0, Y: 288})
 	s.faceSubWindow.Update(&frontend.Vector{X: 384, Y: 288})
 	s.battleSelectWindow.Update(s.faceWindow.GetTopLeftPosition())
+	s.targetSelectWindow.Update(s.faceWindow.GetTopLeftPosition())
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		s.messageWindow.Shake(2, 10)
 	}
@@ -107,6 +110,7 @@ func (s *BattleScene) Update() {
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.messageWindow.Draw(drawFunc)
 	s.battleSelectWindow.Draw(drawFunc)
+	s.targetSelectWindow.Draw(drawFunc)
 	s.faceWindow.Draw(drawFunc)
 	s.faceSubWindow.Draw(drawFunc)
 }
@@ -120,8 +124,10 @@ type NewBattleScene func(*BattleOption) *BattleScene
 
 func StandByNewBattleScene(
 	newMessageWindow component.NewMessageWindowFunc,
+	newSelectWindow component.NewSelectWindowFunc,
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
 	newFaceWindow component.NewFaceWindowFunc,
+	serveEnemyName core.EnemyNameServer,
 	initializeBattle core.InitializeBattleFunc,
 	postCommand core.PostCommandFunc,
 	getBattleSetting game.ServeBattleSetting,
@@ -142,6 +148,29 @@ func StandByNewBattleScene(
 			EnemyIds:             enemyIds,
 		}
 		battleResponse := initializeBattle(initializeRequest)
+		actorNames := func() map[core.ActorId]core.TextId {
+			names := make(map[core.ActorId]core.TextId)
+			names[core.ActorLuneId] = core.TextIdLuneName
+			names[core.ActorSunnyId] = core.TextIdSunnyName
+			for _, pair := range battleResponse.EnemyIds {
+				names[pair.ActorId] = serveEnemyName(pair.EnemyId)
+			}
+			return names
+		}()
+		allTextId := func() []core.TextId {
+			texts := make([]core.TextId, 0)
+			for _, id := range actorNames {
+				texts = append(texts, id)
+			}
+			return texts
+		}()
+		allActorId := func() []core.ActorId {
+			ids := make([]core.ActorId, 0)
+			for id := range actorNames {
+				ids = append(ids, id)
+			}
+			return ids
+		}()
 
 		messageWindow := newMessageWindow(
 			&frontend.Vector{X: 192, Y: 0},
@@ -153,17 +182,34 @@ func StandByNewBattleScene(
 		messageWindow.SetText(testString, false)
 
 		var battleSelectWindow *component.BattleSelectWindow
+		var selectWindow *component.SelectWindow
+		var selectedCommand core.PlayerCommand
+		selectWindow = newSelectWindow(
+			&frontend.Vector{X: 80, Y: 0},
+			frontend.PivotBottomLeft,
+			frontend.DepthWindow,
+			allTextId,
+			func(index int) {
+				target := allActorId[index]
+				response := postCommand(
+					&core.PostCommandRequest{
+						ActorId:  core.ActorLuneId,
+						TargetId: []core.ActorId{target},
+						Command:  selectedCommand,
+					},
+				)
+				fmt.Printf("selected: %s\n", allActorId[index])
+				fmt.Printf("response: %+v\n", *response)
+				battleSelectWindow.Close()
+				selectWindow.Close()
+			},
+		)
+
 		onSubmit := func(command core.PlayerCommand) {
-			response := postCommand(
-				&core.PostCommandRequest{
-					ActorId:  core.ActorLuneId,
-					TargetId: nil,
-					Command:  command,
-				},
-			)
-			fmt.Printf("response: %+v\n", response)
-			battleSelectWindow.Close()
+			selectedCommand = command
+			selectWindow.Open()
 		}
+
 		battleSelectWindow = newBattleSelectWindow(
 			&frontend.Vector{X: 0, Y: 0},
 			frontend.PivotBottomLeft,
@@ -196,6 +242,8 @@ func StandByNewBattleScene(
 			faceWindow:         faceWindow,
 			faceSubWindow:      faceSubWindow,
 			enemyData:          battleResponse.EnemyIds,
+			actorNames:         actorNames,
+			targetSelectWindow: selectWindow,
 		}
 	}
 }
