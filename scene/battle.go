@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"fmt"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
@@ -98,6 +99,9 @@ func (s *BattleScene) Update() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
 		s.battleSelectWindow.MoveCursorUp()
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
+		s.battleSelectWindow.OnSubmit()
+	}
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
@@ -147,23 +151,33 @@ func StandByNewBattleScene(
 		)
 		testString := "あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市"
 		messageWindow.SetText(testString, false)
-		battleSelectWindow := newBattleSelectWindow(
+
+		var battleSelectWindow *component.BattleSelectWindow
+		onSubmit := func(command core.PlayerCommand) {
+			response := postCommand(
+				&core.PostCommandRequest{
+					ActorId:  core.ActorLuneId,
+					TargetId: nil,
+					Command:  command,
+				},
+			)
+			fmt.Printf("response: %+v\n", response)
+			battleSelectWindow.Close()
+		}
+		battleSelectWindow = newBattleSelectWindow(
 			&frontend.Vector{X: 0, Y: 0},
 			frontend.PivotBottomLeft,
 			frontend.DepthWindow,
-			[]component.BattleCommand{
-				component.BattleCommandAttack,
-				component.BattleCommandFire,
-				/*
-					component.BattleCommandThunder,
-					component.BattleCommandBarrier,
-					component.BattleCommandWind,
-				*/
-				component.BattleCommandFocus,
-				component.BattleCommandDefend,
+			[]core.PlayerCommand{
+				core.PlayerCommandAttack,
+				core.PlayerCommandFire,
+				core.PlayerCommandFocus,
+				core.PlayerCommandDefend,
 			},
+			onSubmit,
 		)
 		battleSelectWindow.Open()
+
 		faceWindow := newFaceWindow(
 			&frontend.Vector{X: 0, Y: 0},
 			frontend.DepthWindow,

@@ -11,6 +11,12 @@ import (
 	"log"
 )
 
+const (
+	GameWidth  = 384
+	GameHeight = 288
+	DrawRate   = 1
+)
+
 var (
 	drawing     *frontend.Drawing
 	battleScene *scene.BattleScene
@@ -32,7 +38,8 @@ func init() {
 	processCommand := core.CreateProcessPlayerCommand(actorServer.Get)
 	postCommand := core.CreatePostCommand(processCommand)
 	newMessageWindow := component.StandByNewMessageWindow(resource)
-	newBattleSelectWindow := component.StandByNewBattleSelectWindow(resource, textServer)
+	newSelectWindow := component.StandByNewSelectWindow(resource, textServer)
+	newBattleSelectWindow := component.StandByNewBattleSelectWindow(newSelectWindow)
 	newFaceWindow := component.StandByNewFaceWindow(resource)
 	battleSettingServer := game.CreateServeBattleSetting()
 	newBattleScene := scene.StandByNewBattleScene(
@@ -54,13 +61,7 @@ func init() {
 		frontend.PivotCenter,
 		frontend.DepthWindow,
 		resource.GetTexture(frontend.TextureMarshmallowNormal),
-		&widget.AnimationData{
-			RowCount:       1,
-			ColumnCount:    2,
-			AnimationCount: 2,
-			Duration:       20,
-			IsLoop:         true,
-		},
+		resource.GetAnimationData(frontend.MarshmallowNormal),
 	)
 }
 
@@ -79,11 +80,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 384, 288
+	return GameWidth, GameHeight
 }
 
 func main() {
-	ebiten.SetWindowSize(768, 576)
+	ebiten.SetWindowSize(GameWidth*DrawRate, GameHeight*DrawRate)
 	ebiten.SetWindowTitle("yasoba-prototype")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)

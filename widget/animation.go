@@ -10,15 +10,7 @@ import (
 type Animation struct {
 	image *Image
 	frame int
-	data  *AnimationData
-}
-
-type AnimationData struct {
-	RowCount       int
-	ColumnCount    int
-	AnimationCount int
-	Duration       int
-	IsLoop         bool
+	data  *frontend.AnimationData
 }
 
 func NewAnimation(
@@ -26,7 +18,7 @@ func NewAnimation(
 	pivot *frontend.Pivot,
 	depth frontend.Depth,
 	image *ebiten.Image,
-	data *AnimationData,
+	data *frontend.AnimationData,
 ) *Animation {
 	return &Animation{
 		image: NewImage(

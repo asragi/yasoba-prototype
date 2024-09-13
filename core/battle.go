@@ -16,6 +16,26 @@ const (
 	PlayerCommandDefend
 )
 
+func (b *PlayerCommand) ToTextId() TextId {
+	switch *b {
+	case PlayerCommandAttack:
+		return "battle_command_attack"
+	case PlayerCommandFire:
+		return "battle_command_fire"
+	case PlayerCommandThunder:
+		return "battle_command_thunder"
+	case PlayerCommandBarrier:
+		return "battle_command_barrier"
+	case PlayerCommandWind:
+		return "battle_command_wind"
+	case PlayerCommandFocus:
+		return "battle_command_focus"
+	case PlayerCommandDefend:
+		return "battle_command_defend"
+	}
+	return ""
+}
+
 type BattlePlayerCommandResult struct {
 	SkillApplyArgs *SelectedAction
 }

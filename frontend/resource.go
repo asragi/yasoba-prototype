@@ -26,9 +26,16 @@ const (
 	MaruMinya FontId = iota
 )
 
+type AnimationId int
+
+const (
+	MarshmallowNormal AnimationId = iota
+)
+
 type ResourceManager struct {
-	textureDict map[TextureId]*ebiten.Image
-	fontDict    map[FontId]*text.GoTextFace
+	textureDict   map[TextureId]*ebiten.Image
+	fontDict      map[FontId]*text.GoTextFace
+	animationDict map[AnimationId]*AnimationData
 }
 
 func (r *ResourceManager) GetTexture(id TextureId) *ebiten.Image {
@@ -37,6 +44,10 @@ func (r *ResourceManager) GetTexture(id TextureId) *ebiten.Image {
 
 func (r *ResourceManager) GetFont(id FontId) *text.GoTextFace {
 	return r.fontDict[id]
+}
+
+func (r *ResourceManager) GetAnimationData(id AnimationId) *AnimationData {
+	return r.animationDict[id]
 }
 
 func CreateResourceManager() (*ResourceManager, error) {
@@ -75,8 +86,27 @@ func CreateResourceManager() (*ResourceManager, error) {
 		return handleError(err)
 	}
 	fontDict[MaruMinya] = &text.GoTextFace{Source: s, Size: 12}
+
+	animationDict := map[AnimationId]*AnimationData{
+		MarshmallowNormal: {
+			RowCount:       1,
+			ColumnCount:    2,
+			AnimationCount: 2,
+			Duration:       20,
+			IsLoop:         true,
+		},
+	}
 	return &ResourceManager{
-		textureDict: textureDict,
-		fontDict:    fontDict,
+		textureDict:   textureDict,
+		fontDict:      fontDict,
+		animationDict: animationDict,
 	}, nil
+}
+
+type AnimationData struct {
+	RowCount       int
+	ColumnCount    int
+	AnimationCount int
+	Duration       int
+	IsLoop         bool
 }
