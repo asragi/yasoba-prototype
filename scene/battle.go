@@ -85,6 +85,7 @@ type BattleScene struct {
 	enemyData          []*core.EnemyIdPair
 	actorNames         map[core.ActorId]core.TextId
 	targetSelectWindow *component.SelectWindow
+	input              frontend.InputManager
 }
 
 func (s *BattleScene) Update() {
@@ -96,15 +97,7 @@ func (s *BattleScene) Update() {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		s.messageWindow.Shake(2, 10)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		s.battleSelectWindow.MoveCursorDown()
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		s.battleSelectWindow.MoveCursorUp()
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
-		s.battleSelectWindow.OnSubmit()
-	}
+	s.input.Update()
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
@@ -184,6 +177,7 @@ func StandByNewBattleScene(
 		var battleSelectWindow *component.BattleSelectWindow
 		var selectWindow *component.SelectWindow
 		var selectedCommand core.PlayerCommand
+		input := &frontend.KeyBoardInput{}
 		selectWindow = newSelectWindow(
 			&frontend.Vector{X: 80, Y: 0},
 			frontend.PivotBottomLeft,
@@ -202,12 +196,14 @@ func StandByNewBattleScene(
 				fmt.Printf("response: %+v\n", *response)
 				battleSelectWindow.Close()
 				selectWindow.Close()
+				input.Set(frontend.InputReceiverEmptyInstance)
 			},
 		)
 
 		onSubmit := func(command core.PlayerCommand) {
 			selectedCommand = command
 			selectWindow.Open()
+			input.Set(selectWindow)
 		}
 
 		battleSelectWindow = newBattleSelectWindow(
@@ -222,6 +218,7 @@ func StandByNewBattleScene(
 			},
 			onSubmit,
 		)
+		input.Set(battleSelectWindow)
 		battleSelectWindow.Open()
 
 		faceWindow := newFaceWindow(
@@ -244,6 +241,7 @@ func StandByNewBattleScene(
 			enemyData:          battleResponse.EnemyIds,
 			actorNames:         actorNames,
 			targetSelectWindow: selectWindow,
+			input:              input,
 		}
 	}
 }

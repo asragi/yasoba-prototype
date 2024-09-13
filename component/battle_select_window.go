@@ -13,6 +13,18 @@ type BattleSelectWindow struct {
 	selectWindow *SelectWindow
 }
 
+func (w *BattleSelectWindow) OnInputSubmit() {
+	w.selectWindow.OnInputSubmit()
+}
+
+func (w *BattleSelectWindow) OnInputCancel() {}
+
+func (w *BattleSelectWindow) OnInputSubButton() {}
+
+func (w *BattleSelectWindow) OnInputLeft() {}
+
+func (w *BattleSelectWindow) OnInputRight() {}
+
 func (w *BattleSelectWindow) Open() {
 	w.selectWindow.Open()
 }
@@ -29,16 +41,15 @@ func (w *BattleSelectWindow) Draw(drawFunc frontend.DrawFunc) {
 	w.selectWindow.Draw(drawFunc)
 }
 
-func (w *BattleSelectWindow) MoveCursorUp() {
-	w.selectWindow.MoveCursorUp()
+func (w *BattleSelectWindow) OnInputUp() {
+	w.selectWindow.OnInputUp()
 }
 
-func (w *BattleSelectWindow) MoveCursorDown() {
-	w.selectWindow.MoveCursorDown()
+func (w *BattleSelectWindow) OnInputDown() {
+	w.selectWindow.OnInputDown()
 }
 
 func (w *BattleSelectWindow) OnSubmit() {
-	w.selectWindow.OnSubmit()
 }
 
 type NewBattleSelectWindowFunc func(

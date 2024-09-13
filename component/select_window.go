@@ -14,7 +14,16 @@ type SelectWindow struct {
 	isActive        bool
 	isOpen          bool
 	onSubmit        func(int)
+	smoother        *frontend.InputSmoother
 }
+
+func (w *SelectWindow) OnInputCancel() {}
+
+func (w *SelectWindow) OnInputSubButton() {}
+
+func (w *SelectWindow) OnInputLeft() {}
+
+func (w *SelectWindow) OnInputRight() {}
 
 func (w *SelectWindow) Open() {
 	w.isOpen = true
@@ -25,6 +34,7 @@ func (w *SelectWindow) Close() {
 }
 
 func (w *SelectWindow) Update(parentPosition *frontend.Vector) {
+	w.smoother.Update()
 	for _, text := range w.texts {
 		text.Update(parentPosition)
 	}
@@ -45,17 +55,23 @@ func (w *SelectWindow) calculateCursorPosition() *frontend.Vector {
 	return w.cursorPositions[w.index]
 }
 
-func (w *SelectWindow) MoveCursorUp() {
+func (w *SelectWindow) OnInputUp() {
+	if !w.smoother.Do(frontend.SmoothKeyUp) {
+		return
+	}
 	w.index = (w.index - 1 + len(w.texts)) % len(w.texts)
 	w.cursor.SetRelativePosition(w.calculateCursorPosition())
 }
 
-func (w *SelectWindow) MoveCursorDown() {
+func (w *SelectWindow) OnInputDown() {
+	if !w.smoother.Do(frontend.SmoothKeyDown) {
+		return
+	}
 	w.index = (w.index + 1) % len(w.texts)
 	w.cursor.SetRelativePosition(w.calculateCursorPosition())
 }
 
-func (w *SelectWindow) OnSubmit() {
+func (w *SelectWindow) OnInputSubmit() {
 	w.onSubmit(w.index)
 }
 
@@ -142,6 +158,7 @@ func StandByNewSelectWindow(
 			isActive:        false,
 			isOpen:          false,
 			onSubmit:        onSubmit,
+			smoother:        frontend.NewInputSmoother(),
 		}
 	}
 }
