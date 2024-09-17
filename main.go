@@ -42,6 +42,14 @@ func init() {
 	newBattleSelectWindow := component.StandByNewBattleSelectWindow(newSelectWindow)
 	newFaceWindow := component.StandByNewFaceWindow(resource)
 	battleSettingServer := game.CreateServeBattleSetting()
+	skillServer := core.NewSkillServer()
+	applySkill := core.CreateSkillApply(skillServer, actorServer.Get)
+	battleSequenceServer := frontend.CreateServeBattleEventSequence()
+	prepareBattleSequence := frontend.CreateExecBattleEventSequence(
+		textServer,
+		battleSequenceServer,
+	)
+	skillToSequence := frontend.CreateSkillToSequenceId()
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
 		newSelectWindow,
@@ -50,7 +58,10 @@ func init() {
 		core.CreateEnemyNameServer(),
 		initializeBattle,
 		postCommand,
+		applySkill,
 		battleSettingServer,
+		prepareBattleSequence,
+		skillToSequence,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{

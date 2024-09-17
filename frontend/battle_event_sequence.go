@@ -2,20 +2,47 @@ package frontend
 
 import "github.com/asragi/yasoba-prototype/core"
 
+type EventSequenceId string
+
+const (
+	EventSequenceIdLuneAttack EventSequenceId = "lune-attack"
+)
+
 type BattleTextDisplay interface {
-	SetText(text string)
+	SetText(text string, displayAll bool)
+}
+
+type ShakeActor func(core.ActorId)
+type ShakeScreen func()
+type DisplayDamage func(core.ActorId, core.Damage)
+
+type SkillToSequenceFunc func(core.SkillId) EventSequenceId
+
+func CreateSkillToSequenceId() SkillToSequenceFunc {
+	dict := map[core.SkillId]EventSequenceId{
+		core.SkillIdLuneAttack: EventSequenceIdLuneAttack,
+	}
+	return func(id core.SkillId) EventSequenceId {
+		return dict[id]
+	}
 }
 
 func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	dict := map[EventSequenceId]*BattleEventSequence{}
 	testData := []BattleEventRow{
 		&DisplayMessageEvent{
-			Frame: 0,
-			Text:  "test-text",
+			Frame: 1,
+			Text:  core.TextIdLuneAttackDesc,
+		},
+		&ShakeActorAnimationEvent{
+			Frame: 30,
+		},
+		&DisplayDamageEvent{
+			Frame: 30,
 		},
 	}
-	dict["test"] = &BattleEventSequence{
-		Id:   "test",
+	dict[EventSequenceIdLuneAttack] = &BattleEventSequence{
+		Id:   EventSequenceIdLuneAttack,
 		Rows: testData,
 	}
 	return func(id EventSequenceId) *BattleEventSequence {
@@ -23,35 +50,73 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	}
 }
 
-type EventSequenceArgs struct {
-	sequenceId EventSequenceId
+type DamageInformation struct {
+	Target core.ActorId
+	Damage core.Damage
 }
-type EventSequenceResult struct{}
-type ExecBattleEventSequenceFunc func(*EventSequenceArgs, int) *EventSequenceResult
+
+type EventSequenceArgs struct {
+	SequenceId EventSequenceId
+	Actor      core.ActorId
+	Target     []*DamageInformation
+}
+
+type EventSequenceResult struct {
+	IsEnd bool
+}
+type BattleSequenceFunc func() *EventSequenceResult
+type NewBattleSequenceFunc func(*EventSequenceArgs) BattleSequenceFunc
+type PrepareBattleEventSequenceFunc func(
+	BattleTextDisplay,
+	ShakeActor,
+	DisplayDamage,
+) NewBattleSequenceFunc
 
 func CreateExecBattleEventSequence(
-	display BattleTextDisplay,
 	textServer core.ServeTextDataFunc,
 	serveEvent ServeBattleEventSequenceFunc,
-) ExecBattleEventSequenceFunc {
-	return func(args *EventSequenceArgs, frame int) *EventSequenceResult {
-		sequence := serveEvent(args.sequenceId)
-		for _, row := range sequence.Rows {
-			if !row.IsActive(frame) {
-				continue
-			}
-			switch r := row.(type) {
-			case *DisplayMessageEvent:
-				text := textServer(r.Text)
-				display.SetText(text.Text)
+) PrepareBattleEventSequenceFunc {
+	return func(
+		display BattleTextDisplay,
+		shakeActor ShakeActor,
+		displayDamage DisplayDamage,
+	) NewBattleSequenceFunc {
+		return func(args *EventSequenceArgs) BattleSequenceFunc {
+			sequence := serveEvent(args.SequenceId)
+			frame := 0
+			return func() *EventSequenceResult {
+				frame++
+				isEnd := true
+				for _, row := range sequence.Rows {
+					if !row.IsEnd(frame) {
+						isEnd = false
+					}
+					if !row.IsActive(frame) {
+						continue
+					}
+					switch r := row.(type) {
+					case *DisplayMessageEvent:
+						text := textServer(r.Text)
+						display.SetText(text.Text, false)
+					case *ShakeActorAnimationEvent:
+						target := args.Target[0]
+						shakeActor(target.Target)
+					case *DisplayDamageEvent:
+						target := args.Target[0]
+						displayDamage(target.Target, target.Damage)
+					}
+				}
+				return &EventSequenceResult{
+					IsEnd: isEnd,
+				}
 			}
 		}
-		return &EventSequenceResult{}
 	}
 }
 
 type BattleEventRow interface {
 	IsActive(frame int) bool
+	IsEnd(frame int) bool
 }
 
 type BattleEventSequence struct {
@@ -70,4 +135,38 @@ func (e *DisplayMessageEvent) IsActive(frame int) bool {
 	return e.Frame == frame
 }
 
-type EventSequenceId string
+func (e *DisplayMessageEvent) IsEnd(frame int) bool {
+	return e.Frame < frame
+}
+
+type ShakeActorAnimationEvent struct {
+	Frame int
+}
+
+func (e *ShakeActorAnimationEvent) IsActive(frame int) bool {
+	return e.Frame == frame
+}
+
+func (e *ShakeActorAnimationEvent) IsEnd(frame int) bool {
+	return e.Frame < frame
+}
+
+type DisplayDamageEvent struct {
+	Frame int
+}
+
+func (e *DisplayDamageEvent) IsActive(frame int) bool {
+	return e.Frame == frame
+}
+
+func (e *DisplayDamageEvent) IsEnd(frame int) bool {
+	return e.Frame < frame
+}
+
+type PlayEffectEvent struct {
+	Frame int
+}
+
+func (e *PlayEffectEvent) IsActive(frame int) bool {
+	return e.Frame == frame
+}

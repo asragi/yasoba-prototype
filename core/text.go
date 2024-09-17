@@ -13,6 +13,7 @@ const (
 	TextIdLuneName             TextId = "lune_name"
 	TextIdSunnyName            TextId = "sunny_name"
 	TextIdPunchingBagName      TextId = "enemy_punching_bag_name"
+	TextIdLuneAttackDesc       TextId = "lune_attack_desc"
 )
 
 type ServeTextDataFunc func(id TextId) *TextData
@@ -42,8 +43,12 @@ func CreateServeTextData() ServeTextDataFunc {
 	register(TextIdLuneName, "ルーネ")
 	register(TextIdSunnyName, "サニー")
 	register(TextIdPunchingBagName, "マシュマロス")
+	register(TextIdLuneAttackDesc, "たいあたりした！")
 
 	return func(id TextId) *TextData {
+		if _, ok := dict[id]; !ok {
+			panic("text not found")
+		}
 		return dict[id]
 	}
 }

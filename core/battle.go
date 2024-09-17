@@ -4,6 +4,7 @@ import (
 	"github.com/asragi/yasoba-prototype/util"
 )
 
+// PlayerCommand is a command that the player can select in the battle.
 type PlayerCommand int
 
 const (
@@ -132,7 +133,7 @@ type PostCommandRequest struct {
 }
 
 type PostCommandResponse struct {
-	Actions []*SelectedAction
+	Actions *SelectedAction
 }
 
 type PostCommandFunc func(*PostCommandRequest) *PostCommandResponse
@@ -143,7 +144,7 @@ func CreatePostCommand(
 	return func(command *PostCommandRequest) *PostCommandResponse {
 		result := processPlayerCommand(command)
 		return &PostCommandResponse{
-			Actions: []*SelectedAction{result.SkillApplyArgs},
+			Actions: result.SkillApplyArgs,
 		}
 	}
 }

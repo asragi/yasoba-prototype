@@ -40,6 +40,7 @@ func characterToActor(character *CharacterData, id ActorId) *Actor {
 		MAG:   character.MAG,
 		DEF:   character.DEF,
 		SPD:   character.SPD,
+		Side:  ActorSidePlayer,
 	}
 }
 
@@ -52,6 +53,7 @@ func enemyToActor(enemy *EnemyData, id ActorId) *Actor {
 		MAG:   enemy.Mag,
 		DEF:   enemy.Def,
 		SPD:   enemy.Spd,
+		Side:  ActorSideEnemy,
 	}
 }
 

@@ -10,73 +10,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-type battlePhase int
-
-const (
-	battlePhaseStart battlePhase = iota
-	battlePhaseAction
-	battlePhaseCommand
-	battlePhaseEnd
-)
-
-type BattleSequence struct {
-	frame           int
-	phase           battlePhase
-	openingSequence func()
-	onEnd           OnEndBattle
-}
-
-type BattleResult struct{}
-
-type OnEndBattle func(BattleResult)
-
-type BattleDrawer interface {
-}
-
-func NewBattleSequencer(option BattleOption, drawer BattleDrawer) *BattleSequence {
-	sequencer := &BattleSequence{
-		frame: 0,
-		onEnd: option.OnEnd,
-	}
-	openingSequence := newBattleOpeningPhaseSequence(sequencer.ToAction)
-	sequencer.openingSequence = openingSequence
-	return sequencer
-}
-
-func (s *BattleSequence) ToAction() {
-	s.phase = battlePhaseAction
-}
-
-func (s *BattleSequence) Update() {
-	if s.phase == battlePhaseStart {
-		s.openingSequence()
-		return
-	}
-	if s.phase == battlePhaseAction {
-		return
-	}
-	if s.phase == battlePhaseCommand {
-		return
-	}
-}
-
-func newBattleOpeningPhaseSequence(onEnd func()) func() {
-	innerFrame := 0
-	displayInitialInformation := func() {}
-
-	sequence := make(map[int]func())
-	sequence[0] = displayInitialInformation
-	sequence[60] = onEnd
-
-	return func() {
-		innerFrame++
-		if _, ok := sequence[innerFrame]; !ok {
-			return
-		}
-		sequence[innerFrame]()
-	}
-}
-
 type BattleScene struct {
 	messageWindow      *component.MessageWindow
 	battleSelectWindow *component.BattleSelectWindow
@@ -86,6 +19,7 @@ type BattleScene struct {
 	actorNames         map[core.ActorId]core.TextId
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager
+	battleSequence     frontend.BattleSequenceFunc
 }
 
 func (s *BattleScene) Update() {
@@ -98,6 +32,10 @@ func (s *BattleScene) Update() {
 		s.messageWindow.Shake(2, 10)
 	}
 	s.input.Update()
+	if s.battleSequence != nil {
+		result := s.battleSequence()
+		fmt.Printf("result: %+v\n", result.IsEnd)
+	}
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
@@ -107,6 +45,9 @@ func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.faceWindow.Draw(drawFunc)
 	s.faceSubWindow.Draw(drawFunc)
 }
+
+type BattleResult struct{}
+type OnEndBattle func(BattleResult)
 
 type BattleOption struct {
 	OnEnd           OnEndBattle
@@ -123,7 +64,10 @@ func StandByNewBattleScene(
 	serveEnemyName core.EnemyNameServer,
 	initializeBattle core.InitializeBattleFunc,
 	postCommand core.PostCommandFunc,
+	skillApply core.SkillApplyFunc,
 	getBattleSetting game.ServeBattleSetting,
+	createNewBattleSequence frontend.PrepareBattleEventSequenceFunc,
+	skillToSequence frontend.SkillToSequenceFunc,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -150,19 +94,28 @@ func StandByNewBattleScene(
 			}
 			return names
 		}()
+		allActorId := func() []core.ActorId {
+			ids := []core.ActorId{
+				battleResponse.MainActorId,
+			}
+			if battleResponse.SubActorId != core.ActorEmptyId {
+				ids = append(ids, battleResponse.SubActorId)
+			}
+			enemyActorIds := func() []core.ActorId {
+				result := make([]core.ActorId, len(battleResponse.EnemyIds))
+				for i, pair := range battleResponse.EnemyIds {
+					result[i] = pair.ActorId
+				}
+				return result
+			}()
+			return append(ids, enemyActorIds...)
+		}()
 		allTextId := func() []core.TextId {
 			texts := make([]core.TextId, 0)
-			for _, id := range actorNames {
-				texts = append(texts, id)
+			for _, id := range allActorId {
+				texts = append(texts, actorNames[id])
 			}
 			return texts
-		}()
-		allActorId := func() []core.ActorId {
-			ids := make([]core.ActorId, 0)
-			for id := range actorNames {
-				ids = append(ids, id)
-			}
-			return ids
 		}()
 
 		messageWindow := newMessageWindow(
@@ -174,31 +127,21 @@ func StandByNewBattleScene(
 		testString := "あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市"
 		messageWindow.SetText(testString, false)
 
+		newBattleSequence := createNewBattleSequence(
+			messageWindow,
+			func(id core.ActorId) {
+				fmt.Printf("actor shake: %s\n", id)
+			},
+			func(id core.ActorId, damage core.Damage) {
+				fmt.Printf("actor: %s, damage: %d\n", id, damage)
+			},
+		)
+
 		var battleSelectWindow *component.BattleSelectWindow
 		var selectWindow *component.SelectWindow
 		var selectedCommand core.PlayerCommand
+
 		input := &frontend.KeyBoardInput{}
-		selectWindow = newSelectWindow(
-			&frontend.Vector{X: 80, Y: 0},
-			frontend.PivotBottomLeft,
-			frontend.DepthWindow,
-			allTextId,
-			func(index int) {
-				target := allActorId[index]
-				response := postCommand(
-					&core.PostCommandRequest{
-						ActorId:  core.ActorLuneId,
-						TargetId: []core.ActorId{target},
-						Command:  selectedCommand,
-					},
-				)
-				fmt.Printf("selected: %s\n", allActorId[index])
-				fmt.Printf("response: %+v\n", *response)
-				battleSelectWindow.Close()
-				selectWindow.Close()
-				input.Set(frontend.InputReceiverEmptyInstance)
-			},
-		)
 
 		onSubmit := func(command core.PlayerCommand) {
 			selectedCommand = command
@@ -233,15 +176,64 @@ func StandByNewBattleScene(
 			frontend.PivotBottomRight,
 			frontend.TextureFaceSunnyNormal,
 		)
-		return &BattleScene{
+
+		battleScene := &BattleScene{
 			messageWindow:      messageWindow,
 			battleSelectWindow: battleSelectWindow,
 			faceWindow:         faceWindow,
 			faceSubWindow:      faceSubWindow,
 			enemyData:          battleResponse.EnemyIds,
 			actorNames:         actorNames,
-			targetSelectWindow: selectWindow,
 			input:              input,
 		}
+
+		onTargetSelect := func(index int) {
+			target := allActorId[index]
+			response := postCommand(
+				&core.PostCommandRequest{
+					ActorId:  core.ActorLuneId,
+					TargetId: []core.ActorId{target},
+					Command:  selectedCommand,
+				},
+			)
+			skillId := response.Actions.Id
+			appliedResponse := skillApply(response.Actions)
+			battleSelectWindow.Close()
+			selectWindow.Close()
+			input.Set(frontend.InputReceiverEmptyInstance)
+			sequenceId := skillToSequence(skillId)
+			damageInformation := func() []*frontend.DamageInformation {
+				result := make([]*frontend.DamageInformation, 0)
+				for _, row := range appliedResponse.Rows {
+					switch r := row.(type) {
+					case *core.SkillSingleAttackResult:
+						result = append(
+							result, &frontend.DamageInformation{
+								Target: r.TargetId,
+								Damage: r.Damage,
+							},
+						)
+					}
+				}
+				return result
+			}()
+			sequence := newBattleSequence(
+				&frontend.EventSequenceArgs{
+					SequenceId: sequenceId,
+					Actor:      response.Actions.Actor,
+					Target:     damageInformation,
+				},
+			)
+			battleScene.battleSequence = sequence
+		}
+		selectWindow = newSelectWindow(
+			&frontend.Vector{X: 80, Y: 0},
+			frontend.PivotBottomLeft,
+			frontend.DepthWindow,
+			allTextId,
+			onTargetSelect,
+		)
+		battleScene.targetSelectWindow = selectWindow
+		return battleScene
 	}
 }
