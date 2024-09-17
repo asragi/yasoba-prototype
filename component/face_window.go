@@ -62,3 +62,13 @@ func StandByNewFaceWindow(resource *frontend.ResourceManager) NewFaceWindowFunc 
 		}
 	}
 }
+
+type BattleEmotionType int
+
+const (
+	BattleEmotionNormal BattleEmotionType = iota
+	BattleEmotionDamage
+)
+
+type FaceData struct {
+}

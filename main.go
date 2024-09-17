@@ -6,7 +6,6 @@ import (
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game"
 	"github.com/asragi/yasoba-prototype/scene"
-	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
 )
@@ -20,7 +19,6 @@ const (
 var (
 	drawing     *frontend.Drawing
 	battleScene *scene.BattleScene
-	marshmallow *widget.Animation
 )
 
 func init() {
@@ -50,6 +48,9 @@ func init() {
 		battleSequenceServer,
 	)
 	skillToSequence := frontend.CreateSkillToSequenceId()
+	enemyGraphicServer := component.CreateGetEnemyGraphics()
+	newBattleActorGraphics := component.NewBattleActorGraphics(resource, enemyGraphicServer)
+	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newBattleActorGraphics)
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
 		newSelectWindow,
@@ -62,6 +63,7 @@ func init() {
 		battleSettingServer,
 		prepareBattleSequence,
 		skillToSequence,
+		newBattleActorDisplay,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{
@@ -69,26 +71,17 @@ func init() {
 			BattleSettingId: game.BattleSettingTest,
 		},
 	)
-	marshmallow = widget.NewAnimation(
-		frontend.VectorZero,
-		frontend.PivotCenter,
-		frontend.DepthWindow,
-		resource.GetTexture(frontend.TextureMarshmallowNormal),
-		resource.GetAnimationData(frontend.MarshmallowNormal),
-	)
 }
 
 type Game struct{}
 
 func (g *Game) Update() error {
 	battleScene.Update()
-	marshmallow.Update(&frontend.Vector{X: 192, Y: 144})
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	battleScene.Draw(drawing.Draw)
-	marshmallow.Draw(drawing.Draw)
 	drawing.DrawEnd(screen)
 }
 

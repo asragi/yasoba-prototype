@@ -6,6 +6,7 @@ import (
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game"
+	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -20,11 +21,19 @@ type BattleScene struct {
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager
 	battleSequence     frontend.BattleSequenceFunc
+	battleActorDisplay *component.BattleActorDisplay
+	effectManager      *widget.EffectManager
+}
+
+func (s *BattleScene) OnSequenceEnd() {
+	s.input.Set(s.battleSelectWindow)
+	s.battleSelectWindow.Open()
 }
 
 func (s *BattleScene) Update() {
 	s.messageWindow.Update(frontend.VectorZero)
 	s.faceWindow.Update(&frontend.Vector{X: 0, Y: 288})
+	s.battleActorDisplay.Update(&frontend.Vector{X: 192, Y: 144})
 	s.faceSubWindow.Update(&frontend.Vector{X: 384, Y: 288})
 	s.battleSelectWindow.Update(s.faceWindow.GetTopLeftPosition())
 	s.targetSelectWindow.Update(s.faceWindow.GetTopLeftPosition())
@@ -34,16 +43,22 @@ func (s *BattleScene) Update() {
 	s.input.Update()
 	if s.battleSequence != nil {
 		result := s.battleSequence()
-		fmt.Printf("result: %+v\n", result.IsEnd)
+		if result.IsEnd {
+			s.battleSequence = nil
+			s.OnSequenceEnd()
+		}
 	}
+	s.effectManager.Update(frontend.VectorZero)
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.messageWindow.Draw(drawFunc)
 	s.battleSelectWindow.Draw(drawFunc)
 	s.targetSelectWindow.Draw(drawFunc)
+	s.battleActorDisplay.Draw(drawFunc)
 	s.faceWindow.Draw(drawFunc)
 	s.faceSubWindow.Draw(drawFunc)
+	s.effectManager.Draw(drawFunc)
 }
 
 type BattleResult struct{}
@@ -68,6 +83,7 @@ func StandByNewBattleScene(
 	getBattleSetting game.ServeBattleSetting,
 	createNewBattleSequence frontend.PrepareBattleEventSequenceFunc,
 	skillToSequence frontend.SkillToSequenceFunc,
+	newBattleActorDisplay component.NewBattleActorDisplayFunc,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -137,6 +153,37 @@ func StandByNewBattleScene(
 			},
 		)
 
+		displayArgs := func() []*component.BattleDisplayArgs {
+			result := make([]*component.BattleDisplayArgs, len(battleResponse.EnemyIds))
+			mappedList := make(map[core.EnemyId][]core.ActorId)
+			mappedSettingList := make(map[core.EnemyId][]*game.EnemySetting)
+			for _, pair := range battleResponse.EnemyIds {
+				mappedList[pair.EnemyId] = append(mappedList[pair.EnemyId], pair.ActorId)
+			}
+			for _, set := range battleSetting.Enemies {
+				mappedSettingList[set.EnemyId] = append(mappedSettingList[set.EnemyId], set)
+			}
+			index := 0
+			for _, pair := range battleResponse.EnemyIds {
+				enemyId := pair.EnemyId
+				actors := mappedList[enemyId]
+				setting := mappedSettingList[enemyId]
+				for j, actorId := range actors {
+					result[index] = &component.BattleDisplayArgs{
+						ActorId:  actorId,
+						EnemyId:  enemyId,
+						Position: setting[j].Position,
+					}
+					index++
+				}
+			}
+			return result
+		}()
+		battleActorDisplay := newBattleActorDisplay(
+			displayArgs,
+			frontend.DepthEnemy,
+		)
+
 		var battleSelectWindow *component.BattleSelectWindow
 		var selectWindow *component.SelectWindow
 		var selectedCommand core.PlayerCommand
@@ -185,6 +232,8 @@ func StandByNewBattleScene(
 			enemyData:          battleResponse.EnemyIds,
 			actorNames:         actorNames,
 			input:              input,
+			effectManager:      widget.NewEffectManager(),
+			battleActorDisplay: battleActorDisplay,
 		}
 
 		onTargetSelect := func(index int) {

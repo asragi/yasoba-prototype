@@ -63,3 +63,7 @@ func (a *Animation) Update(passedPosition *frontend.Vector) {
 func (a *Animation) Draw(drawFunc frontend.DrawFunc) {
 	a.image.Draw(drawFunc)
 }
+
+func (a *Animation) Reset() {
+	a.frame = 0
+}

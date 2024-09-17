@@ -28,7 +28,7 @@ func CreateServeBattleSetting() ServeBattleSetting {
 		Enemies: []*EnemySetting{
 			{
 				EnemyId:  core.EnemyPunchingBagId,
-				Position: &frontend.Vector{X: 200, Y: 100},
+				Position: frontend.VectorZero,
 			},
 		},
 	}

@@ -18,6 +18,7 @@ const (
 	TextureFaceLuneNormal
 	TextureFaceSunnyNormal
 	TextureMarshmallowNormal
+	TextureMarshmallowDamage
 )
 
 type FontId int
@@ -29,7 +30,8 @@ const (
 type AnimationId int
 
 const (
-	MarshmallowNormal AnimationId = iota
+	AnimationMarshmallowNormal AnimationId = iota
+	AnimationMarshmallowDamage
 )
 
 type ResourceManager struct {
@@ -79,6 +81,9 @@ func CreateResourceManager() (*ResourceManager, error) {
 	if err := loadTexture(load.MarshmallowNormal, TextureMarshmallowNormal); err != nil {
 		return handleError(err)
 	}
+	if err := loadTexture(load.MarshmallowDamage, TextureMarshmallowDamage); err != nil {
+		return handleError(err)
+	}
 
 	fontDict := map[FontId]*text.GoTextFace{}
 	s, err := text.NewGoTextFaceSource(bytes.NewReader(font.MaruMinya))
@@ -88,10 +93,17 @@ func CreateResourceManager() (*ResourceManager, error) {
 	fontDict[MaruMinya] = &text.GoTextFace{Source: s, Size: 12}
 
 	animationDict := map[AnimationId]*AnimationData{
-		MarshmallowNormal: {
+		AnimationMarshmallowNormal: {
 			RowCount:       1,
 			ColumnCount:    2,
 			AnimationCount: 2,
+			Duration:       20,
+			IsLoop:         true,
+		},
+		AnimationMarshmallowDamage: {
+			RowCount:       1,
+			ColumnCount:    1,
+			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
 		},
