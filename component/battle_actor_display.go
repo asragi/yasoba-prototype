@@ -1,7 +1,6 @@
 package component
 
 import (
-	"fmt"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -10,6 +9,22 @@ import (
 type BattleActorDisplay struct {
 	actorIds      []core.ActorId
 	actorGraphics map[core.ActorId]BattleActorGraphics
+}
+
+func (d *BattleActorDisplay) DoShake(actorId core.ActorId) {
+	graphics, ok := d.actorGraphics[actorId]
+	if !ok {
+		return
+	}
+	graphics.DoShake()
+}
+
+func (d *BattleActorDisplay) SetEmotion(actorId core.ActorId, emotion BattleEmotionType) {
+	graphics, ok := d.actorGraphics[actorId]
+	if !ok {
+		return
+	}
+	graphics.SetEmotion(emotion)
 }
 
 func (d *BattleActorDisplay) Update(parentCenterPosition *frontend.Vector) {
@@ -63,6 +78,7 @@ func CreateNewBattleActorDisplay(
 type BattleActorGraphics struct {
 	currentEmotion BattleEmotionType
 	animation      map[BattleEmotionType]*widget.Animation
+	shake          *frontend.EmitShake
 }
 
 func (g *BattleActorGraphics) getCurrentAnimation() *widget.Animation {
@@ -73,12 +89,19 @@ func (g *BattleActorGraphics) getCurrentAnimation() *widget.Animation {
 	return animation
 }
 
+func (g *BattleActorGraphics) DoShake() {
+	const amplitude = 3
+	const period = 12
+	g.shake.Shake(amplitude, period)
+}
+
 func (g *BattleActorGraphics) Update(parentCenterPosition *frontend.Vector) {
-	g.getCurrentAnimation().Update(parentCenterPosition)
+	g.shake.Update()
+	position := parentCenterPosition.Add(g.shake.Delta())
+	g.getCurrentAnimation().Update(position)
 }
 
 func (g *BattleActorGraphics) Draw(drawFunc frontend.DrawFunc) {
-	fmt.Printf("draw actor graphics\n")
 	g.getCurrentAnimation().Draw(drawFunc)
 }
 
@@ -122,6 +145,7 @@ func NewBattleActorGraphics(
 		}()
 		return &BattleActorGraphics{
 			animation: animations,
+			shake:     frontend.NewShake(),
 		}
 	}
 }

@@ -143,16 +143,6 @@ func StandByNewBattleScene(
 		testString := "あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市"
 		messageWindow.SetText(testString, false)
 
-		newBattleSequence := createNewBattleSequence(
-			messageWindow,
-			func(id core.ActorId) {
-				fmt.Printf("actor shake: %s\n", id)
-			},
-			func(id core.ActorId, damage core.Damage) {
-				fmt.Printf("actor: %s, damage: %d\n", id, damage)
-			},
-		)
-
 		displayArgs := func() []*component.BattleDisplayArgs {
 			result := make([]*component.BattleDisplayArgs, len(battleResponse.EnemyIds))
 			mappedList := make(map[core.EnemyId][]core.ActorId)
@@ -182,6 +172,14 @@ func StandByNewBattleScene(
 		battleActorDisplay := newBattleActorDisplay(
 			displayArgs,
 			frontend.DepthEnemy,
+		)
+
+		newBattleSequence := createNewBattleSequence(
+			messageWindow,
+			battleActorDisplay.DoShake,
+			func(id core.ActorId, damage core.Damage) {
+				fmt.Printf("actor: %s, damage: %d\n", id, damage)
+			},
 		)
 
 		var battleSelectWindow *component.BattleSelectWindow
