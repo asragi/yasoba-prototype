@@ -6,6 +6,7 @@ const (
 	Zero Depth = iota
 	DepthEnemy
 	DepthEffect
+	DepthDamageText
 	DepthWindow
 	DepthDebug
 )
@@ -13,6 +14,7 @@ const (
 var AllDepths = []Depth{
 	DepthEnemy,
 	DepthEffect,
+	DepthDamageText,
 	DepthWindow,
 	DepthDebug,
 }

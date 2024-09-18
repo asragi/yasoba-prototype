@@ -18,7 +18,7 @@ type BattleTextDisplay interface {
 type ShakeActor func(core.ActorId)
 type ChangeEmotion func(core.ActorId, BattleEmotionType)
 type ShakeScreen func()
-type DisplayDamage func(core.ActorId, core.Damage)
+type DisplayDamageFunc func(core.ActorId, core.Damage)
 type PlayEffect func(widget.EffectId, core.ActorId)
 
 type SkillToSequenceFunc func(core.SkillId) EventSequenceId
@@ -87,7 +87,7 @@ type PrepareBattleEventSequenceFunc func(
 	BattleTextDisplay,
 	ShakeActor,
 	ChangeEmotion,
-	DisplayDamage,
+	DisplayDamageFunc,
 	PlayEffect,
 ) NewBattleSequenceFunc
 
@@ -99,7 +99,7 @@ func CreateExecBattleEventSequence(
 		display BattleTextDisplay,
 		shakeActor ShakeActor,
 		changeEmotion ChangeEmotion,
-		displayDamage DisplayDamage,
+		displayDamage DisplayDamageFunc,
 		playEffect PlayEffect,
 	) NewBattleSequenceFunc {
 		return func(args *EventSequenceArgs) BattleSequenceFunc {

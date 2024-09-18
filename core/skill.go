@@ -1,6 +1,9 @@
 package core
 
-import "math"
+import (
+	"math"
+	"strconv"
+)
 
 type SkillId string
 
@@ -118,6 +121,10 @@ type SkillResult struct {
 }
 
 type Damage int
+
+func (d Damage) String() string {
+	return strconv.Itoa(int(d))
+}
 
 func calculateNormalAttackDamage(
 	attackerATK ATK,

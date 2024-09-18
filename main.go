@@ -14,7 +14,7 @@ import (
 const (
 	GameWidth  = 384
 	GameHeight = 288
-	DrawRate   = 2
+	DrawRate   = 1
 )
 
 var (
@@ -50,7 +50,12 @@ func init() {
 	)
 	skillToSequence := component.CreateSkillToSequenceId()
 	enemyGraphicServer := component.CreateGetEnemyGraphics()
-	newBattleActorGraphics := component.NewBattleActorGraphics(resource, enemyGraphicServer)
+	newDisplayDamage := component.CreateNewDisplayDamage(resource)
+	newBattleActorGraphics := component.NewBattleActorGraphics(
+		resource,
+		enemyGraphicServer,
+		newDisplayDamage,
+	)
 	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newBattleActorGraphics)
 	effectData := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(effectData, resource)

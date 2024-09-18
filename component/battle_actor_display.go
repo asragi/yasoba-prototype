@@ -11,6 +11,14 @@ type BattleActorDisplay struct {
 	actorGraphics map[core.ActorId]*BattleActorGraphics
 }
 
+func (d *BattleActorDisplay) SetDamage(actorId core.ActorId, damage core.Damage) {
+	graphics, ok := d.actorGraphics[actorId]
+	if !ok {
+		return
+	}
+	graphics.SetDamage(damage)
+}
+
 func (d *BattleActorDisplay) DoShake(actorId core.ActorId) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
@@ -86,6 +94,7 @@ func CreateNewBattleActorDisplay(
 type BattleActorGraphics struct {
 	currentEmotion BattleEmotionType
 	animation      map[BattleEmotionType]*widget.Animation
+	displayDamage  *DisplayDamage
 	shake          *frontend.EmitShake
 
 	parentPosition   *frontend.Vector
@@ -104,6 +113,10 @@ func (g *BattleActorGraphics) getCurrentAnimation() *widget.Animation {
 	return animation
 }
 
+func (g *BattleActorGraphics) SetDamage(damage core.Damage) {
+	g.displayDamage.DisplayDamage(damage)
+}
+
 func (g *BattleActorGraphics) DoShake() {
 	const amplitude = 3
 	const period = 12
@@ -112,12 +125,14 @@ func (g *BattleActorGraphics) DoShake() {
 
 func (g *BattleActorGraphics) Update(parentCenterPosition *frontend.Vector) {
 	g.shake.Update()
+	g.displayDamage.Update(parentCenterPosition)
 	g.parentPosition = parentCenterPosition
 	position := parentCenterPosition.Add(g.shake.Delta())
 	g.getCurrentAnimation().Update(position)
 }
 
 func (g *BattleActorGraphics) Draw(drawFunc frontend.DrawFunc) {
+	g.displayDamage.Draw(drawFunc)
 	g.getCurrentAnimation().Draw(drawFunc)
 }
 
@@ -136,6 +151,7 @@ type NewBattleActorGraphicsFunc func(
 func NewBattleActorGraphics(
 	resource *frontend.ResourceManager,
 	getEnemyGraphics GetEnemyGraphicsFunc,
+	newDisplayDamage NewDisplayDamageFunc,
 ) NewBattleActorGraphicsFunc {
 	return func(
 		relativePosition *frontend.Vector,
@@ -165,6 +181,7 @@ func NewBattleActorGraphics(
 			shake:            frontend.NewShake(),
 			parentPosition:   frontend.VectorZero,
 			relativePosition: relativePosition,
+			displayDamage:    newDisplayDamage(),
 		}
 	}
 }

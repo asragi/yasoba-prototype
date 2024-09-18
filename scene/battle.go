@@ -1,7 +1,6 @@
 package scene
 
 import (
-	"fmt"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
@@ -184,9 +183,7 @@ func StandByNewBattleScene(
 			messageWindow,
 			battleActorDisplay.DoShake,
 			battleActorDisplay.SetEmotion,
-			func(id core.ActorId, damage core.Damage) {
-				fmt.Printf("actor: %s, damage: %d\n", id, damage)
-			},
+			battleActorDisplay.SetDamage,
 			playEffect,
 		)
 
