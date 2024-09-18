@@ -6,6 +6,7 @@ import (
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game"
 	"github.com/asragi/yasoba-prototype/scene"
+	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
 )
@@ -13,7 +14,7 @@ import (
 const (
 	GameWidth  = 384
 	GameHeight = 288
-	DrawRate   = 1
+	DrawRate   = 2
 )
 
 var (
@@ -42,15 +43,17 @@ func init() {
 	battleSettingServer := game.CreateServeBattleSetting()
 	skillServer := core.NewSkillServer()
 	applySkill := core.CreateSkillApply(skillServer, actorServer.Get)
-	battleSequenceServer := frontend.CreateServeBattleEventSequence()
-	prepareBattleSequence := frontend.CreateExecBattleEventSequence(
+	battleSequenceServer := component.CreateServeBattleEventSequence()
+	prepareBattleSequence := component.CreateExecBattleEventSequence(
 		textServer,
 		battleSequenceServer,
 	)
-	skillToSequence := frontend.CreateSkillToSequenceId()
+	skillToSequence := component.CreateSkillToSequenceId()
 	enemyGraphicServer := component.CreateGetEnemyGraphics()
 	newBattleActorGraphics := component.NewBattleActorGraphics(resource, enemyGraphicServer)
 	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newBattleActorGraphics)
+	effectData := widget.CreateServeEffectData()
+	effectManager := widget.NewEffectManager(effectData, resource)
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
 		newSelectWindow,
@@ -64,6 +67,7 @@ func init() {
 		prepareBattleSequence,
 		skillToSequence,
 		newBattleActorDisplay,
+		effectManager,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{

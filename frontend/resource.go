@@ -19,6 +19,7 @@ const (
 	TextureFaceSunnyNormal
 	TextureMarshmallowNormal
 	TextureMarshmallowDamage
+	TextureBattleEffectImpact
 )
 
 type FontId int
@@ -32,6 +33,7 @@ type AnimationId int
 const (
 	AnimationMarshmallowNormal AnimationId = iota
 	AnimationMarshmallowDamage
+	AnimationBattleEffectImpact
 )
 
 type ResourceManager struct {
@@ -41,7 +43,11 @@ type ResourceManager struct {
 }
 
 func (r *ResourceManager) GetTexture(id TextureId) *ebiten.Image {
-	return r.textureDict[id]
+	t, ok := r.textureDict[id]
+	if !ok {
+		panic(fmt.Sprintf("texture not found: %d", id))
+	}
+	return t
 }
 
 func (r *ResourceManager) GetFont(id FontId) *text.GoTextFace {
@@ -84,6 +90,9 @@ func CreateResourceManager() (*ResourceManager, error) {
 	if err := loadTexture(load.MarshmallowDamage, TextureMarshmallowDamage); err != nil {
 		return handleError(err)
 	}
+	if err := loadTexture(load.BattleEffectImpact, TextureBattleEffectImpact); err != nil {
+		return handleError(err)
+	}
 
 	fontDict := map[FontId]*text.GoTextFace{}
 	s, err := text.NewGoTextFaceSource(bytes.NewReader(font.MaruMinya))
@@ -94,6 +103,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 
 	animationDict := map[AnimationId]*AnimationData{
 		AnimationMarshmallowNormal: {
+			TextureId:      TextureMarshmallowNormal,
 			RowCount:       1,
 			ColumnCount:    2,
 			AnimationCount: 2,
@@ -101,11 +111,20 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationMarshmallowDamage: {
+			TextureId:      TextureMarshmallowDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
+		},
+		AnimationBattleEffectImpact: {
+			TextureId:      TextureBattleEffectImpact,
+			RowCount:       4,
+			ColumnCount:    4,
+			AnimationCount: 16,
+			Duration:       4,
+			IsLoop:         false,
 		},
 	}
 	return &ResourceManager{
@@ -116,6 +135,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 }
 
 type AnimationData struct {
+	TextureId      TextureId
 	RowCount       int
 	ColumnCount    int
 	AnimationCount int

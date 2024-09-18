@@ -8,7 +8,7 @@ import (
 
 type BattleActorDisplay struct {
 	actorIds      []core.ActorId
-	actorGraphics map[core.ActorId]BattleActorGraphics
+	actorGraphics map[core.ActorId]*BattleActorGraphics
 }
 
 func (d *BattleActorDisplay) DoShake(actorId core.ActorId) {
@@ -25,6 +25,14 @@ func (d *BattleActorDisplay) SetEmotion(actorId core.ActorId, emotion BattleEmot
 		return
 	}
 	graphics.SetEmotion(emotion)
+}
+
+func (d *BattleActorDisplay) GetPosition(id core.ActorId) *frontend.Vector {
+	graphics, ok := d.actorGraphics[id]
+	if !ok {
+		return nil
+	}
+	return graphics.GetDefinitivePosition()
 }
 
 func (d *BattleActorDisplay) Update(parentCenterPosition *frontend.Vector) {
@@ -57,7 +65,7 @@ func CreateNewBattleActorDisplay(
 		depth frontend.Depth,
 	) *BattleActorDisplay {
 		actorIds := make([]core.ActorId, len(enemies))
-		actorGraphics := map[core.ActorId]BattleActorGraphics{}
+		actorGraphics := map[core.ActorId]*BattleActorGraphics{}
 		for i, enemy := range enemies {
 			graphics := newBattleActorGraphics(
 				enemy.Position,
@@ -65,7 +73,7 @@ func CreateNewBattleActorDisplay(
 				depth,
 				enemy.EnemyId,
 			)
-			actorGraphics[enemy.ActorId] = *graphics
+			actorGraphics[enemy.ActorId] = graphics
 			actorIds[i] = enemy.ActorId
 		}
 		return &BattleActorDisplay{
@@ -79,6 +87,13 @@ type BattleActorGraphics struct {
 	currentEmotion BattleEmotionType
 	animation      map[BattleEmotionType]*widget.Animation
 	shake          *frontend.EmitShake
+
+	parentPosition   *frontend.Vector
+	relativePosition *frontend.Vector
+}
+
+func (g *BattleActorGraphics) GetDefinitivePosition() *frontend.Vector {
+	return g.parentPosition.Add(g.relativePosition)
 }
 
 func (g *BattleActorGraphics) getCurrentAnimation() *widget.Animation {
@@ -97,6 +112,7 @@ func (g *BattleActorGraphics) DoShake() {
 
 func (g *BattleActorGraphics) Update(parentCenterPosition *frontend.Vector) {
 	g.shake.Update()
+	g.parentPosition = parentCenterPosition
 	position := parentCenterPosition.Add(g.shake.Delta())
 	g.getCurrentAnimation().Update(position)
 }
@@ -144,8 +160,11 @@ func NewBattleActorGraphics(
 			return result
 		}()
 		return &BattleActorGraphics{
-			animation: animations,
-			shake:     frontend.NewShake(),
+			currentEmotion:   BattleEmotionNormal,
+			animation:        animations,
+			shake:            frontend.NewShake(),
+			parentPosition:   frontend.VectorZero,
+			relativePosition: relativePosition,
 		}
 	}
 }

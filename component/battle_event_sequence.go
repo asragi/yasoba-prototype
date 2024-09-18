@@ -1,6 +1,9 @@
-package frontend
+package component
 
-import "github.com/asragi/yasoba-prototype/core"
+import (
+	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/widget"
+)
 
 type EventSequenceId string
 
@@ -13,8 +16,10 @@ type BattleTextDisplay interface {
 }
 
 type ShakeActor func(core.ActorId)
+type ChangeEmotion func(core.ActorId, BattleEmotionType)
 type ShakeScreen func()
 type DisplayDamage func(core.ActorId, core.Damage)
+type PlayEffect func(widget.EffectId, core.ActorId)
 
 type SkillToSequenceFunc func(core.SkillId) EventSequenceId
 
@@ -34,11 +39,23 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			Frame: 1,
 			Text:  core.TextIdLuneAttackDesc,
 		},
+		&PlayEffectEvent{
+			Frame:    1,
+			EffectId: widget.EffectIdLuneAttack,
+		},
 		&ShakeActorAnimationEvent{
 			Frame: 30,
 		},
 		&DisplayDamageEvent{
 			Frame: 30,
+		},
+		&ChangeEmotionEvent{
+			Frame:       30,
+			EmotionType: BattleEmotionDamage,
+		},
+		&ChangeEmotionEvent{
+			Frame:       60,
+			EmotionType: BattleEmotionNormal,
 		},
 	}
 	dict[EventSequenceIdLuneAttack] = &BattleEventSequence{
@@ -69,7 +86,9 @@ type NewBattleSequenceFunc func(*EventSequenceArgs) BattleSequenceFunc
 type PrepareBattleEventSequenceFunc func(
 	BattleTextDisplay,
 	ShakeActor,
+	ChangeEmotion,
 	DisplayDamage,
+	PlayEffect,
 ) NewBattleSequenceFunc
 
 func CreateExecBattleEventSequence(
@@ -79,7 +98,9 @@ func CreateExecBattleEventSequence(
 	return func(
 		display BattleTextDisplay,
 		shakeActor ShakeActor,
+		changeEmotion ChangeEmotion,
 		displayDamage DisplayDamage,
+		playEffect PlayEffect,
 	) NewBattleSequenceFunc {
 		return func(args *EventSequenceArgs) BattleSequenceFunc {
 			sequence := serveEvent(args.SequenceId)
@@ -104,6 +125,12 @@ func CreateExecBattleEventSequence(
 					case *DisplayDamageEvent:
 						target := args.Target[0]
 						displayDamage(target.Target, target.Damage)
+					case *ChangeEmotionEvent:
+						target := args.Target[0]
+						changeEmotion(target.Target, r.EmotionType)
+					case *PlayEffectEvent:
+						target := args.Target[0]
+						playEffect(r.EffectId, target.Target)
 					}
 				}
 				return &EventSequenceResult{
@@ -164,9 +191,27 @@ func (e *DisplayDamageEvent) IsEnd(frame int) bool {
 }
 
 type PlayEffectEvent struct {
-	Frame int
+	Frame    int
+	EffectId widget.EffectId
 }
 
 func (e *PlayEffectEvent) IsActive(frame int) bool {
 	return e.Frame == frame
+}
+
+func (e *PlayEffectEvent) IsEnd(frame int) bool {
+	return e.Frame < frame
+}
+
+type ChangeEmotionEvent struct {
+	Frame       int
+	EmotionType BattleEmotionType
+}
+
+func (e *ChangeEmotionEvent) IsActive(frame int) bool {
+	return e.Frame == frame
+}
+
+func (e *ChangeEmotionEvent) IsEnd(frame int) bool {
+	return e.Frame < frame
 }

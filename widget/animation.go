@@ -67,3 +67,10 @@ func (a *Animation) Draw(drawFunc frontend.DrawFunc) {
 func (a *Animation) Reset() {
 	a.frame = 0
 }
+
+func (a *Animation) IsEnd() bool {
+	if a.data.IsLoop {
+		return false
+	}
+	return a.frame >= a.data.Duration*a.data.AnimationCount
+}

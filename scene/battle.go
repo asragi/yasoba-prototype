@@ -20,7 +20,7 @@ type BattleScene struct {
 	actorNames         map[core.ActorId]core.TextId
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager
-	battleSequence     frontend.BattleSequenceFunc
+	battleSequence     component.BattleSequenceFunc
 	battleActorDisplay *component.BattleActorDisplay
 	effectManager      *widget.EffectManager
 }
@@ -48,7 +48,7 @@ func (s *BattleScene) Update() {
 			s.OnSequenceEnd()
 		}
 	}
-	s.effectManager.Update(frontend.VectorZero)
+	s.effectManager.Update()
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
@@ -81,9 +81,10 @@ func StandByNewBattleScene(
 	postCommand core.PostCommandFunc,
 	skillApply core.SkillApplyFunc,
 	getBattleSetting game.ServeBattleSetting,
-	createNewBattleSequence frontend.PrepareBattleEventSequenceFunc,
-	skillToSequence frontend.SkillToSequenceFunc,
+	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
+	skillToSequence component.SkillToSequenceFunc,
 	newBattleActorDisplay component.NewBattleActorDisplayFunc,
+	effectManager *widget.EffectManager,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -174,12 +175,19 @@ func StandByNewBattleScene(
 			frontend.DepthEnemy,
 		)
 
+		playEffect := func(effectId widget.EffectId, target core.ActorId) {
+			position := battleActorDisplay.GetPosition(target)
+			effectManager.CallEffect(effectId, position)
+		}
+
 		newBattleSequence := createNewBattleSequence(
 			messageWindow,
 			battleActorDisplay.DoShake,
+			battleActorDisplay.SetEmotion,
 			func(id core.ActorId, damage core.Damage) {
 				fmt.Printf("actor: %s, damage: %d\n", id, damage)
 			},
+			playEffect,
 		)
 
 		var battleSelectWindow *component.BattleSelectWindow
@@ -230,7 +238,7 @@ func StandByNewBattleScene(
 			enemyData:          battleResponse.EnemyIds,
 			actorNames:         actorNames,
 			input:              input,
-			effectManager:      widget.NewEffectManager(),
+			effectManager:      effectManager,
 			battleActorDisplay: battleActorDisplay,
 		}
 
@@ -249,13 +257,13 @@ func StandByNewBattleScene(
 			selectWindow.Close()
 			input.Set(frontend.InputReceiverEmptyInstance)
 			sequenceId := skillToSequence(skillId)
-			damageInformation := func() []*frontend.DamageInformation {
-				result := make([]*frontend.DamageInformation, 0)
+			damageInformation := func() []*component.DamageInformation {
+				result := make([]*component.DamageInformation, 0)
 				for _, row := range appliedResponse.Rows {
 					switch r := row.(type) {
 					case *core.SkillSingleAttackResult:
 						result = append(
-							result, &frontend.DamageInformation{
+							result, &component.DamageInformation{
 								Target: r.TargetId,
 								Damage: r.Damage,
 							},
@@ -265,7 +273,7 @@ func StandByNewBattleScene(
 				return result
 			}()
 			sequence := newBattleSequence(
-				&frontend.EventSequenceArgs{
+				&component.EventSequenceArgs{
 					SequenceId: sequenceId,
 					Actor:      response.Actions.Actor,
 					Target:     damageInformation,
