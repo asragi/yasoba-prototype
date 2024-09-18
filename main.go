@@ -9,6 +9,7 @@ import (
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
+	"math/rand"
 )
 
 const (
@@ -42,7 +43,8 @@ func init() {
 	newFaceWindow := component.StandByNewFaceWindow(resource)
 	battleSettingServer := game.CreateServeBattleSetting()
 	skillServer := core.NewSkillServer()
-	applySkill := core.CreateSkillApply(skillServer, actorServer.Get)
+	random := rand.Float64
+	applySkill := core.CreateSkillApply(skillServer, actorServer.Get, random)
 	battleSequenceServer := component.CreateServeBattleEventSequence()
 	prepareBattleSequence := component.CreateExecBattleEventSequence(
 		textServer,

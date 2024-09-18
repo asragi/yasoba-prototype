@@ -66,11 +66,13 @@ func (t *Text) Draw(drawFunc frontend.DrawFunc) {
 }
 
 func (t *Text) Size() *frontend.Vector {
+	scale := float64(t.options.Scale)
 	// TODO: Size should be calculated from font Size
-	return &frontend.Vector{
+	tmp := &frontend.Vector{
 		X: float64(len(t.characterSet[0]))*13 - 1,
 		Y: float64(len(t.characterSet))*16 - 4,
 	}
+	return tmp.Multiply(scale)
 }
 
 func (t *Text) drawText(
@@ -90,13 +92,15 @@ func (t *Text) drawText(
 		{X: 1, Y: 0},
 		{X: -1, Y: 0},
 	}
+	pivotDiff := t.options.Pivot.ApplyToSize(t.Size())
 	characterPosition := func() []*frontend.Vector {
 		result := make([]*frontend.Vector, t.textSize)
 		for i := 0; i < t.textSize; i++ {
-			result[i] = &frontend.Vector{
+			tmp := frontend.Vector{
 				X: t.options.RelativePosition.X + float64(i*characterSizeX)*scale,
 				Y: t.options.RelativePosition.Y,
 			}
+			result[i] = tmp.Sub(pivotDiff)
 		}
 		return result
 	}()

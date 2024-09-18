@@ -22,10 +22,11 @@ type NewDisplayDamageFunc func() *DisplayDamage
 func CreateNewDisplayDamage(resource *frontend.ResourceManager) NewDisplayDamageFunc {
 	damageTextColor := color.White
 	font := resource.GetFont(frontend.MaruMinya)
+	positionDiff := &frontend.Vector{Y: 30}
 	return func() *DisplayDamage {
 		text := widget.NewText(
 			&widget.TextOptions{
-				RelativePosition: frontend.VectorZero,
+				RelativePosition: positionDiff,
 				Pivot:            frontend.PivotCenter,
 				TextFace:         font,
 				Speed:            4,

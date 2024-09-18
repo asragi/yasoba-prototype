@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/asragi/yasoba-prototype/util"
 	"math"
 	"strconv"
 )
@@ -37,7 +38,7 @@ func NewSkillServer() ServeSkillData {
 	register(
 		SkillIdLuneAttack, []SkillDataRow{
 			&SkillSingleAttackRow{
-				Power: 0.6,
+				Power: 1.0,
 				Type:  SkillTypePhysical,
 			},
 		},
@@ -83,6 +84,7 @@ type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
 func CreateSkillApply(
 	skillServer ServeSkillData,
 	supplyActor ActorSupplier,
+	random util.EmitRandomFunc,
 ) SkillApplyFunc {
 	return func(args *SelectedAction) *SkillApplyResult {
 		result := make([]SkillApplyResultRow, 0)
@@ -99,6 +101,7 @@ func CreateSkillApply(
 					target.MAG,
 					r.Power,
 					r.Type,
+					random,
 				)
 				result = append(
 					result, &SkillSingleAttackResult{
@@ -133,24 +136,26 @@ func calculateNormalAttackDamage(
 	defenderMAG MAG,
 	power SkillPower,
 	attackType SkillType,
+	random util.EmitRandomFunc,
 ) Damage {
 	// 同パラメータのキャラクターがPower=1.0の攻撃を受けた場合に失うHPの割合を表す係数
 	const damageRate = 0.3
 	// うまいことやって出た数字
-	const baseValue = 4.0
-	attackValue := func() int {
+	const baseValue = 7.0
+	attackValue := func() float64 {
 		if attackType == SkillTypePhysical {
-			return int(attackerATK)
+			return float64(attackerATK)
 		}
-		return int(attackerMAG)
+		return float64(attackerMAG)
 	}()
-	defenderValue := func() int {
+	defenderValue := func() float64 {
 		if attackType == SkillTypePhysical {
-			return int(defenderDEF)
+			return float64(defenderDEF)
 		}
-		return int(defenderMAG)
+		return float64(defenderMAG)
 	}()
-	estimatedHP := attackValue * 10
-	ratio := float64(attackValue) / float64(defenderValue)
-	return Damage(int(float64(estimatedHP) * damageRate * float64(power) * math.Pow(baseValue, ratio-1)))
+	attackPower := float64(power) * baseValue * (math.Pow(attackValue, 3) / (math.Pow(attackValue, 2) + 1600))
+	defencePower := (109 - defenderValue) / 109
+	randomValue := random() * attackValue
+	return Damage(attackPower*defencePower + randomValue)
 }
