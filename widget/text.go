@@ -5,6 +5,7 @@ import (
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"image/color"
 	"strings"
 )
 
@@ -74,6 +75,12 @@ func (t *Text) drawText(
 	// TODO: characterSizeX should be calculated from font Size
 	const characterSizeX = 13
 	const lineHeight = 16
+	diffSet := []*frontend.Vector{
+		{X: 0, Y: 1},
+		{X: 0, Y: -1},
+		{X: 1, Y: 0},
+		{X: -1, Y: 0},
+	}
 	characterPosition := func() []*frontend.Vector {
 		result := make([]*frontend.Vector, t.textSize)
 		for i := 0; i < t.textSize; i++ {
@@ -92,6 +99,18 @@ func (t *Text) drawText(
 		targetCharacter := characters[i]
 		drawFunc(
 			func(screen *ebiten.Image) {
+				if t.options.EnableOutline {
+					outlineOp := &text.DrawOptions{}
+					*outlineOp = *op
+					outlineOp.ColorScale.ScaleWithColor(t.options.OutlineColor)
+					for j := 0; j < len(diffSet); j++ {
+						v := diffSet[j]
+						outlineOp.GeoM.Translate(v.X, v.Y)
+						text.Draw(screen, targetCharacter, t.options.TextFace, outlineOp)
+						outlineOp.GeoM.Translate(-v.X, -v.Y)
+					}
+				}
+				op.ColorScale.ScaleWithColor(t.options.Color)
 				text.Draw(screen, targetCharacter, t.options.TextFace, op)
 			}, t.options.Depth,
 		)
@@ -104,9 +123,18 @@ type TextOptions struct {
 	TextFace         *text.GoTextFace
 	Speed            int
 	Depth            frontend.Depth
+	Color            color.Color
+	OutlineColor     color.Color
+	EnableOutline    bool
 }
 
 func NewText(options *TextOptions) *Text {
+	if options.Color == nil {
+		options.Color = color.White
+	}
+	if options.OutlineColor == nil {
+		options.OutlineColor = color.Black
+	}
 	return &Text{
 		currentIndex: 0,
 		characterSet: nil,
