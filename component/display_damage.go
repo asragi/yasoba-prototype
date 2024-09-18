@@ -32,6 +32,7 @@ func CreateNewDisplayDamage(resource *frontend.ResourceManager) NewDisplayDamage
 				Depth:            frontend.DepthDamageText,
 				Color:            damageTextColor,
 				EnableOutline:    true,
+				Scale:            2,
 			},
 		)
 

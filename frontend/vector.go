@@ -22,6 +22,13 @@ func (v *Vector) Sub(v2 *Vector) *Vector {
 	}
 }
 
+func (v *Vector) Multiply(scale float64) *Vector {
+	return &Vector{
+		X: v.X * scale,
+		Y: v.Y * scale,
+	}
+}
+
 type Pivot struct {
 	X, Y float64
 }

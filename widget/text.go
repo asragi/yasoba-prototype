@@ -65,6 +65,14 @@ func (t *Text) Draw(drawFunc frontend.DrawFunc) {
 	}
 }
 
+func (t *Text) Size() *frontend.Vector {
+	// TODO: Size should be calculated from font Size
+	return &frontend.Vector{
+		X: float64(len(t.characterSet[0]))*13 - 1,
+		Y: float64(len(t.characterSet))*16 - 4,
+	}
+}
+
 func (t *Text) drawText(
 	characters []string,
 	currentIndex int,
@@ -75,6 +83,7 @@ func (t *Text) drawText(
 	// TODO: characterSizeX should be calculated from font Size
 	const characterSizeX = 13
 	const lineHeight = 16
+	scale := float64(t.options.Scale)
 	diffSet := []*frontend.Vector{
 		{X: 0, Y: 1},
 		{X: 0, Y: -1},
@@ -85,7 +94,7 @@ func (t *Text) drawText(
 		result := make([]*frontend.Vector, t.textSize)
 		for i := 0; i < t.textSize; i++ {
 			result[i] = &frontend.Vector{
-				X: t.options.RelativePosition.X + float64(i*characterSizeX),
+				X: t.options.RelativePosition.X + float64(i*characterSizeX)*scale,
 				Y: t.options.RelativePosition.Y,
 			}
 		}
@@ -94,7 +103,8 @@ func (t *Text) drawText(
 	for i := 0; i < currentIndex; i++ {
 		op := &text.DrawOptions{}
 		x := characterPosition[i].X + parentPosition.X
-		y := characterPosition[i].Y + parentPosition.Y + float64(line*lineHeight)
+		y := characterPosition[i].Y + parentPosition.Y + float64(line*lineHeight)*scale
+		op.GeoM.Scale(scale, scale)
 		op.GeoM.Translate(x, y)
 		targetCharacter := characters[i]
 		drawFunc(
@@ -104,7 +114,7 @@ func (t *Text) drawText(
 					*outlineOp = *op
 					outlineOp.ColorScale.ScaleWithColor(t.options.OutlineColor)
 					for j := 0; j < len(diffSet); j++ {
-						v := diffSet[j]
+						v := diffSet[j].Multiply(scale)
 						outlineOp.GeoM.Translate(v.X, v.Y)
 						text.Draw(screen, targetCharacter, t.options.TextFace, outlineOp)
 						outlineOp.GeoM.Translate(-v.X, -v.Y)
@@ -126,6 +136,7 @@ type TextOptions struct {
 	Color            color.Color
 	OutlineColor     color.Color
 	EnableOutline    bool
+	Scale            int
 }
 
 func NewText(options *TextOptions) *Text {
@@ -134,6 +145,9 @@ func NewText(options *TextOptions) *Text {
 	}
 	if options.OutlineColor == nil {
 		options.OutlineColor = color.Black
+	}
+	if options.Scale == 0 {
+		options.Scale = 1
 	}
 	return &Text{
 		currentIndex: 0,
