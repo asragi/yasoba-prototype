@@ -20,6 +20,7 @@ const (
 	TextureMarshmallowNormal
 	TextureMarshmallowDamage
 	TextureBattleEffectImpact
+	TextureBattleEffectFire
 )
 
 type FontId int
@@ -34,6 +35,7 @@ const (
 	AnimationMarshmallowNormal AnimationId = iota
 	AnimationMarshmallowDamage
 	AnimationBattleEffectImpact
+	AnimationBattleEffectFire
 )
 
 type ResourceManager struct {
@@ -93,6 +95,9 @@ func CreateResourceManager() (*ResourceManager, error) {
 	if err := loadTexture(load.BattleEffectImpact, TextureBattleEffectImpact); err != nil {
 		return handleError(err)
 	}
+	if err := loadTexture(load.BattleEffectFire, TextureBattleEffectFire); err != nil {
+		return handleError(err)
+	}
 
 	fontDict := map[FontId]*text.GoTextFace{}
 	s, err := text.NewGoTextFaceSource(bytes.NewReader(font.MaruMinya))
@@ -123,6 +128,14 @@ func CreateResourceManager() (*ResourceManager, error) {
 			RowCount:       4,
 			ColumnCount:    4,
 			AnimationCount: 16,
+			Duration:       4,
+			IsLoop:         false,
+		},
+		AnimationBattleEffectFire: {
+			TextureId:      TextureBattleEffectFire,
+			RowCount:       5,
+			ColumnCount:    6,
+			AnimationCount: 25,
 			Duration:       4,
 			IsLoop:         false,
 		},

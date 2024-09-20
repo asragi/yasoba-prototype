@@ -58,6 +58,7 @@ func enemyToActor(enemy *EnemyData, id ActorId) *Actor {
 }
 
 type ActorSupplier func(ActorId) *Actor
+type UpdateActorFunc func(*Actor)
 
 type ActorServer interface {
 	Get(ActorId) *Actor

@@ -19,7 +19,7 @@ type BattleScene struct {
 	actorNames         map[core.ActorId]core.TextId
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager
-	battleSequence     component.BattleSequenceFunc
+	battleSequence     *component.BattleEventSequencer
 	battleActorDisplay *component.BattleActorDisplay
 	effectManager      *widget.EffectManager
 }
@@ -40,10 +40,9 @@ func (s *BattleScene) Update() {
 		s.messageWindow.Shake(2, 10)
 	}
 	s.input.Update()
-	if s.battleSequence != nil {
-		result := s.battleSequence()
-		if result.IsEnd {
-			s.battleSequence = nil
+	if s.battleSequence.IsRun() {
+		s.battleSequence.Update()
+		if s.battleSequence.IsEnd() {
 			s.OnSequenceEnd()
 		}
 	}
@@ -78,7 +77,7 @@ func StandByNewBattleScene(
 	serveEnemyName core.EnemyNameServer,
 	initializeBattle core.InitializeBattleFunc,
 	postCommand core.PostCommandFunc,
-	skillApply core.SkillApplyFunc,
+	skillApply core.SkillCalculationFunc,
 	getBattleSetting game.ServeBattleSetting,
 	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
 	skillToSequence component.SkillToSequenceFunc,
@@ -206,6 +205,9 @@ func StandByNewBattleScene(
 			[]core.PlayerCommand{
 				core.PlayerCommandAttack,
 				core.PlayerCommandFire,
+				core.PlayerCommandBarrier,
+				core.PlayerCommandThunder,
+				core.PlayerCommandWind,
 				core.PlayerCommandFocus,
 				core.PlayerCommandDefend,
 			},
@@ -237,9 +239,13 @@ func StandByNewBattleScene(
 			input:              input,
 			effectManager:      effectManager,
 			battleActorDisplay: battleActorDisplay,
+			battleSequence:     component.NewBattleEventSequencer(),
 		}
 
 		onTargetSelect := func(index int) {
+			battleSelectWindow.Close()
+			selectWindow.Close()
+			input.Set(frontend.InputReceiverEmptyInstance)
 			target := allActorId[index]
 			response := postCommand(
 				&core.PostCommandRequest{
@@ -250,9 +256,6 @@ func StandByNewBattleScene(
 			)
 			skillId := response.Actions.Id
 			appliedResponse := skillApply(response.Actions)
-			battleSelectWindow.Close()
-			selectWindow.Close()
-			input.Set(frontend.InputReceiverEmptyInstance)
 			sequenceId := skillToSequence(skillId)
 			damageInformation := func() []*component.DamageInformation {
 				result := make([]*component.DamageInformation, 0)
@@ -276,7 +279,8 @@ func StandByNewBattleScene(
 					Target:     damageInformation,
 				},
 			)
-			battleScene.battleSequence = sequence
+			battleScene.battleSequence.Reset()
+			battleScene.battleSequence.Add(sequence)
 		}
 		selectWindow = newSelectWindow(
 			&frontend.Vector{X: 80, Y: 0},

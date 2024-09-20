@@ -34,6 +34,7 @@ func CreateNewDisplayDamage(resource *frontend.ResourceManager) NewDisplayDamage
 				Color:            damageTextColor,
 				EnableOutline:    true,
 				Scale:            2,
+				XSpacing:         8,
 			},
 		)
 

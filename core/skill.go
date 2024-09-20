@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"github.com/asragi/yasoba-prototype/util"
 	"math"
 	"strconv"
@@ -43,6 +44,14 @@ func NewSkillServer() ServeSkillData {
 			},
 		},
 	)
+	register(
+		SkillIdLuneFireEnemy, []SkillDataRow{
+			&SkillSingleAttackRow{
+				Power: 5,
+				Type:  SkillTypeMagical,
+			},
+		},
+	)
 	return func(id SkillId) *SkillData {
 		return dict[id]
 	}
@@ -56,10 +65,12 @@ type SkillSingleAttackRow struct {
 }
 
 type SkillSingleAttackResult struct {
-	ActorId  ActorId
-	TargetId ActorId
-	SkillId  SkillId
-	Damage   Damage
+	ActorId        ActorId
+	TargetId       ActorId
+	SkillId        SkillId
+	Damage         Damage
+	IsTargetBeaten bool
+	AfterHp        HP
 }
 
 type SkillData struct {
@@ -79,13 +90,14 @@ type SkillApplyResult struct {
 	Rows []SkillApplyResultRow
 }
 
-type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
+type SkillCalculationFunc func(*SelectedAction) *SkillApplyResult
 
 func CreateSkillApply(
 	skillServer ServeSkillData,
 	supplyActor ActorSupplier,
+	updateActor UpdateActorFunc,
 	random util.EmitRandomFunc,
-) SkillApplyFunc {
+) SkillCalculationFunc {
 	return func(args *SelectedAction) *SkillApplyResult {
 		result := make([]SkillApplyResultRow, 0)
 		data := skillServer(args.Id)
@@ -103,12 +115,18 @@ func CreateSkillApply(
 					r.Type,
 					random,
 				)
+				afterHP := damage.Apply(target.HP)
+				target.HP = afterHP
+				fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
+				updateActor(target)
 				result = append(
 					result, &SkillSingleAttackResult{
-						ActorId:  args.Actor,
-						TargetId: args.Target[0],
-						SkillId:  args.Id,
-						Damage:   damage,
+						ActorId:        args.Actor,
+						TargetId:       args.Target[0],
+						SkillId:        args.Id,
+						Damage:         damage,
+						IsTargetBeaten: afterHP <= 0,
+						AfterHp:        afterHP,
 					},
 				)
 			}
@@ -117,16 +135,14 @@ func CreateSkillApply(
 	}
 }
 
-type SkillResultRow interface{}
-
-type SkillResult struct {
-	Rows []SkillResultRow
-}
-
 type Damage int
 
 func (d Damage) String() string {
 	return strconv.Itoa(int(d))
+}
+
+func (d Damage) Apply(hp HP) HP {
+	return HP(int(hp) - int(d))
 }
 
 func calculateNormalAttackDamage(

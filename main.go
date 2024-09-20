@@ -44,7 +44,7 @@ func init() {
 	battleSettingServer := game.CreateServeBattleSetting()
 	skillServer := core.NewSkillServer()
 	random := rand.Float64
-	applySkill := core.CreateSkillApply(skillServer, actorServer.Get, random)
+	applySkill := core.CreateSkillApply(skillServer, actorServer.Get, actorServer.Upsert, random)
 	battleSequenceServer := component.CreateServeBattleEventSequence()
 	prepareBattleSequence := component.CreateExecBattleEventSequence(
 		textServer,

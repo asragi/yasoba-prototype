@@ -8,7 +8,9 @@ import (
 type EventSequenceId string
 
 const (
-	EventSequenceIdLuneAttack EventSequenceId = "lune-attack"
+	EventSequenceIdLuneAttack        EventSequenceId = "lune-attack"
+	EventSequenceIdLuneFire          EventSequenceId = "lune-fire"
+	EventSequenceIdPunchingBagBeaten EventSequenceId = "punching-bag-beaten"
 )
 
 type BattleTextDisplay interface {
@@ -25,16 +27,21 @@ type SkillToSequenceFunc func(core.SkillId) EventSequenceId
 
 func CreateSkillToSequenceId() SkillToSequenceFunc {
 	dict := map[core.SkillId]EventSequenceId{
-		core.SkillIdLuneAttack: EventSequenceIdLuneAttack,
+		core.SkillIdLuneAttack:    EventSequenceIdLuneAttack,
+		core.SkillIdLuneFireEnemy: EventSequenceIdLuneFire,
 	}
 	return func(id core.SkillId) EventSequenceId {
-		return dict[id]
+		seq, ok := dict[id]
+		if !ok {
+			panic("sequence not found")
+		}
+		return seq
 	}
 }
 
 func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	dict := map[EventSequenceId]*BattleEventSequence{}
-	testData := []BattleEventRow{
+	normalAttack := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
 			Text:  core.TextIdLuneAttackDesc,
@@ -60,7 +67,45 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	}
 	dict[EventSequenceIdLuneAttack] = &BattleEventSequence{
 		Id:   EventSequenceIdLuneAttack,
-		Rows: testData,
+		Rows: normalAttack,
+	}
+	luneFire := []BattleEventRow{
+		&DisplayMessageEvent{
+			Frame: 1,
+			Text:  core.TextIdLuneFireDesc,
+		},
+		&PlayEffectEvent{
+			Frame:    1,
+			EffectId: widget.EffectIdLuneFire,
+		},
+		&ShakeActorAnimationEvent{
+			Frame: 66,
+		},
+		&DisplayDamageEvent{
+			Frame: 66,
+		},
+		&ChangeEmotionEvent{
+			Frame:       22,
+			EmotionType: BattleEmotionDamage,
+		},
+		&ChangeEmotionEvent{
+			Frame:       96,
+			EmotionType: BattleEmotionNormal,
+		},
+	}
+	dict[EventSequenceIdLuneFire] = &BattleEventSequence{
+		Id:   EventSequenceIdLuneFire,
+		Rows: luneFire,
+	}
+	punchingBagBeaten := []BattleEventRow{
+		&ChangeEmotionEvent{
+			Frame:       1,
+			EmotionType: BattleEmotionDamage,
+		},
+	}
+	dict[EventSequenceIdPunchingBagBeaten] = &BattleEventSequence{
+		Id:   EventSequenceIdPunchingBagBeaten,
+		Rows: punchingBagBeaten,
 	}
 	return func(id EventSequenceId) *BattleEventSequence {
 		return dict[id]
@@ -214,4 +259,56 @@ func (e *ChangeEmotionEvent) IsActive(frame int) bool {
 
 func (e *ChangeEmotionEvent) IsEnd(frame int) bool {
 	return e.Frame < frame
+}
+
+type EnemyDisappearEvent struct {
+	Frame int
+}
+
+func (e *EnemyDisappearEvent) IsActive(frame int) bool {
+	return e.Frame == frame
+}
+
+func (e *EnemyDisappearEvent) IsEnd(frame int) bool {
+	const disappearFrame = 60
+	return e.Frame+disappearFrame < frame
+}
+
+type BattleEventSequencer struct {
+	index    int
+	sequence []BattleSequenceFunc
+}
+
+func NewBattleEventSequencer() *BattleEventSequencer {
+	return &BattleEventSequencer{
+		index:    0,
+		sequence: []BattleSequenceFunc{},
+	}
+}
+
+func (s *BattleEventSequencer) Add(sequence BattleSequenceFunc) {
+	s.sequence = append(s.sequence, sequence)
+}
+
+func (s *BattleEventSequencer) Update() {
+	if s.index >= len(s.sequence) {
+		return
+	}
+	result := s.sequence[s.index]()
+	if result.IsEnd {
+		s.index++
+	}
+}
+
+func (s *BattleEventSequencer) IsEnd() bool {
+	return s.index >= len(s.sequence)
+}
+
+func (s *BattleEventSequencer) IsRun() bool {
+	return s.index < len(s.sequence)
+}
+
+func (s *BattleEventSequencer) Reset() {
+	s.index = 0
+	s.sequence = []BattleSequenceFunc{}
 }

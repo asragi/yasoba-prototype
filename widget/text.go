@@ -69,7 +69,7 @@ func (t *Text) Size() *frontend.Vector {
 	scale := float64(t.options.Scale)
 	// TODO: Size should be calculated from font Size
 	tmp := &frontend.Vector{
-		X: float64(len(t.characterSet[0]))*13 - 1,
+		X: float64(len(t.characterSet[0])*t.options.XSpacing) - 1,
 		Y: float64(len(t.characterSet))*16 - 4,
 	}
 	return tmp.Multiply(scale)
@@ -83,7 +83,6 @@ func (t *Text) drawText(
 	drawFunc frontend.DrawFunc,
 ) {
 	// TODO: characterSizeX should be calculated from font Size
-	const characterSizeX = 13
 	const lineHeight = 16
 	scale := float64(t.options.Scale)
 	diffSet := []*frontend.Vector{
@@ -97,7 +96,7 @@ func (t *Text) drawText(
 		result := make([]*frontend.Vector, t.textSize)
 		for i := 0; i < t.textSize; i++ {
 			tmp := frontend.Vector{
-				X: t.options.RelativePosition.X + float64(i*characterSizeX)*scale,
+				X: t.options.RelativePosition.X + float64(i*t.options.XSpacing)*scale,
 				Y: t.options.RelativePosition.Y,
 			}
 			result[i] = tmp.Sub(pivotDiff)
@@ -141,9 +140,11 @@ type TextOptions struct {
 	OutlineColor     color.Color
 	EnableOutline    bool
 	Scale            int
+	XSpacing         int
 }
 
 func NewText(options *TextOptions) *Text {
+	const characterSizeX = 13
 	if options.Color == nil {
 		options.Color = color.White
 	}
@@ -152,6 +153,9 @@ func NewText(options *TextOptions) *Text {
 	}
 	if options.Scale == 0 {
 		options.Scale = 1
+	}
+	if options.XSpacing == 0 {
+		options.XSpacing = characterSizeX
 	}
 	return &Text{
 		currentIndex: 0,

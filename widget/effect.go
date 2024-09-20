@@ -1,11 +1,15 @@
 package widget
 
-import "github.com/asragi/yasoba-prototype/frontend"
+import (
+	"fmt"
+	"github.com/asragi/yasoba-prototype/frontend"
+)
 
 type EffectId string
 
 const (
 	EffectIdLuneAttack EffectId = "lune_attack"
+	EffectIdLuneFire   EffectId = "lune_fire"
 )
 
 type Effect struct {
@@ -85,8 +89,16 @@ func CreateServeEffectData() ServeEffectDataFunc {
 			EffectId:    EffectIdLuneAttack,
 			AnimationId: frontend.AnimationBattleEffectImpact,
 		},
+		EffectIdLuneFire: {
+			EffectId:    EffectIdLuneFire,
+			AnimationId: frontend.AnimationBattleEffectFire,
+		},
 	}
 	return func(effectId EffectId) *EffectData {
-		return dict[effectId]
+		data, ok := dict[effectId]
+		if !ok {
+			panic(fmt.Sprintf("effect data not found: %s", effectId))
+		}
+		return data
 	}
 }
