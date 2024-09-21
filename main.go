@@ -61,6 +61,7 @@ func init() {
 	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newBattleActorGraphics)
 	effectData := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(effectData, resource)
+	serveEnemyView := component.NewServeEnemyViewData()
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
 		newSelectWindow,
@@ -75,6 +76,7 @@ func init() {
 		skillToSequence,
 		newBattleActorDisplay,
 		effectManager,
+		serveEnemyView,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{

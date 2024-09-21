@@ -83,6 +83,7 @@ func StandByNewBattleScene(
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleActorDisplay component.NewBattleActorDisplayFunc,
 	effectManager *widget.EffectManager,
+	serveEnemyView component.ServeEnemyViewData,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -100,6 +101,13 @@ func StandByNewBattleScene(
 			EnemyIds:             enemyIds,
 		}
 		battleResponse := initializeBattle(initializeRequest)
+		actorIdToEnemy := func() map[core.ActorId]core.EnemyId {
+			result := make(map[core.ActorId]core.EnemyId)
+			for _, pair := range battleResponse.EnemyIds {
+				result[pair.ActorId] = pair.EnemyId
+			}
+			return result
+		}()
 		actorNames := func() map[core.ActorId]core.TextId {
 			names := make(map[core.ActorId]core.TextId)
 			names[core.ActorLuneId] = core.TextIdLuneName
@@ -254,6 +262,7 @@ func StandByNewBattleScene(
 					Command:  selectedCommand,
 				},
 			)
+			battleScene.battleSequence.Reset()
 			skillId := response.Actions.Id
 			appliedResponse := skillApply(response.Actions)
 			sequenceId := skillToSequence(skillId)
@@ -279,8 +288,31 @@ func StandByNewBattleScene(
 					Target:     damageInformation,
 				},
 			)
-			battleScene.battleSequence.Reset()
 			battleScene.battleSequence.Add(sequence)
+			for _, row := range appliedResponse.Rows {
+				switch r := row.(type) {
+				case *core.SkillSingleAttackResult:
+					if !r.IsTargetBeaten {
+						return
+					}
+					actualTarget := r.TargetId
+					enemyId := actorIdToEnemy[actualTarget]
+					viewData := serveEnemyView(enemyId)
+					beatenSequence := newBattleSequence(
+						&component.EventSequenceArgs{
+							SequenceId: viewData.BeatenSequenceId,
+							Actor:      actualTarget,
+							Target: []*component.DamageInformation{
+								{
+									Target: actualTarget,
+									Damage: 0,
+								},
+							},
+						},
+					)
+					battleScene.battleSequence.Add(beatenSequence)
+				}
+			}
 		}
 		selectWindow = newSelectWindow(
 			&frontend.Vector{X: 80, Y: 0},

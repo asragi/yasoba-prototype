@@ -142,7 +142,7 @@ func (d Damage) String() string {
 }
 
 func (d Damage) Apply(hp HP) HP {
-	return HP(int(hp) - int(d))
+	return HP(math.Max(0, float64(hp)-float64(d)))
 }
 
 func calculateNormalAttackDamage(
