@@ -15,6 +15,7 @@ const (
 	TextIdPunchingBagName      TextId = "enemy_punching_bag_name"
 	TextIdLuneAttackDesc       TextId = "lune_attack_desc"
 	TextIdLuneFireDesc         TextId = "lune_fire_desc"
+	TextIdEnemyBeaten          TextId = "enemy_beaten_desc"
 )
 
 type ServeTextDataFunc func(id TextId) *TextData
@@ -46,6 +47,7 @@ func CreateServeTextData() ServeTextDataFunc {
 	register(TextIdPunchingBagName, "マシュマロス")
 	register(TextIdLuneAttackDesc, "たいあたりした！")
 	register(TextIdLuneFireDesc, "ファイアをとなえた！")
+	register(TextIdEnemyBeaten, "てきをやっつけた！")
 
 	return func(id TextId) *TextData {
 		if _, ok := dict[id]; !ok {

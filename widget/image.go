@@ -14,10 +14,15 @@ type Image struct {
 	depth            frontend.Depth
 	scale            *frontend.Vector
 	rect             *image.Rectangle
+	shader           *frontend.Shader
 }
 
 func (i *Image) Update(passedPosition *frontend.Vector) {
 	i.parentPosition = passedPosition
+	if i.shader == nil {
+		return
+	}
+	i.shader.Update()
 }
 
 func (i *Image) Draw(drawFunc frontend.DrawFunc) {
@@ -35,9 +40,20 @@ func (i *Image) Draw(drawFunc frontend.DrawFunc) {
 		i.parentPosition.Y+i.relativePosition.Y-pivotModification.Y,
 	)
 	imageToDraw := i.image.SubImage(*i.rect).(*ebiten.Image)
+
 	drawFunc(
 		func(screen *ebiten.Image) {
-			screen.DrawImage(imageToDraw, op)
+			if i.shader == nil {
+				screen.DrawImage(imageToDraw, op)
+				return
+			}
+			w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
+			img := ebiten.NewImage(w, h)
+			img.DrawImage(imageToDraw, op)
+			shaderOption := &ebiten.DrawRectShaderOptions{}
+			shaderOption.Images[0] = img
+			shaderOption.Uniforms = i.shader.GetUniforms()
+			screen.DrawRectShader(w, h, i.shader.GetShader(), shaderOption)
 		}, i.depth,
 	)
 }
@@ -71,6 +87,33 @@ func (i *Image) SetRelativePosition(position *frontend.Vector) {
 	i.relativePosition = position
 }
 
+func (i *Image) SetShader(shader *frontend.Shader) {
+	i.shader = shader
+	shader.Reset()
+}
+
+func (i *Image) SetShaderUniforms(key string, value interface{}) {
+	i.shader.SetUniforms(key, value)
+}
+
+type ImageOption struct {
+	customDraw CustomDrawFunc
+}
+
+type CustomDrawArgs struct {
+	relativePosition *frontend.Vector
+	parentPosition   *frontend.Vector
+	pivot            *frontend.Pivot
+	image            *ebiten.Image
+	depth            frontend.Depth
+	scale            *frontend.Vector
+	rect             *image.Rectangle
+	size             *frontend.Vector
+	drawFunc         frontend.DrawFunc
+}
+
+type CustomDrawFunc func(*CustomDrawArgs)
+
 func NewImage(
 	relativePosition *frontend.Vector,
 	pivot *frontend.Pivot,
@@ -85,5 +128,6 @@ func NewImage(
 		depth:            depth,
 		scale:            &frontend.Vector{X: 1, Y: 1},
 		rect:             &rect,
+		shader:           nil,
 	}
 }

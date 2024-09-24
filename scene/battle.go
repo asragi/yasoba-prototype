@@ -192,6 +192,7 @@ func StandByNewBattleScene(
 			battleActorDisplay.SetEmotion,
 			battleActorDisplay.SetDamage,
 			playEffect,
+			battleActorDisplay.SetDisappear,
 		)
 
 		var battleSelectWindow *component.BattleSelectWindow

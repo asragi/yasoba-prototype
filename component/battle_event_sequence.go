@@ -22,6 +22,7 @@ type ChangeEmotion func(core.ActorId, BattleEmotionType)
 type ShakeScreen func()
 type DisplayDamageFunc func(core.ActorId, core.Damage)
 type PlayEffect func(widget.EffectId, core.ActorId)
+type SetDisappear func(core.ActorId)
 
 type SkillToSequenceFunc func(core.SkillId) EventSequenceId
 
@@ -102,6 +103,13 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			Frame:       1,
 			EmotionType: BattleEmotionDamage,
 		},
+		&EnemyDisappearEvent{
+			Frame: 1,
+		},
+		&DisplayMessageEvent{
+			Frame: 1,
+			Text:  core.TextIdEnemyBeaten,
+		},
 	}
 	dict[EventSequenceIdPunchingBagBeaten] = &BattleEventSequence{
 		Id:   EventSequenceIdPunchingBagBeaten,
@@ -134,6 +142,7 @@ type PrepareBattleEventSequenceFunc func(
 	ChangeEmotion,
 	DisplayDamageFunc,
 	PlayEffect,
+	SetDisappear,
 ) NewBattleSequenceFunc
 
 func CreateExecBattleEventSequence(
@@ -146,6 +155,7 @@ func CreateExecBattleEventSequence(
 		changeEmotion ChangeEmotion,
 		displayDamage DisplayDamageFunc,
 		playEffect PlayEffect,
+		setDisappear SetDisappear,
 	) NewBattleSequenceFunc {
 		return func(args *EventSequenceArgs) BattleSequenceFunc {
 			sequence := serveEvent(args.SequenceId)
@@ -176,6 +186,9 @@ func CreateExecBattleEventSequence(
 					case *PlayEffectEvent:
 						target := args.Target[0]
 						playEffect(r.EffectId, target.Target)
+					case *EnemyDisappearEvent:
+						target := args.Target[0]
+						setDisappear(target.Target)
 					}
 				}
 				return &EventSequenceResult{

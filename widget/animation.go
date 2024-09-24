@@ -74,3 +74,7 @@ func (a *Animation) IsEnd() bool {
 	}
 	return a.frame >= a.data.Duration*a.data.AnimationCount
 }
+
+func (a *Animation) SetShader(shader *frontend.Shader) {
+	a.image.SetShader(shader)
+}

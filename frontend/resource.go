@@ -42,6 +42,7 @@ type ResourceManager struct {
 	textureDict   map[TextureId]*ebiten.Image
 	fontDict      map[FontId]*text.GoTextFace
 	animationDict map[AnimationId]*AnimationData
+	shaderDict    map[ShaderId]*ebiten.Shader
 }
 
 func (r *ResourceManager) GetTexture(id TextureId) *ebiten.Image {
@@ -60,6 +61,14 @@ func (r *ResourceManager) GetAnimationData(id AnimationId) *AnimationData {
 	return r.animationDict[id]
 }
 
+func (r *ResourceManager) GetShader(id ShaderId) *Shader {
+	s, ok := r.shaderDict[id]
+	if !ok {
+		panic(fmt.Sprintf("shader not found: %d", id))
+	}
+	return NewShader(s)
+}
+
 func CreateResourceManager() (*ResourceManager, error) {
 	handleError := func(err error) (*ResourceManager, error) {
 		return nil, fmt.Errorf("failed to create resource manager: %w", err)
@@ -71,6 +80,15 @@ func CreateResourceManager() (*ResourceManager, error) {
 			return err
 		}
 		textureDict[id] = ebiten.NewImageFromImage(img)
+		return nil
+	}
+	shaderDict := map[ShaderId]*ebiten.Shader{}
+	loadShader := func(data []byte, id ShaderId) error {
+		shader, err := ebiten.NewShader(data)
+		if err != nil {
+			return err
+		}
+		shaderDict[id] = shader
 		return nil
 	}
 	// TODO: この辺の処理go:generateとかで自動生成したいね
@@ -140,10 +158,14 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         false,
 		},
 	}
+	if err = loadShader(load.DisappearShader, ShaderDisappear); err != nil {
+		return handleError(err)
+	}
 	return &ResourceManager{
 		textureDict:   textureDict,
 		fontDict:      fontDict,
 		animationDict: animationDict,
+		shaderDict:    shaderDict,
 	}, nil
 }
 

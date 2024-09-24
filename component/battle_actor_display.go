@@ -11,6 +11,14 @@ type BattleActorDisplay struct {
 	actorGraphics map[core.ActorId]*BattleActorGraphics
 }
 
+func (d *BattleActorDisplay) SetDisappear(actorId core.ActorId) {
+	graphics, ok := d.actorGraphics[actorId]
+	if !ok {
+		return
+	}
+	graphics.SetDisappear()
+}
+
 func (d *BattleActorDisplay) SetDamage(actorId core.ActorId, damage core.Damage) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
@@ -92,11 +100,11 @@ func CreateNewBattleActorDisplay(
 }
 
 type BattleActorGraphics struct {
-	currentEmotion BattleEmotionType
-	animation      map[BattleEmotionType]*widget.Animation
-	displayDamage  *DisplayDamage
-	shake          *frontend.EmitShake
-
+	currentEmotion   BattleEmotionType
+	animation        map[BattleEmotionType]*widget.Animation
+	displayDamage    *DisplayDamage
+	shake            *frontend.EmitShake
+	disappearShader  *frontend.Shader
 	parentPosition   *frontend.Vector
 	relativePosition *frontend.Vector
 }
@@ -141,6 +149,12 @@ func (g *BattleActorGraphics) SetEmotion(emotion BattleEmotionType) {
 	g.getCurrentAnimation().Reset()
 }
 
+func (g *BattleActorGraphics) SetDisappear() {
+	for _, anim := range g.animation {
+		anim.SetShader(g.disappearShader)
+	}
+}
+
 type NewBattleActorGraphicsFunc func(
 	*frontend.Vector,
 	*frontend.Pivot,
@@ -182,6 +196,7 @@ func NewBattleActorGraphics(
 			parentPosition:   frontend.VectorZero,
 			relativePosition: relativePosition,
 			displayDamage:    newDisplayDamage(),
+			disappearShader:  resource.GetShader(frontend.ShaderDisappear),
 		}
 	}
 }
