@@ -21,6 +21,7 @@ type BattleScene struct {
 	battleSequence     *component.BattleEventSequencer
 	battleActorDisplay *component.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
+	shake              *frontend.EmitShake
 }
 
 func (s *BattleScene) OnSequenceEnd() {
@@ -29,10 +30,21 @@ func (s *BattleScene) OnSequenceEnd() {
 }
 
 func (s *BattleScene) Update() {
-	s.messageWindow.Update(frontend.VectorZero)
-	s.actorDisplay.Update(&frontend.Vector{X: 0, Y: 288}, &frontend.Vector{X: 384, Y: 288})
-	s.battleActorDisplay.Update(&frontend.Vector{X: 192, Y: 144})
+	s.shake.Update()
+	delta := s.shake.Delta()
+	zeroVector := frontend.VectorZero
+	zeroVector = zeroVector.Add(delta)
+	bottomLeft := &frontend.Vector{X: 0, Y: 288}
+	bottomLeft = bottomLeft.Add(delta)
+	bottomRight := &frontend.Vector{X: 384, Y: 288}
+	bottomRight = bottomRight.Add(delta)
+	center := &frontend.Vector{X: 192, Y: 144}
+	center = center.Add(delta)
 	mainCharacterTopLeftPosition := s.actorDisplay.GetMainCharacterTopLeftPosition()
+	mainCharacterTopLeftPosition = mainCharacterTopLeftPosition.Add(delta)
+	s.messageWindow.Update(zeroVector)
+	s.actorDisplay.Update(bottomLeft, bottomRight)
+	s.battleActorDisplay.Update(center)
 	s.battleSelectWindow.Update(mainCharacterTopLeftPosition)
 	s.targetSelectWindow.Update(mainCharacterTopLeftPosition)
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
@@ -240,6 +252,7 @@ func StandByNewBattleScene(
 			effectManager.CallEffect(effectId, position)
 		}
 
+		var battleScene *BattleScene
 		doShake := func(actorId core.ActorId) {
 			actor := serveActor(actorId)
 			if actor.IsEnemy() {
@@ -250,7 +263,7 @@ func StandByNewBattleScene(
 				actorDisplay.ShakeSubActor()
 				return
 			}
-
+			battleScene.shake.Shake(frontend.ShakeDefaultAmplitude, frontend.ShakeDefaultPeriod)
 		}
 
 		// TODO: Expand these functions to handle player actor
@@ -263,7 +276,7 @@ func StandByNewBattleScene(
 			battleEnemyDisplay.SetDisappear,
 		)
 
-		battleScene := &BattleScene{
+		battleScene = &BattleScene{
 			messageWindow:      messageWindow,
 			battleSelectWindow: battleSelectWindow,
 			actorDisplay:       actorDisplay,
@@ -273,6 +286,7 @@ func StandByNewBattleScene(
 			battleSequence:     component.NewBattleEventSequencer(),
 			battleActorDisplay: battleEnemyDisplay,
 			effectManager:      effectManager,
+			shake:              frontend.NewShake(),
 		}
 
 		playSequence := createPlayBattleSequence(
