@@ -12,6 +12,11 @@ type EmitShake struct {
 	frame     int
 }
 
+const (
+	ShakeDefaultAmplitude = 3
+	ShakeDefaultPeriod    = 12
+)
+
 func NewShake() *EmitShake {
 	return &EmitShake{
 		amplitude: 0,

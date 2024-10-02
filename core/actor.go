@@ -29,6 +29,18 @@ type Actor struct {
 	Side  ActorSide
 }
 
+func (a *Actor) IsMainActor() bool {
+	return a.Id == ActorLuneId
+}
+
+func (a *Actor) IsSubActor() bool {
+	return a.Id == ActorSunnyId
+}
+
+func (a *Actor) IsEnemy() bool {
+	return a.Side == ActorSideEnemy
+}
+
 type ServeActorCharacterFunc func(CharacterId) *Actor
 
 func characterToActor(character *CharacterData, id ActorId) *Actor {

@@ -5,14 +5,23 @@ import "github.com/asragi/yasoba-prototype/frontend"
 type BattleActorDisplay struct {
 	mainActorDisplay *FaceWindow
 	subActorDisplay  *FaceWindow
+	subActorShake    *frontend.EmitShake
+}
+
+func (d *BattleActorDisplay) ShakeSubActor() {
+	d.subActorShake.Shake(
+		frontend.ShakeDefaultAmplitude,
+		frontend.ShakeDefaultPeriod,
+	)
 }
 
 func (d *BattleActorDisplay) Update(
 	bottomLeftPosition,
 	bottomRightPosition *frontend.Vector,
 ) {
+	d.subActorShake.Update()
 	d.mainActorDisplay.Update(bottomLeftPosition)
-	d.subActorDisplay.Update(bottomRightPosition)
+	d.subActorDisplay.Update(bottomRightPosition.Add(d.subActorShake.Delta()))
 }
 
 func (d *BattleActorDisplay) Draw(
@@ -53,6 +62,7 @@ func CreateNewBattleActorDisplay(
 				frontend.PivotBottomRight,
 				frontend.TextureFaceSunnyNormal,
 			),
+			subActorShake: frontend.NewShake(),
 		}
 	}
 }

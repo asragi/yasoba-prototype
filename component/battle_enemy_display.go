@@ -127,9 +127,7 @@ func (g *BattleEnemyGraphics) SetDamage(damage core.Damage) {
 }
 
 func (g *BattleEnemyGraphics) DoShake() {
-	const amplitude = 3
-	const period = 12
-	g.shake.Shake(amplitude, period)
+	g.shake.Shake(frontend.ShakeDefaultAmplitude, frontend.ShakeDefaultPeriod)
 }
 
 func (g *BattleEnemyGraphics) Update(parentCenterPosition *frontend.Vector) {

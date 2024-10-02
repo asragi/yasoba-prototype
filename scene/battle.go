@@ -240,9 +240,23 @@ func StandByNewBattleScene(
 			effectManager.CallEffect(effectId, position)
 		}
 
+		doShake := func(actorId core.ActorId) {
+			actor := serveActor(actorId)
+			if actor.IsEnemy() {
+				battleEnemyDisplay.DoShake(actorId)
+				return
+			}
+			if actor.IsSubActor() {
+				actorDisplay.ShakeSubActor()
+				return
+			}
+
+		}
+
+		// TODO: Expand these functions to handle player actor
 		newBattleSequence := createNewBattleSequence(
 			messageWindow,
-			battleEnemyDisplay.DoShake,
+			doShake,
 			battleEnemyDisplay.SetEmotion,
 			battleEnemyDisplay.SetDamage,
 			playEffect,
