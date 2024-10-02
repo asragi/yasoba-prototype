@@ -62,6 +62,15 @@ func init() {
 	effectData := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(effectData, resource)
 	serveEnemyView := component.NewServeEnemyViewData()
+	choiceTarget := core.CreateChoiceSkillTarget(random)
+	newChoiceRandomAction := core.StandByCreateRandomAction(
+		random,
+		skillServer,
+		choiceTarget,
+	)
+	choiceAction := core.CreateNewChoiceAction(newChoiceRandomAction)
+	decideActionOrder := core.CreateDecideActionOrder(actorServer)
+	serveBattleState := core.CreateServeBattleState(actorServer)
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
 		newSelectWindow,
@@ -77,6 +86,9 @@ func init() {
 		newBattleActorDisplay,
 		effectManager,
 		serveEnemyView,
+		choiceAction,
+		serveBattleState,
+		decideActionOrder,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{

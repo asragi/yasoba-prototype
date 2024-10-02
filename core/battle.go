@@ -77,20 +77,28 @@ func CreateProcessPlayerCommand(supplyActor ActorSupplier) ProcessPlayerCommandF
 	}
 }
 
-func decideActionOrder(actorServer ActorServer) []ActorId {
-	var result []ActorId
-	mainActorId := ActorLuneId
-	actors := actorServer.GetAllActor()
-	actorSet := util.NewSet(actors)
-	subActor, err := actorSet.Find(func(a *Actor) bool { return a.Id != mainActorId && a.Side == ActorSidePlayer })
-	if err == nil {
-		result = append(result, subActor.Id)
+type DecideActionOrderFunc func() []ActorId
+
+type AllActorServer interface {
+	GetAllActor() []*Actor
+}
+
+func CreateDecideActionOrder(actorServer AllActorServer) DecideActionOrderFunc {
+	return func() []ActorId {
+		var result []ActorId
+		mainActorId := ActorLuneId
+		actors := actorServer.GetAllActor()
+		actorSet := util.NewSet(actors)
+		subActor, err := actorSet.Find(func(a *Actor) bool { return a.Id != mainActorId && a.Side == ActorSidePlayer })
+		if err == nil {
+			result = append(result, subActor.Id)
+		}
+		result = append(result, mainActorId)
+		enemies := actorSet.Filter(func(a *Actor) bool { return a.Side == ActorSideEnemy })
+		enemyIds := util.SetSelect(enemies, func(a *Actor) ActorId { return a.Id })
+		result = append(result, enemyIds.ToArray()...)
+		return result
 	}
-	result = append(result, mainActorId)
-	enemies := actorSet.Filter(func(a *Actor) bool { return a.Side == ActorSideEnemy })
-	enemyIds := util.SetSelect(enemies, func(a *Actor) ActorId { return a.Id })
-	result = append(result, enemyIds.ToArray()...)
-	return result
 }
 
 type InitializeBattleRequest struct {

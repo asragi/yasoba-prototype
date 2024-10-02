@@ -14,6 +14,7 @@ const (
 	SkillIdLuneFireEnemy    SkillId = "lune-fire-enemy"
 	SkillIdLuneFireAlly     SkillId = "lune-fire-ally"
 	SkillIdLuneThunderEnemy SkillId = "lune-thunder-enemy"
+	SkillIdNormalTackle     SkillId = "normal-tackle"
 )
 
 type SkillType int
@@ -26,18 +27,24 @@ const (
 type SkillPower float64
 type SkillTargetType int
 
+const (
+	SkillTargetTypeNone SkillTargetType = iota
+	SkillTargetTypeSingleOther
+)
+
 type ServeSkillData func(id SkillId) *SkillData
 
 func NewSkillServer() ServeSkillData {
 	dict := map[SkillId]*SkillData{}
-	register := func(id SkillId, rows []SkillDataRow) {
+	register := func(id SkillId, targetType SkillTargetType, rows []SkillDataRow) {
 		dict[id] = &SkillData{
-			Id:   id,
-			Rows: rows,
+			Id:         id,
+			TargetType: targetType,
+			Rows:       rows,
 		}
 	}
 	register(
-		SkillIdLuneAttack, []SkillDataRow{
+		SkillIdLuneAttack, SkillTargetTypeSingleOther, []SkillDataRow{
 			&SkillSingleAttackRow{
 				Power: 1.0,
 				Type:  SkillTypePhysical,
@@ -45,15 +52,27 @@ func NewSkillServer() ServeSkillData {
 		},
 	)
 	register(
-		SkillIdLuneFireEnemy, []SkillDataRow{
+		SkillIdLuneFireEnemy, SkillTargetTypeSingleOther, []SkillDataRow{
 			&SkillSingleAttackRow{
 				Power: 5,
 				Type:  SkillTypeMagical,
 			},
 		},
 	)
+	register(
+		SkillIdNormalTackle, SkillTargetTypeSingleOther, []SkillDataRow{
+			&SkillSingleAttackRow{
+				Power: 1.0,
+				Type:  SkillTypePhysical,
+			},
+		},
+	)
 	return func(id SkillId) *SkillData {
-		return dict[id]
+		skill, ok := dict[id]
+		if !ok {
+			panic("skill not found")
+		}
+		return skill
 	}
 }
 
@@ -74,8 +93,9 @@ type SkillSingleAttackResult struct {
 }
 
 type SkillData struct {
-	Id   SkillId
-	Rows []SkillDataRow
+	Id         SkillId
+	TargetType SkillTargetType
+	Rows       []SkillDataRow
 }
 
 type SelectedAction struct {
@@ -87,17 +107,21 @@ type SelectedAction struct {
 
 type SkillApplyResultRow interface{}
 type SkillApplyResult struct {
-	Rows []SkillApplyResultRow
+	Actor   ActorId
+	SkillId SkillId
+	Rows    []SkillApplyResultRow
 }
 
-type SkillCalculationFunc func(*SelectedAction) *SkillApplyResult
+// SkillApplyFunc is a function that calculate skill effect to the target
+// and UPDATE actors status.
+type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
 
 func CreateSkillApply(
 	skillServer ServeSkillData,
 	supplyActor ActorSupplier,
 	updateActor UpdateActorFunc,
 	random util.EmitRandomFunc,
-) SkillCalculationFunc {
+) SkillApplyFunc {
 	return func(args *SelectedAction) *SkillApplyResult {
 		result := make([]SkillApplyResultRow, 0)
 		data := skillServer(args.Id)
@@ -117,7 +141,9 @@ func CreateSkillApply(
 				)
 				afterHP := damage.Apply(target.HP)
 				target.HP = afterHP
+				fmt.Printf("actor: %s, target: %s\n", actor.Id, target.Id)
 				fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
+				fmt.Println("---")
 				updateActor(target)
 				result = append(
 					result, &SkillSingleAttackResult{
@@ -131,7 +157,11 @@ func CreateSkillApply(
 				)
 			}
 		}
-		return &SkillApplyResult{Rows: result}
+		return &SkillApplyResult{
+			Actor:   args.Actor,
+			SkillId: args.Id,
+			Rows:    result,
+		}
 	}
 }
 
@@ -154,8 +184,6 @@ func calculateNormalAttackDamage(
 	attackType SkillType,
 	random util.EmitRandomFunc,
 ) Damage {
-	// 同パラメータのキャラクターがPower=1.0の攻撃を受けた場合に失うHPの割合を表す係数
-	const damageRate = 0.3
 	// うまいことやって出た数字
 	const baseValue = 7.0
 	attackValue := func() float64 {

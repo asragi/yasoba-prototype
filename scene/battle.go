@@ -77,13 +77,16 @@ func StandByNewBattleScene(
 	serveEnemyName core.EnemyNameServer,
 	initializeBattle core.InitializeBattleFunc,
 	postCommand core.PostCommandFunc,
-	skillApply core.SkillCalculationFunc,
+	skillApply core.SkillApplyFunc,
 	getBattleSetting game.ServeBattleSetting,
 	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleActorDisplay component.NewBattleActorDisplayFunc,
 	effectManager *widget.EffectManager,
 	serveEnemyView component.ServeEnemyViewData,
+	newChoiceAction core.NewChoiceActionFunc,
+	serveBattleState core.ServeBattleState,
+	decideActionOrder core.DecideActionOrderFunc,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -94,18 +97,29 @@ func StandByNewBattleScene(
 			}
 			return ids
 		}()
+		subCharacterId := core.CharacterSunnyId
 		initializeRequest := &core.InitializeBattleRequest{
 			// TODO: variables must be provided by args
 			MainActorCharacterId: core.CharacterLuneId,
-			SubActorCharacterId:  core.CharacterSunnyId,
+			SubActorCharacterId:  subCharacterId,
 			EnemyIds:             enemyIds,
 		}
 		battleResponse := initializeBattle(initializeRequest)
+		mainActorId := battleResponse.MainActorId
 		actorIdToEnemy := func() map[core.ActorId]core.EnemyId {
 			result := make(map[core.ActorId]core.EnemyId)
 			for _, pair := range battleResponse.EnemyIds {
 				result[pair.ActorId] = pair.EnemyId
 			}
+			return result
+		}()
+		choiceActionList := func() map[core.ActorId]core.DecideActionFunc {
+			result := make(map[core.ActorId]core.DecideActionFunc)
+			for key, value := range actorIdToEnemy {
+				result[key] = newChoiceAction(core.EnemyIdToChoiceActionId(value))
+			}
+			subActorId := battleResponse.SubActorId
+			result[subActorId] = newChoiceAction(core.CharacterIdToChoiceActionId(subCharacterId))
 			return result
 		}()
 		actorNames := func() map[core.ActorId]core.TextId {
@@ -251,25 +265,57 @@ func StandByNewBattleScene(
 			battleSequence:     component.NewBattleEventSequencer(),
 		}
 
-		onTargetSelect := func(index int) {
+		playSequence := createPlayBattleSequence(
+			skillToSequence,
+			newBattleSequence,
+			battleScene.battleSequence.Add,
+			actorIdToEnemy,
+			serveEnemyView,
+		)
+		closeWindowOnTargetSelect := func() {
 			battleSelectWindow.Close()
 			selectWindow.Close()
 			input.Set(frontend.InputReceiverEmptyInstance)
-			target := allActorId[index]
-			response := postCommand(
-				&core.PostCommandRequest{
-					ActorId:  core.ActorLuneId,
-					TargetId: []core.ActorId{target},
-					Command:  selectedCommand,
-				},
-			)
-			battleScene.battleSequence.Reset()
-			skillId := response.Actions.Id
-			appliedResponse := skillApply(response.Actions)
+		}
+		onTargetSelect := createOnTargetSelect(
+			mainActorId,
+			closeWindowOnTargetSelect,
+			func(index int) core.ActorId { return allActorId[index] },
+			func() core.PlayerCommand { return selectedCommand },
+			postCommand,
+			battleScene.battleSequence.Reset,
+			skillApply,
+			decideActionOrder,
+			func(id core.ActorId) core.DecideActionFunc { return choiceActionList[id] },
+			serveBattleState,
+			playSequence,
+		)
+		selectWindow = newSelectWindow(
+			&frontend.Vector{X: 80, Y: 0},
+			frontend.PivotBottomLeft,
+			frontend.DepthWindow,
+			allTextId,
+			onTargetSelect,
+		)
+		battleScene.targetSelectWindow = selectWindow
+		return battleScene
+	}
+}
+
+func createPlayBattleSequence(
+	skillToSequence component.SkillToSequenceFunc,
+	newBattleSequence component.NewBattleSequenceFunc,
+	addBattleSequence func(component.BattleSequenceFunc),
+	actorIdToEnemy map[core.ActorId]core.EnemyId,
+	serveEnemyView component.ServeEnemyViewData,
+) func([]*core.SkillApplyResult) {
+	return func(skillApplyResultSet []*core.SkillApplyResult) {
+		for _, skillApplyResult := range skillApplyResultSet {
+			skillId := skillApplyResult.SkillId
 			sequenceId := skillToSequence(skillId)
 			damageInformation := func() []*component.DamageInformation {
 				result := make([]*component.DamageInformation, 0)
-				for _, row := range appliedResponse.Rows {
+				for _, row := range skillApplyResult.Rows {
 					switch r := row.(type) {
 					case *core.SkillSingleAttackResult:
 						result = append(
@@ -285,12 +331,12 @@ func StandByNewBattleScene(
 			sequence := newBattleSequence(
 				&component.EventSequenceArgs{
 					SequenceId: sequenceId,
-					Actor:      response.Actions.Actor,
+					Actor:      skillApplyResult.Actor,
 					Target:     damageInformation,
 				},
 			)
-			battleScene.battleSequence.Add(sequence)
-			for _, row := range appliedResponse.Rows {
+			addBattleSequence(sequence)
+			for _, row := range skillApplyResult.Rows {
 				switch r := row.(type) {
 				case *core.SkillSingleAttackResult:
 					if !r.IsTargetBeaten {
@@ -311,18 +357,61 @@ func StandByNewBattleScene(
 							},
 						},
 					)
-					battleScene.battleSequence.Add(beatenSequence)
+					addBattleSequence(beatenSequence)
 				}
 			}
 		}
-		selectWindow = newSelectWindow(
-			&frontend.Vector{X: 80, Y: 0},
-			frontend.PivotBottomLeft,
-			frontend.DepthWindow,
-			allTextId,
-			onTargetSelect,
+	}
+}
+
+func createOnTargetSelect(
+	mainActorId core.ActorId,
+	closeWindow func(),
+	indexToActor func(int) core.ActorId,
+	serveSelectedCommand func() core.PlayerCommand,
+	postCommand func(*core.PostCommandRequest) *core.PostCommandResponse,
+	resetBattleSequence func(),
+	skillApply func(*core.SelectedAction) *core.SkillApplyResult,
+	decideActionOrder core.DecideActionOrderFunc,
+	serveDecideAction func(core.ActorId) core.DecideActionFunc,
+	serveState core.ServeBattleState,
+	playSequence func([]*core.SkillApplyResult),
+) func(int) {
+	return func(index int) {
+		closeWindow()
+		target := indexToActor(index)
+		command := serveSelectedCommand()
+		response := postCommand(
+			&core.PostCommandRequest{
+				ActorId:  mainActorId,
+				TargetId: []core.ActorId{target},
+				Command:  command,
+			},
 		)
-		battleScene.targetSelectWindow = selectWindow
-		return battleScene
+		var appliedResponses []*core.SkillApplyResult
+		playerActionResponse := skillApply(response.Actions)
+		appliedResponses = append(appliedResponses, playerActionResponse)
+
+		orderedActorIdSet := decideActionOrder()
+		for _, actorId := range orderedActorIdSet {
+			if actorId == core.ActorLuneId {
+				// This block should not be executed
+				// TODO: Return to player action if main actor's actorId is given
+				continue
+			}
+			decideActionFunction := serveDecideAction(actorId)
+			state := serveState()
+			decidedAction := decideActionFunction(state)
+			enemyActionRequest := &core.SelectedAction{
+				Id:       decidedAction.SelectedSkill,
+				Actor:    actorId,
+				SubActor: core.ActorEmptyId,
+				Target:   decidedAction.TargetActorIds,
+			}
+			appliedResponses = append(appliedResponses, skillApply(enemyActionRequest))
+		}
+
+		resetBattleSequence()
+		playSequence(appliedResponses)
 	}
 }

@@ -29,7 +29,7 @@ func CreateCharacterServer() ServeCharacterFunc {
 		Name:  TextIdLuneName,
 		MaxHP: 40,
 		HP:    40,
-		ATK:   22,
+		ATK:   6,
 		MAG:   30,
 		DEF:   6,
 		SPD:   6,

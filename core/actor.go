@@ -86,6 +86,14 @@ func (s *InMemoryActorServer) Upsert(actor *Actor) {
 	s.actors[actor.Id] = actor
 }
 
+func (s *InMemoryActorServer) GetAllActor() []*Actor {
+	var result []*Actor
+	for _, actor := range s.actors {
+		result = append(result, actor)
+	}
+	return result
+}
+
 func (s *InMemoryActorServer) ClearAll() {
 	s.actors = map[ActorId]*Actor{}
 }
