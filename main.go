@@ -58,7 +58,8 @@ func init() {
 		enemyGraphicServer,
 		newDisplayDamage,
 	)
-	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newBattleActorGraphics)
+	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newFaceWindow)
+	newBattleEnemyDisplay := component.CreateNewBattleEnemyDisplay(newBattleActorGraphics)
 	effectData := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(effectData, resource)
 	serveEnemyView := component.NewServeEnemyViewData()
@@ -75,7 +76,7 @@ func init() {
 		newMessageWindow,
 		newSelectWindow,
 		newBattleSelectWindow,
-		newFaceWindow,
+		newBattleActorDisplay,
 		core.CreateEnemyNameServer(),
 		initializeBattle,
 		postCommand,
@@ -83,12 +84,13 @@ func init() {
 		battleSettingServer,
 		prepareBattleSequence,
 		skillToSequence,
-		newBattleActorDisplay,
+		newBattleEnemyDisplay,
 		effectManager,
 		serveEnemyView,
 		choiceAction,
 		serveBattleState,
 		decideActionOrder,
+		actorServer.Get,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{

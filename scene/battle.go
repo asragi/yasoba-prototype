@@ -13,14 +13,13 @@ import (
 type BattleScene struct {
 	messageWindow      *component.MessageWindow
 	battleSelectWindow *component.BattleSelectWindow
-	faceWindow         *component.FaceWindow
-	faceSubWindow      *component.FaceWindow
+	actorDisplay       *component.BattleActorDisplay
 	enemyData          []*core.EnemyIdPair
 	actorNames         map[core.ActorId]core.TextId
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager
 	battleSequence     *component.BattleEventSequencer
-	battleActorDisplay *component.BattleActorDisplay
+	battleActorDisplay *component.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
 }
 
@@ -31,11 +30,11 @@ func (s *BattleScene) OnSequenceEnd() {
 
 func (s *BattleScene) Update() {
 	s.messageWindow.Update(frontend.VectorZero)
-	s.faceWindow.Update(&frontend.Vector{X: 0, Y: 288})
+	s.actorDisplay.Update(&frontend.Vector{X: 0, Y: 288}, &frontend.Vector{X: 384, Y: 288})
 	s.battleActorDisplay.Update(&frontend.Vector{X: 192, Y: 144})
-	s.faceSubWindow.Update(&frontend.Vector{X: 384, Y: 288})
-	s.battleSelectWindow.Update(s.faceWindow.GetTopLeftPosition())
-	s.targetSelectWindow.Update(s.faceWindow.GetTopLeftPosition())
+	mainCharacterTopLeftPosition := s.actorDisplay.GetMainCharacterTopLeftPosition()
+	s.battleSelectWindow.Update(mainCharacterTopLeftPosition)
+	s.targetSelectWindow.Update(mainCharacterTopLeftPosition)
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		s.messageWindow.Shake(2, 10)
 	}
@@ -54,8 +53,7 @@ func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.battleSelectWindow.Draw(drawFunc)
 	s.targetSelectWindow.Draw(drawFunc)
 	s.battleActorDisplay.Draw(drawFunc)
-	s.faceWindow.Draw(drawFunc)
-	s.faceSubWindow.Draw(drawFunc)
+	s.actorDisplay.Draw(drawFunc)
 	s.effectManager.Draw(drawFunc)
 }
 
@@ -73,7 +71,7 @@ func StandByNewBattleScene(
 	newMessageWindow component.NewMessageWindowFunc,
 	newSelectWindow component.NewSelectWindowFunc,
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
-	newFaceWindow component.NewFaceWindowFunc,
+	newBattleActorDisplay component.NewBattleActorDisplayFunc,
 	serveEnemyName core.EnemyNameServer,
 	initializeBattle core.InitializeBattleFunc,
 	postCommand core.PostCommandFunc,
@@ -81,12 +79,13 @@ func StandByNewBattleScene(
 	getBattleSetting game.ServeBattleSetting,
 	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
 	skillToSequence component.SkillToSequenceFunc,
-	newBattleActorDisplay component.NewBattleActorDisplayFunc,
+	newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc,
 	effectManager *widget.EffectManager,
 	serveEnemyView component.ServeEnemyViewData,
 	newChoiceAction core.NewChoiceActionFunc,
 	serveBattleState core.ServeBattleState,
 	decideActionOrder core.DecideActionOrderFunc,
+	serveActor core.ActorSupplier,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -190,23 +189,9 @@ func StandByNewBattleScene(
 			}
 			return result
 		}()
-		battleActorDisplay := newBattleActorDisplay(
+		battleEnemyDisplay := newBattleEnemyDisplay(
 			displayArgs,
 			frontend.DepthEnemy,
-		)
-
-		playEffect := func(effectId widget.EffectId, target core.ActorId) {
-			position := battleActorDisplay.GetPosition(target)
-			effectManager.CallEffect(effectId, position)
-		}
-
-		newBattleSequence := createNewBattleSequence(
-			messageWindow,
-			battleActorDisplay.DoShake,
-			battleActorDisplay.SetEmotion,
-			battleActorDisplay.SetDamage,
-			playEffect,
-			battleActorDisplay.SetDisappear,
 		)
 
 		var battleSelectWindow *component.BattleSelectWindow
@@ -239,30 +224,41 @@ func StandByNewBattleScene(
 		input.Set(battleSelectWindow)
 		battleSelectWindow.Open()
 
-		faceWindow := newFaceWindow(
-			&frontend.Vector{X: 0, Y: 0},
-			frontend.DepthWindow,
-			frontend.PivotBottomLeft,
-			frontend.TextureFaceLuneNormal,
-		)
-		faceSubWindow := newFaceWindow(
-			&frontend.Vector{X: 0, Y: 0},
-			frontend.DepthWindow,
-			frontend.PivotBottomRight,
-			frontend.TextureFaceSunnyNormal,
+		actorDisplay := newBattleActorDisplay()
+
+		playEffect := func(effectId widget.EffectId, target core.ActorId) {
+			actor := serveActor(target)
+			position := func() *frontend.Vector {
+				if actor.Side == core.ActorSideEnemy {
+					return battleEnemyDisplay.GetPosition(target)
+				}
+				if actor.Id == core.ActorSunnyId {
+					return actorDisplay.GetSubCharacterPosition()
+				}
+				return actorDisplay.GetMainCharacterPosition()
+			}()
+			effectManager.CallEffect(effectId, position)
+		}
+
+		newBattleSequence := createNewBattleSequence(
+			messageWindow,
+			battleEnemyDisplay.DoShake,
+			battleEnemyDisplay.SetEmotion,
+			battleEnemyDisplay.SetDamage,
+			playEffect,
+			battleEnemyDisplay.SetDisappear,
 		)
 
 		battleScene := &BattleScene{
 			messageWindow:      messageWindow,
 			battleSelectWindow: battleSelectWindow,
-			faceWindow:         faceWindow,
-			faceSubWindow:      faceSubWindow,
+			actorDisplay:       actorDisplay,
 			enemyData:          battleResponse.EnemyIds,
 			actorNames:         actorNames,
 			input:              input,
-			effectManager:      effectManager,
-			battleActorDisplay: battleActorDisplay,
 			battleSequence:     component.NewBattleEventSequencer(),
+			battleActorDisplay: battleEnemyDisplay,
+			effectManager:      effectManager,
 		}
 
 		playSequence := createPlayBattleSequence(
@@ -340,24 +336,29 @@ func createPlayBattleSequence(
 				switch r := row.(type) {
 				case *core.SkillSingleAttackResult:
 					if !r.IsTargetBeaten {
-						return
+						continue
 					}
 					actualTarget := r.TargetId
-					enemyId := actorIdToEnemy[actualTarget]
-					viewData := serveEnemyView(enemyId)
-					beatenSequence := newBattleSequence(
-						&component.EventSequenceArgs{
-							SequenceId: viewData.BeatenSequenceId,
-							Actor:      actualTarget,
-							Target: []*component.DamageInformation{
-								{
-									Target: actualTarget,
-									Damage: 0,
+					targetSide := r.TargetSide
+					if targetSide == core.ActorSideEnemy {
+						enemyId := actorIdToEnemy[actualTarget]
+						viewData := serveEnemyView(enemyId)
+						beatenSequence := newBattleSequence(
+							&component.EventSequenceArgs{
+								SequenceId: viewData.BeatenSequenceId,
+								Actor:      actualTarget,
+								Target: []*component.DamageInformation{
+									{
+										Target: actualTarget,
+										Damage: 0,
+									},
 								},
 							},
-						},
-					)
-					addBattleSequence(beatenSequence)
+						)
+						addBattleSequence(beatenSequence)
+						return
+					}
+					// TODO: Implement player beaten sequence
 				}
 			}
 		}

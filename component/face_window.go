@@ -31,6 +31,10 @@ func (f *FaceWindow) GetTopLeftPosition() *frontend.Vector {
 	return f.window.GetPositionUpperLeft()
 }
 
+func (f *FaceWindow) GetCenterPosition() *frontend.Vector {
+	return f.window.GetPositionCenter()
+}
+
 func StandByNewFaceWindow(resource *frontend.ResourceManager) NewFaceWindowFunc {
 	return func(
 		relativePosition *frontend.Vector,

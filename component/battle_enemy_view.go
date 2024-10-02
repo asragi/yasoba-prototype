@@ -1,6 +1,9 @@
 package component
 
-import "github.com/asragi/yasoba-prototype/core"
+import (
+	"fmt"
+	"github.com/asragi/yasoba-prototype/core"
+)
 
 type EnemyViewData struct {
 	EnemyId          core.EnemyId
@@ -19,6 +22,10 @@ func NewServeEnemyViewData() ServeEnemyViewData {
 	}
 	register(core.EnemyPunchingBagId, EventSequenceIdPunchingBagBeaten)
 	return func(id core.EnemyId) *EnemyViewData {
-		return dict[id]
+		data, ok := dict[id]
+		if !ok {
+			panic(fmt.Sprintf("enemy view data not found: %v", id))
+		}
+		return data
 	}
 }

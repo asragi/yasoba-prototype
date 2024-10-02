@@ -1,230 +1,58 @@
 package component
 
-import (
-	"github.com/asragi/yasoba-prototype/core"
-	"github.com/asragi/yasoba-prototype/frontend"
-	"github.com/asragi/yasoba-prototype/widget"
-)
+import "github.com/asragi/yasoba-prototype/frontend"
 
 type BattleActorDisplay struct {
-	actorIds      []core.ActorId
-	actorGraphics map[core.ActorId]*BattleActorGraphics
+	mainActorDisplay *FaceWindow
+	subActorDisplay  *FaceWindow
 }
 
-func (d *BattleActorDisplay) SetDisappear(actorId core.ActorId) {
-	graphics, ok := d.actorGraphics[actorId]
-	if !ok {
-		return
-	}
-	graphics.SetDisappear()
+func (d *BattleActorDisplay) Update(
+	bottomLeftPosition,
+	bottomRightPosition *frontend.Vector,
+) {
+	d.mainActorDisplay.Update(bottomLeftPosition)
+	d.subActorDisplay.Update(bottomRightPosition)
 }
 
-func (d *BattleActorDisplay) SetDamage(actorId core.ActorId, damage core.Damage) {
-	graphics, ok := d.actorGraphics[actorId]
-	if !ok {
-		return
-	}
-	graphics.SetDamage(damage)
+func (d *BattleActorDisplay) Draw(
+	drawFunc frontend.DrawFunc,
+) {
+	d.mainActorDisplay.Draw(drawFunc)
+	d.subActorDisplay.Draw(drawFunc)
 }
 
-func (d *BattleActorDisplay) DoShake(actorId core.ActorId) {
-	graphics, ok := d.actorGraphics[actorId]
-	if !ok {
-		return
-	}
-	graphics.DoShake()
+func (d *BattleActorDisplay) GetMainCharacterPosition() *frontend.Vector {
+	return d.mainActorDisplay.GetCenterPosition()
 }
 
-func (d *BattleActorDisplay) SetEmotion(actorId core.ActorId, emotion BattleEmotionType) {
-	graphics, ok := d.actorGraphics[actorId]
-	if !ok {
-		return
-	}
-	graphics.SetEmotion(emotion)
+func (d *BattleActorDisplay) GetSubCharacterPosition() *frontend.Vector {
+	return d.subActorDisplay.GetCenterPosition()
 }
 
-func (d *BattleActorDisplay) GetPosition(id core.ActorId) *frontend.Vector {
-	graphics, ok := d.actorGraphics[id]
-	if !ok {
-		return nil
-	}
-	return graphics.GetDefinitivePosition()
+func (d *BattleActorDisplay) GetMainCharacterTopLeftPosition() *frontend.Vector {
+	return d.mainActorDisplay.GetTopLeftPosition()
 }
 
-func (d *BattleActorDisplay) Update(parentCenterPosition *frontend.Vector) {
-	for _, id := range d.actorIds {
-		graphics := d.actorGraphics[id]
-		graphics.Update(parentCenterPosition)
-	}
-}
-
-func (d *BattleActorDisplay) Draw(drawFunc frontend.DrawFunc) {
-	for _, id := range d.actorIds {
-		graphics := d.actorGraphics[id]
-		graphics.Draw(drawFunc)
-	}
-}
-
-type BattleDisplayArgs struct {
-	ActorId  core.ActorId
-	EnemyId  core.EnemyId
-	Position *frontend.Vector
-}
-
-type NewBattleActorDisplayFunc func([]*BattleDisplayArgs, frontend.Depth) *BattleActorDisplay
+type NewBattleActorDisplayFunc func() *BattleActorDisplay
 
 func CreateNewBattleActorDisplay(
-	newBattleActorGraphics NewBattleActorGraphicsFunc,
+	newFaceWindow NewFaceWindowFunc,
 ) NewBattleActorDisplayFunc {
-	return func(
-		enemies []*BattleDisplayArgs,
-		depth frontend.Depth,
-	) *BattleActorDisplay {
-		actorIds := make([]core.ActorId, len(enemies))
-		actorGraphics := map[core.ActorId]*BattleActorGraphics{}
-		for i, enemy := range enemies {
-			graphics := newBattleActorGraphics(
-				enemy.Position,
-				frontend.PivotCenter,
-				depth,
-				enemy.EnemyId,
-			)
-			actorGraphics[enemy.ActorId] = graphics
-			actorIds[i] = enemy.ActorId
-		}
+	return func() *BattleActorDisplay {
 		return &BattleActorDisplay{
-			actorGraphics: actorGraphics,
-			actorIds:      actorIds,
+			mainActorDisplay: newFaceWindow(
+				&frontend.Vector{X: 0, Y: 0},
+				frontend.DepthPlayer,
+				frontend.PivotBottomLeft,
+				frontend.TextureFaceLuneNormal,
+			),
+			subActorDisplay: newFaceWindow(
+				&frontend.Vector{X: 0, Y: 0},
+				frontend.DepthPlayer,
+				frontend.PivotBottomRight,
+				frontend.TextureFaceSunnyNormal,
+			),
 		}
-	}
-}
-
-type BattleActorGraphics struct {
-	currentEmotion   BattleEmotionType
-	animation        map[BattleEmotionType]*widget.Animation
-	displayDamage    *DisplayDamage
-	shake            *frontend.EmitShake
-	disappearShader  *frontend.Shader
-	parentPosition   *frontend.Vector
-	relativePosition *frontend.Vector
-}
-
-func (g *BattleActorGraphics) GetDefinitivePosition() *frontend.Vector {
-	return g.parentPosition.Add(g.relativePosition)
-}
-
-func (g *BattleActorGraphics) getCurrentAnimation() *widget.Animation {
-	animation, ok := g.animation[g.currentEmotion]
-	if !ok {
-		return g.animation[BattleEmotionNormal]
-	}
-	return animation
-}
-
-func (g *BattleActorGraphics) SetDamage(damage core.Damage) {
-	g.displayDamage.DisplayDamage(damage)
-}
-
-func (g *BattleActorGraphics) DoShake() {
-	const amplitude = 3
-	const period = 12
-	g.shake.Shake(amplitude, period)
-}
-
-func (g *BattleActorGraphics) Update(parentCenterPosition *frontend.Vector) {
-	g.shake.Update()
-	g.displayDamage.Update(parentCenterPosition)
-	g.parentPosition = parentCenterPosition
-	position := parentCenterPosition.Add(g.shake.Delta())
-	g.getCurrentAnimation().Update(position)
-}
-
-func (g *BattleActorGraphics) Draw(drawFunc frontend.DrawFunc) {
-	g.displayDamage.Draw(drawFunc)
-	g.getCurrentAnimation().Draw(drawFunc)
-}
-
-func (g *BattleActorGraphics) SetEmotion(emotion BattleEmotionType) {
-	g.currentEmotion = emotion
-	g.getCurrentAnimation().Reset()
-}
-
-func (g *BattleActorGraphics) SetDisappear() {
-	for _, anim := range g.animation {
-		anim.SetShader(g.disappearShader)
-	}
-}
-
-type NewBattleActorGraphicsFunc func(
-	*frontend.Vector,
-	*frontend.Pivot,
-	frontend.Depth,
-	core.EnemyId,
-) *BattleActorGraphics
-
-func NewBattleActorGraphics(
-	resource *frontend.ResourceManager,
-	getEnemyGraphics GetEnemyGraphicsFunc,
-	newDisplayDamage NewDisplayDamageFunc,
-) NewBattleActorGraphicsFunc {
-	return func(
-		relativePosition *frontend.Vector,
-		pivot *frontend.Pivot,
-		depth frontend.Depth,
-		enemyId core.EnemyId,
-	) *BattleActorGraphics {
-		enemyGraphicsData := getEnemyGraphics(enemyId)
-		animations := func() map[BattleEmotionType]*widget.Animation {
-			result := map[BattleEmotionType]*widget.Animation{}
-			for _, data := range enemyGraphicsData {
-				texture := resource.GetTexture(data.texture)
-				animation := resource.GetAnimationData(data.animation)
-				result[data.emotion] = widget.NewAnimation(
-					relativePosition,
-					pivot,
-					depth,
-					texture,
-					animation,
-				)
-			}
-			return result
-		}()
-		return &BattleActorGraphics{
-			currentEmotion:   BattleEmotionNormal,
-			animation:        animations,
-			shake:            frontend.NewShake(),
-			parentPosition:   frontend.VectorZero,
-			relativePosition: relativePosition,
-			displayDamage:    newDisplayDamage(),
-			disappearShader:  resource.GetShader(frontend.ShaderDisappear),
-		}
-	}
-}
-
-type BattleActorAnimationSet struct {
-	emotion   BattleEmotionType
-	texture   frontend.TextureId
-	animation frontend.AnimationId
-}
-
-type GetEnemyGraphicsFunc func(core.EnemyId) []*BattleActorAnimationSet
-
-func CreateGetEnemyGraphics() GetEnemyGraphicsFunc {
-	dict := map[core.EnemyId][]*BattleActorAnimationSet{
-		core.EnemyPunchingBagId: {
-			{
-				emotion:   BattleEmotionNormal,
-				texture:   frontend.TextureMarshmallowNormal,
-				animation: frontend.AnimationMarshmallowNormal,
-			},
-			{
-				emotion:   BattleEmotionDamage,
-				texture:   frontend.TextureMarshmallowDamage,
-				animation: frontend.AnimationMarshmallowDamage,
-			},
-		},
-	}
-	return func(enemyId core.EnemyId) []*BattleActorAnimationSet {
-		return dict[enemyId]
 	}
 }

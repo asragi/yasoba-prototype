@@ -11,6 +11,7 @@ const (
 	EventSequenceIdLuneAttack        EventSequenceId = "lune-attack"
 	EventSequenceIdLuneFire          EventSequenceId = "lune-fire"
 	EventSequenceIdPunchingBagBeaten EventSequenceId = "punching-bag-beaten"
+	EventSequenceIdNormalTackle      EventSequenceId = "normal-tackle"
 )
 
 type BattleTextDisplay interface {
@@ -30,6 +31,7 @@ func CreateSkillToSequenceId() SkillToSequenceFunc {
 	dict := map[core.SkillId]EventSequenceId{
 		core.SkillIdLuneAttack:    EventSequenceIdLuneAttack,
 		core.SkillIdLuneFireEnemy: EventSequenceIdLuneFire,
+		core.SkillIdNormalTackle:  EventSequenceIdLuneAttack,
 	}
 	return func(id core.SkillId) EventSequenceId {
 		seq, ok := dict[id]

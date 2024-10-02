@@ -5,6 +5,7 @@ type Depth int
 const (
 	Zero Depth = iota
 	DepthEnemy
+	DepthPlayer
 	DepthEffect
 	DepthDamageText
 	DepthWindow
@@ -13,6 +14,7 @@ const (
 
 var AllDepths = []Depth{
 	DepthEnemy,
+	DepthPlayer,
 	DepthEffect,
 	DepthDamageText,
 	DepthWindow,

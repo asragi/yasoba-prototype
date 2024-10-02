@@ -37,12 +37,12 @@ func CreateCharacterServer() ServeCharacterFunc {
 	dict[CharacterSunnyId] = &CharacterData{
 		Id:    CharacterSunnyId,
 		Name:  TextIdSunnyName,
-		MaxHP: 100,
-		HP:    100,
-		ATK:   10,
-		MAG:   10,
-		DEF:   10,
-		SPD:   10,
+		MaxHP: 220,
+		HP:    220,
+		ATK:   22,
+		MAG:   21,
+		DEF:   28,
+		SPD:   28,
 	}
 	return func(id CharacterId) *CharacterData {
 		return dict[id]

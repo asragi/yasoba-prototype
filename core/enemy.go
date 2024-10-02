@@ -23,7 +23,7 @@ func CreateEnemyServer() ServeEnemyData {
 	dict[EnemyPunchingBagId] = &EnemyData{
 		Id:     EnemyPunchingBagId,
 		MaxHP:  1000,
-		Atk:    10,
+		Atk:    18,
 		Mag:    10,
 		Def:    10,
 		Spd:    10,

@@ -86,6 +86,7 @@ type SkillSingleAttackRow struct {
 type SkillSingleAttackResult struct {
 	ActorId        ActorId
 	TargetId       ActorId
+	TargetSide     ActorSide
 	SkillId        SkillId
 	Damage         Damage
 	IsTargetBeaten bool
@@ -149,6 +150,7 @@ func CreateSkillApply(
 					result, &SkillSingleAttackResult{
 						ActorId:        args.Actor,
 						TargetId:       args.Target[0],
+						TargetSide:     target.Side,
 						SkillId:        args.Id,
 						Damage:         damage,
 						IsTargetBeaten: afterHP <= 0,
