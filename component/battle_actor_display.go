@@ -8,6 +8,7 @@ import (
 type BattleActorDisplay struct {
 	faceWindow    *FaceWindow
 	displayDamage *DisplayDamage
+	hpDisplay     *BattleHPDisplay
 }
 
 func (d *BattleActorDisplay) SetDamage(damage core.Damage) {
@@ -19,6 +20,7 @@ func (d *BattleActorDisplay) Update(
 ) {
 	d.faceWindow.Update(bottomLeftPosition)
 	d.displayDamage.Update(d.faceWindow.GetCenterPosition())
+	d.hpDisplay.Update(d.faceWindow.GetTopLeftPosition())
 }
 
 func (d *BattleActorDisplay) Draw(
@@ -26,6 +28,7 @@ func (d *BattleActorDisplay) Draw(
 ) {
 	d.faceWindow.Draw(drawFunc)
 	d.displayDamage.Draw(drawFunc)
+	d.hpDisplay.Draw(drawFunc)
 }
 
 func (d *BattleActorDisplay) GetMainCharacterPosition() *frontend.Vector {
@@ -41,6 +44,7 @@ type NewBattleActorDisplayFunc func() *BattleActorDisplay
 func CreateNewBattleActorDisplay(
 	newFaceWindow NewFaceWindowFunc,
 	newDisplayDamage NewDisplayDamageFunc,
+	newBattleHPDisplay NewBattleHPDisplayFunc,
 ) NewBattleActorDisplayFunc {
 	return func() *BattleActorDisplay {
 		return &BattleActorDisplay{
@@ -51,6 +55,7 @@ func CreateNewBattleActorDisplay(
 				frontend.TextureFaceLuneNormal,
 			),
 			displayDamage: newDisplayDamage(),
+			hpDisplay:     newBattleHPDisplay(),
 		}
 	}
 }

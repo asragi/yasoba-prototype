@@ -43,7 +43,6 @@ func StandByNewMessageWindow(resource *frontend.ResourceManager) NewMessageWindo
 	padding := &frontend.Vector{X: 16, Y: 8}
 	font := resource.GetFont(frontend.MaruMinya)
 	speed := 5
-	shake := frontend.NewShake()
 	return func(
 		relativePosition *frontend.Vector,
 		size *frontend.Vector,
@@ -59,7 +58,6 @@ func StandByNewMessageWindow(resource *frontend.ResourceManager) NewMessageWindo
 				Depth:            depth,
 				Pivot:            pivot,
 				Padding:          padding,
-				Shake:            shake,
 			},
 		)
 
@@ -76,7 +74,7 @@ func StandByNewMessageWindow(resource *frontend.ResourceManager) NewMessageWindo
 		return &MessageWindow{
 			text:   text,
 			window: window,
-			shake:  shake,
+			shake:  frontend.NewShake(),
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package frontend
 
+import "fmt"
+
 type Vector struct {
 	X, Y float64
 }
@@ -27,6 +29,10 @@ func (v *Vector) Multiply(scale float64) *Vector {
 		X: v.X * scale,
 		Y: v.Y * scale,
 	}
+}
+
+func (v *Vector) String() string {
+	return fmt.Sprintf("{X: %f, Y: %f}", v.X, v.Y)
 }
 
 type Pivot struct {

@@ -1,5 +1,7 @@
 package core
 
+import "strconv"
+
 type CharacterId string
 
 const (
@@ -15,6 +17,11 @@ func (h MaxHP) ToHP() HP {
 }
 
 type HP int
+
+func (h HP) String() string {
+	return strconv.Itoa(int(h))
+}
+
 type ATK int
 type MAG int
 type DEF int

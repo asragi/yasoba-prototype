@@ -15,7 +15,6 @@ type WindowOption struct {
 	Depth            frontend.Depth
 	Pivot            *frontend.Pivot
 	Padding          *frontend.Vector
-	Shake            frontend.PositionDelta
 }
 
 func (o *WindowOption) Validation() error {
@@ -26,7 +25,7 @@ func (o *WindowOption) Validation() error {
 		return errors.New("corner Size must be greater than 0")
 	}
 	if o.Size == nil {
-		return errors.New("Size is required")
+		return errors.New("size is required")
 	}
 	if o.Depth == frontend.Zero {
 		return errors.New("depth is required")
@@ -34,13 +33,110 @@ func (o *WindowOption) Validation() error {
 	return nil
 }
 
+type windowRect struct {
+	x0 int
+	y0 int
+	x1 int
+	y1 int
+}
+
 type Window struct {
-	GetPositionUpperLeft func() *frontend.Vector
-	GetPositionCenter    func() *frontend.Vector
-	GetContentUpperLeft  func() *frontend.Vector
-	MoveTo               func(relativePosition *frontend.Vector)
-	Update               func(parentPosition *frontend.Vector)
-	Draw                 func(frontend.DrawFunc)
+	image               *ebiten.Image
+	relativePosition    *frontend.Vector
+	parentPosition      *frontend.Vector
+	size                *frontend.Vector
+	pivot               *frontend.Pivot
+	GetContentUpperLeft func() *frontend.Vector
+	corners             []*windowRect
+	sides               []*windowRect
+	cornerPosition      []*frontend.Vector
+	sidePosition        []*frontend.Vector
+	sideScale           []*frontend.Vector
+	cornerSize          int
+	depth               frontend.Depth
+}
+
+func (w *Window) GetPositionUpperLeft() *frontend.Vector {
+	pivotDiff := w.pivot.ApplyToSize(w.size)
+	return &frontend.Vector{
+		X: w.relativePosition.X + w.parentPosition.X - pivotDiff.X,
+		Y: w.relativePosition.Y + w.parentPosition.Y - pivotDiff.Y,
+	}
+}
+
+func (w *Window) GetPositionCenter() *frontend.Vector {
+	pivotDiff := w.pivot.ApplyToSize(w.size)
+	return &frontend.Vector{
+		X: w.relativePosition.X + w.parentPosition.X - pivotDiff.X + w.size.X/2,
+		Y: w.relativePosition.Y + w.parentPosition.Y - pivotDiff.Y + w.size.Y/2,
+	}
+}
+
+func (w *Window) GetPositionLowerRight() *frontend.Vector {
+	pivotDiff := w.pivot.ApplyToSize(w.size)
+	return &frontend.Vector{
+		X: w.relativePosition.X + w.parentPosition.X - pivotDiff.X + w.size.X,
+		Y: w.relativePosition.Y + w.parentPosition.Y - pivotDiff.Y + w.size.Y,
+	}
+}
+
+func (w *Window) Update(passedPosition *frontend.Vector) {
+	w.parentPosition = passedPosition
+}
+
+func (w *Window) Draw(drawFunc frontend.DrawFunc) {
+	pivotDiff := w.pivot.ApplyToSize(w.size)
+	textureWidth := w.image.Bounds().Dx()
+	textureHeight := w.image.Bounds().Dy()
+	targetXSize := w.size.X - float64(w.cornerSize*2)
+	targetYSize := w.size.Y - float64(w.cornerSize*2)
+	for i, v := range w.corners {
+		op := &ebiten.DrawImageOptions{}
+		x := w.cornerPosition[i].X + w.relativePosition.X - pivotDiff.X + w.parentPosition.X
+		y := w.cornerPosition[i].Y + w.relativePosition.Y - pivotDiff.Y + w.parentPosition.Y
+		op.GeoM.Translate(x, y)
+		subImage := w.image.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
+		drawFunc(
+			func(screen *ebiten.Image) {
+				screen.DrawImage(subImage, op)
+			}, w.depth,
+		)
+	}
+	for i, v := range w.sides {
+		op := &ebiten.DrawImageOptions{}
+		x := w.sidePosition[i].X + w.relativePosition.X - pivotDiff.X + w.parentPosition.X
+		y := w.sidePosition[i].Y + w.relativePosition.Y - pivotDiff.Y + w.parentPosition.Y
+		op.GeoM.Scale(w.sideScale[i].X, w.sideScale[i].Y)
+		op.GeoM.Translate(x, y)
+		subImage := w.image.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
+		drawFunc(
+			func(screen *ebiten.Image) {
+				screen.DrawImage(subImage, op)
+			}, w.depth,
+		)
+	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(
+		targetXSize/float64(textureWidth-w.cornerSize*2),
+		targetYSize/float64(textureHeight-w.cornerSize*2),
+	)
+	op.GeoM.Translate(
+		w.relativePosition.X-pivotDiff.X+w.parentPosition.X+float64(w.cornerSize),
+		w.relativePosition.Y-pivotDiff.Y+w.parentPosition.Y+float64(w.cornerSize),
+	)
+	subImage := w.image.SubImage(
+		image.Rect(
+			w.cornerSize,
+			w.cornerSize,
+			textureWidth-w.cornerSize,
+			textureHeight-w.cornerSize,
+		),
+	).(*ebiten.Image)
+	drawFunc(
+		func(screen *ebiten.Image) {
+			screen.DrawImage(subImage, op)
+		}, w.depth,
+	)
 }
 
 func NewWindow(option *WindowOption) *Window {
@@ -51,16 +147,9 @@ func NewWindow(option *WindowOption) *Window {
 		panic(err)
 	}
 	img := option.Image
-	type rect struct {
-		x0 int
-		y0 int
-		x1 int
-		y1 int
-	}
-	pivotDiff := option.Pivot.ApplyToSize(option.Size)
 	textureWidth := img.Bounds().Dx()
 	textureHeight := img.Bounds().Dy()
-	corners := []*rect{
+	corners := []*windowRect{
 		{0, 0, option.CornerSize, option.CornerSize},
 		{img.Bounds().Dx() - option.CornerSize, 0, img.Bounds().Dx(), option.CornerSize},
 		{0, img.Bounds().Dy() - option.CornerSize, option.CornerSize, img.Bounds().Dy()},
@@ -71,7 +160,7 @@ func NewWindow(option *WindowOption) *Window {
 			img.Bounds().Dy(),
 		},
 	}
-	sides := []*rect{
+	sides := []*windowRect{
 		{option.CornerSize, 0, img.Bounds().Dx() - option.CornerSize, option.CornerSize},
 		{
 			img.Bounds().Dx() - option.CornerSize,
@@ -110,71 +199,6 @@ func NewWindow(option *WindowOption) *Window {
 		{targetXSize / sideXSize, 1},
 	}
 
-	moveTo := func(passedPosition *frontend.Vector) {
-		relativePosition = passedPosition
-	}
-
-	shakePosition := func() *frontend.Vector {
-		if option.Shake == nil {
-			return frontend.VectorZero
-		}
-		return option.Shake.Delta()
-	}
-
-	update := func(passedPosition *frontend.Vector) {
-		parentPosition = passedPosition.Add(shakePosition())
-	}
-
-	drawWindow := func(drawing frontend.DrawFunc) {
-		for i, v := range corners {
-			op := &ebiten.DrawImageOptions{}
-			x := cornerPosition[i].X + relativePosition.X - pivotDiff.X + parentPosition.X
-			y := cornerPosition[i].Y + relativePosition.Y - pivotDiff.Y + parentPosition.Y
-			op.GeoM.Translate(x, y)
-			subImage := img.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
-			drawing(
-				func(screen *ebiten.Image) {
-					screen.DrawImage(subImage, op)
-				}, option.Depth,
-			)
-		}
-		for i, v := range sides {
-			op := &ebiten.DrawImageOptions{}
-			x := sidePosition[i].X + relativePosition.X - pivotDiff.X + parentPosition.X
-			y := sidePosition[i].Y + relativePosition.Y - pivotDiff.Y + parentPosition.Y
-			op.GeoM.Scale(sideScales[i].X, sideScales[i].Y)
-			op.GeoM.Translate(x, y)
-			subImage := img.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
-			drawing(
-				func(screen *ebiten.Image) {
-					screen.DrawImage(subImage, op)
-				}, option.Depth,
-			)
-		}
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Scale(
-			targetXSize/float64(textureWidth-option.CornerSize*2),
-			targetYSize/float64(textureHeight-option.CornerSize*2),
-		)
-		op.GeoM.Translate(
-			relativePosition.X-pivotDiff.X+parentPosition.X+float64(option.CornerSize),
-			relativePosition.Y-pivotDiff.Y+parentPosition.Y+float64(option.CornerSize),
-		)
-		subImage := img.SubImage(
-			image.Rect(
-				option.CornerSize,
-				option.CornerSize,
-				textureWidth-option.CornerSize,
-				textureHeight-option.CornerSize,
-			),
-		).(*ebiten.Image)
-		drawing(
-			func(screen *ebiten.Image) {
-				screen.DrawImage(subImage, op)
-			}, option.Depth,
-		)
-	}
-
 	getContentPosition := func() *frontend.Vector {
 		return option.Padding
 		/*
@@ -185,26 +209,19 @@ func NewWindow(option *WindowOption) *Window {
 		*/
 	}
 
-	getPositionUpperLeft := func() *frontend.Vector {
-		return &frontend.Vector{
-			X: relativePosition.X + parentPosition.X - pivotDiff.X,
-			Y: relativePosition.Y + parentPosition.Y - pivotDiff.Y,
-		}
-	}
-
-	getPositionCenter := func() *frontend.Vector {
-		return &frontend.Vector{
-			X: relativePosition.X + parentPosition.X - pivotDiff.X + option.Size.X/2,
-			Y: relativePosition.Y + parentPosition.Y - pivotDiff.Y + option.Size.Y/2,
-		}
-	}
-
 	return &Window{
-		GetPositionUpperLeft: getPositionUpperLeft,
-		GetContentUpperLeft:  getContentPosition,
-		GetPositionCenter:    getPositionCenter,
-		MoveTo:               moveTo,
-		Update:               update,
-		Draw:                 drawWindow,
+		image:               img,
+		relativePosition:    relativePosition,
+		parentPosition:      parentPosition,
+		size:                option.Size,
+		pivot:               option.Pivot,
+		GetContentUpperLeft: getContentPosition,
+		corners:             corners,
+		sides:               sides,
+		cornerPosition:      cornerPosition,
+		sidePosition:        sidePosition,
+		sideScale:           sideScales,
+		cornerSize:          option.CornerSize,
+		depth:               option.Depth,
 	}
 }

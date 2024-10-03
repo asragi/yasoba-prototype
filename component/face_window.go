@@ -31,6 +31,10 @@ func (f *FaceWindow) GetTopLeftPosition() *frontend.Vector {
 	return f.window.GetPositionUpperLeft()
 }
 
+func (f *FaceWindow) GetBottomRightPosition() *frontend.Vector {
+	return f.window.GetPositionLowerRight()
+}
+
 func (f *FaceWindow) GetCenterPosition() *frontend.Vector {
 	return f.window.GetPositionCenter()
 }
@@ -73,6 +77,3 @@ const (
 	BattleEmotionNormal BattleEmotionType = iota
 	BattleEmotionDamage
 )
-
-type FaceData struct {
-}
