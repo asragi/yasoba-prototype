@@ -1,68 +1,112 @@
 package component
 
-import "github.com/asragi/yasoba-prototype/frontend"
+import (
+	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/frontend"
+)
 
 type BattleActorDisplay struct {
-	mainActorDisplay *FaceWindow
-	subActorDisplay  *FaceWindow
-	subActorShake    *frontend.EmitShake
+	faceWindow    *FaceWindow
+	displayDamage *DisplayDamage
 }
 
-func (d *BattleActorDisplay) ShakeSubActor() {
-	d.subActorShake.Shake(
-		frontend.ShakeDefaultAmplitude,
-		frontend.ShakeDefaultPeriod,
-	)
+func (d *BattleActorDisplay) SetDamage(damage core.Damage) {
+	d.displayDamage.DisplayDamage(damage)
 }
 
 func (d *BattleActorDisplay) Update(
-	bottomLeftPosition,
-	bottomRightPosition *frontend.Vector,
+	bottomLeftPosition *frontend.Vector,
 ) {
-	d.subActorShake.Update()
-	d.mainActorDisplay.Update(bottomLeftPosition)
-	d.subActorDisplay.Update(bottomRightPosition.Add(d.subActorShake.Delta()))
+	d.faceWindow.Update(bottomLeftPosition)
+	d.displayDamage.Update(d.faceWindow.GetCenterPosition())
 }
 
 func (d *BattleActorDisplay) Draw(
 	drawFunc frontend.DrawFunc,
 ) {
-	d.mainActorDisplay.Draw(drawFunc)
-	d.subActorDisplay.Draw(drawFunc)
+	d.faceWindow.Draw(drawFunc)
+	d.displayDamage.Draw(drawFunc)
 }
 
 func (d *BattleActorDisplay) GetMainCharacterPosition() *frontend.Vector {
-	return d.mainActorDisplay.GetCenterPosition()
-}
-
-func (d *BattleActorDisplay) GetSubCharacterPosition() *frontend.Vector {
-	return d.subActorDisplay.GetCenterPosition()
+	return d.faceWindow.GetCenterPosition()
 }
 
 func (d *BattleActorDisplay) GetMainCharacterTopLeftPosition() *frontend.Vector {
-	return d.mainActorDisplay.GetTopLeftPosition()
+	return d.faceWindow.GetTopLeftPosition()
 }
 
 type NewBattleActorDisplayFunc func() *BattleActorDisplay
 
 func CreateNewBattleActorDisplay(
 	newFaceWindow NewFaceWindowFunc,
+	newDisplayDamage NewDisplayDamageFunc,
 ) NewBattleActorDisplayFunc {
 	return func() *BattleActorDisplay {
 		return &BattleActorDisplay{
-			mainActorDisplay: newFaceWindow(
+			faceWindow: newFaceWindow(
 				&frontend.Vector{X: 0, Y: 0},
 				frontend.DepthPlayer,
 				frontend.PivotBottomLeft,
 				frontend.TextureFaceLuneNormal,
 			),
-			subActorDisplay: newFaceWindow(
+			displayDamage: newDisplayDamage(),
+		}
+	}
+}
+
+type BattleSubActorDisplay struct {
+	faceWindow    *FaceWindow
+	displayDamage *DisplayDamage
+	shake         *frontend.EmitShake
+}
+
+type NewBattleSubActorDisplayFunc func() *BattleSubActorDisplay
+
+func CreateNewBattleSubActorDisplay(
+	newFaceWindow NewFaceWindowFunc,
+	newDisplayDamage NewDisplayDamageFunc,
+) NewBattleSubActorDisplayFunc {
+	return func() *BattleSubActorDisplay {
+		return &BattleSubActorDisplay{
+			faceWindow: newFaceWindow(
 				&frontend.Vector{X: 0, Y: 0},
 				frontend.DepthPlayer,
 				frontend.PivotBottomRight,
 				frontend.TextureFaceSunnyNormal,
 			),
-			subActorShake: frontend.NewShake(),
+			displayDamage: newDisplayDamage(),
+			shake:         frontend.NewShake(),
 		}
 	}
+}
+
+func (d *BattleSubActorDisplay) SetDamage(damage core.Damage) {
+	d.displayDamage.DisplayDamage(damage)
+}
+
+func (d *BattleSubActorDisplay) Shake() {
+	d.shake.Shake(
+		frontend.ShakeDefaultAmplitude,
+		frontend.ShakeDefaultPeriod,
+	)
+}
+
+func (d *BattleSubActorDisplay) Update(
+	bottomRightPosition *frontend.Vector,
+) {
+	d.shake.Update()
+	d.faceWindow.Update(bottomRightPosition.Add(d.shake.Delta()))
+	d.displayDamage.Update(d.faceWindow.GetCenterPosition())
+}
+
+func (d *BattleSubActorDisplay) Draw(
+	drawFunc frontend.DrawFunc,
+) {
+	d.faceWindow.Draw(drawFunc)
+	d.displayDamage.Draw(drawFunc)
+}
+
+func (d *BattleSubActorDisplay) GetCenterPosition() *frontend.Vector {
+	return d.faceWindow.GetCenterPosition()
 }

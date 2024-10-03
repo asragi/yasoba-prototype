@@ -6,20 +6,19 @@ import (
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game"
 	"github.com/asragi/yasoba-prototype/widget"
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type BattleScene struct {
 	messageWindow      *component.MessageWindow
 	battleSelectWindow *component.BattleSelectWindow
 	actorDisplay       *component.BattleActorDisplay
+	subActorDisplay    *component.BattleSubActorDisplay
 	enemyData          []*core.EnemyIdPair
 	actorNames         map[core.ActorId]core.TextId
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager
 	battleSequence     *component.BattleEventSequencer
-	battleActorDisplay *component.BattleEnemyDisplay
+	battleEnemyDisplay *component.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
 	shake              *frontend.EmitShake
 }
@@ -43,13 +42,11 @@ func (s *BattleScene) Update() {
 	mainCharacterTopLeftPosition := s.actorDisplay.GetMainCharacterTopLeftPosition()
 	mainCharacterTopLeftPosition = mainCharacterTopLeftPosition.Add(delta)
 	s.messageWindow.Update(zeroVector)
-	s.actorDisplay.Update(bottomLeft, bottomRight)
-	s.battleActorDisplay.Update(center)
+	s.actorDisplay.Update(bottomLeft)
+	s.subActorDisplay.Update(bottomRight)
+	s.battleEnemyDisplay.Update(center)
 	s.battleSelectWindow.Update(mainCharacterTopLeftPosition)
 	s.targetSelectWindow.Update(mainCharacterTopLeftPosition)
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		s.messageWindow.Shake(2, 10)
-	}
 	s.input.Update()
 	if s.battleSequence.IsRun() {
 		s.battleSequence.Update()
@@ -64,7 +61,8 @@ func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.messageWindow.Draw(drawFunc)
 	s.battleSelectWindow.Draw(drawFunc)
 	s.targetSelectWindow.Draw(drawFunc)
-	s.battleActorDisplay.Draw(drawFunc)
+	s.battleEnemyDisplay.Draw(drawFunc)
+	s.subActorDisplay.Draw(drawFunc)
 	s.actorDisplay.Draw(drawFunc)
 	s.effectManager.Draw(drawFunc)
 }
@@ -84,6 +82,7 @@ func StandByNewBattleScene(
 	newSelectWindow component.NewSelectWindowFunc,
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
 	newBattleActorDisplay component.NewBattleActorDisplayFunc,
+	newBattleSubActorDisplay component.NewBattleSubActorDisplayFunc,
 	serveEnemyName core.EnemyNameServer,
 	initializeBattle core.InitializeBattleFunc,
 	postCommand core.PostCommandFunc,
@@ -237,6 +236,7 @@ func StandByNewBattleScene(
 		battleSelectWindow.Open()
 
 		actorDisplay := newBattleActorDisplay()
+		subActorDisplay := newBattleSubActorDisplay()
 
 		playEffect := func(effectId widget.EffectId, target core.ActorId) {
 			actor := serveActor(target)
@@ -245,7 +245,7 @@ func StandByNewBattleScene(
 					return battleEnemyDisplay.GetPosition(target)
 				}
 				if actor.Id == core.ActorSunnyId {
-					return actorDisplay.GetSubCharacterPosition()
+					return subActorDisplay.GetCenterPosition()
 				}
 				return actorDisplay.GetMainCharacterPosition()
 			}()
@@ -260,10 +260,23 @@ func StandByNewBattleScene(
 				return
 			}
 			if actor.IsSubActor() {
-				actorDisplay.ShakeSubActor()
+				subActorDisplay.Shake()
 				return
 			}
 			battleScene.shake.Shake(frontend.ShakeDefaultAmplitude, frontend.ShakeDefaultPeriod)
+		}
+
+		setDamage := func(actorId core.ActorId, damage core.Damage) {
+			actor := serveActor(actorId)
+			if actor.IsEnemy() {
+				battleEnemyDisplay.SetDamage(actorId, damage)
+				return
+			}
+			if actor.IsSubActor() {
+				subActorDisplay.SetDamage(damage)
+				return
+			}
+			actorDisplay.SetDamage(damage)
 		}
 
 		// TODO: Expand these functions to handle player actor
@@ -271,7 +284,7 @@ func StandByNewBattleScene(
 			messageWindow,
 			doShake,
 			battleEnemyDisplay.SetEmotion,
-			battleEnemyDisplay.SetDamage,
+			setDamage,
 			playEffect,
 			battleEnemyDisplay.SetDisappear,
 		)
@@ -284,7 +297,8 @@ func StandByNewBattleScene(
 			actorNames:         actorNames,
 			input:              input,
 			battleSequence:     component.NewBattleEventSequencer(),
-			battleActorDisplay: battleEnemyDisplay,
+			battleEnemyDisplay: battleEnemyDisplay,
+			subActorDisplay:    subActorDisplay,
 			effectManager:      effectManager,
 			shake:              frontend.NewShake(),
 		}
