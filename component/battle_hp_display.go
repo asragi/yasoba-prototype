@@ -23,26 +23,29 @@ func (d *BattleHPDisplay) SetHP(afterHp core.HP) {
 	d.text.SetText(afterHp.String(), false)
 }
 
-type NewBattleHPDisplayFunc func() *BattleHPDisplay
+type NewBattleHPDisplayFunc func(core.HP) *BattleHPDisplay
 
 func CreateNewBattleHPDisplay(
 	font frontend.FontId,
 	resource *frontend.ResourceManager,
 ) NewBattleHPDisplayFunc {
-	return func() *BattleHPDisplay {
+	const margin float64 = 4
+	return func(initialHp core.HP) *BattleHPDisplay {
 		text := widget.NewText(
 			&widget.TextOptions{
-				RelativePosition: &frontend.Vector{X: 0, Y: 0},
+				RelativePosition: &frontend.Vector{X: -margin, Y: -margin},
 				Pivot:            frontend.PivotBottomRight,
 				TextFace:         resource.GetFont(font),
 				Speed:            4,
-				Depth:            frontend.DepthDamageText,
+				Depth:            frontend.DepthDebug,
 				Color:            color.White,
 				EnableOutline:    true,
 				Scale:            1,
 				XSpacing:         8,
 			},
 		)
+
+		text.SetText(initialHp.String(), true)
 
 		return &BattleHPDisplay{
 			text: text,

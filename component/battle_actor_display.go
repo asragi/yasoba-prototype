@@ -20,7 +20,7 @@ func (d *BattleActorDisplay) Update(
 ) {
 	d.faceWindow.Update(bottomLeftPosition)
 	d.displayDamage.Update(d.faceWindow.GetCenterPosition())
-	d.hpDisplay.Update(d.faceWindow.GetTopLeftPosition())
+	d.hpDisplay.Update(d.faceWindow.GetBottomRightPosition())
 }
 
 func (d *BattleActorDisplay) Draw(
@@ -39,14 +39,15 @@ func (d *BattleActorDisplay) GetMainCharacterTopLeftPosition() *frontend.Vector 
 	return d.faceWindow.GetTopLeftPosition()
 }
 
-type NewBattleActorDisplayFunc func() *BattleActorDisplay
+type NewBattleActorDisplayFunc func(*core.Actor) *BattleActorDisplay
 
 func CreateNewBattleActorDisplay(
 	newFaceWindow NewFaceWindowFunc,
 	newDisplayDamage NewDisplayDamageFunc,
 	newBattleHPDisplay NewBattleHPDisplayFunc,
 ) NewBattleActorDisplayFunc {
-	return func() *BattleActorDisplay {
+	return func(actor *core.Actor) *BattleActorDisplay {
+		initialHp := actor.HP
 		return &BattleActorDisplay{
 			faceWindow: newFaceWindow(
 				&frontend.Vector{X: 0, Y: 0},
@@ -55,7 +56,7 @@ func CreateNewBattleActorDisplay(
 				frontend.TextureFaceLuneNormal,
 			),
 			displayDamage: newDisplayDamage(),
-			hpDisplay:     newBattleHPDisplay(),
+			hpDisplay:     newBattleHPDisplay(initialHp),
 		}
 	}
 }
