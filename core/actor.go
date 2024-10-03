@@ -17,6 +17,13 @@ const (
 	ActorSideEnemy
 )
 
+func (s ActorSide) Invert() ActorSide {
+	if s == ActorSidePlayer {
+		return ActorSideEnemy
+	}
+	return ActorSidePlayer
+}
+
 // Actor is a parameter set for a character in a battle.
 type Actor struct {
 	Id    ActorId

@@ -326,6 +326,7 @@ func StandByNewBattleScene(
 			decideActionOrder,
 			func(id core.ActorId) core.DecideActionFunc { return choiceActionList[id] },
 			serveBattleState,
+			serveActor,
 			playSequence,
 		)
 		selectWindow = newSelectWindow(
@@ -418,6 +419,7 @@ func createOnTargetSelect(
 	decideActionOrder core.DecideActionOrderFunc,
 	serveDecideAction func(core.ActorId) core.DecideActionFunc,
 	serveState core.ServeBattleState,
+	serveActor core.ActorSupplier,
 	playSequence func([]*core.SkillApplyResult),
 ) func(int) {
 	return func(index int) {
@@ -443,8 +445,9 @@ func createOnTargetSelect(
 				continue
 			}
 			decideActionFunction := serveDecideAction(actorId)
+			actor := serveActor(actorId)
 			state := serveState()
-			decidedAction := decideActionFunction(state)
+			decidedAction := decideActionFunction(actor, state)
 			enemyActionRequest := &core.SelectedAction{
 				Id:       decidedAction.SelectedSkill,
 				Actor:    actorId,

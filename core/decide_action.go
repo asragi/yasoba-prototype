@@ -19,6 +19,18 @@ type BattleState struct {
 	Actors []*Actor
 }
 
+func (s *BattleState) GetOtherSideActors(actionActor *Actor) []*Actor {
+	side := actionActor.Side
+	var result []*Actor
+	for _, actor := range s.Actors {
+		if actor.Side == side {
+			continue
+		}
+		result = append(result, actor)
+	}
+	return result
+}
+
 type BattleAction struct {
 	SelectedSkill  SkillId
 	TargetActorIds []ActorId
@@ -35,7 +47,7 @@ func CreateServeBattleState(supplyActor AllActorServer) ServeBattleState {
 	}
 }
 
-type DecideActionFunc func(state *BattleState) *BattleAction
+type DecideActionFunc func(*Actor, *BattleState) *BattleAction
 type NewChoiceRandomActionFunc func([]SkillId) DecideActionFunc
 
 func StandByCreateRandomAction(
@@ -51,11 +63,11 @@ func StandByCreateRandomAction(
 			}
 			return result
 		}()
-		return func(state *BattleState) *BattleAction {
+		return func(actor *Actor, state *BattleState) *BattleAction {
 			random := getRandom()
 			skillIndex := int(random * float64(len(skills)))
 			skill := skills[skillIndex]
-			targets := choiceSkillTarget(skill, state.Actors)
+			targets := choiceSkillTarget(skill, actor, state)
 			return &BattleAction{
 				SelectedSkill:  skill.Id,
 				TargetActorIds: targets,
@@ -66,22 +78,25 @@ func StandByCreateRandomAction(
 
 type ChoiceSkillTargetFunc func(
 	skill *SkillData,
-	actors []*Actor,
+	actor *Actor,
+	actors *BattleState,
 ) []ActorId
 
 func CreateChoiceSkillTarget(getRandom util.EmitRandomFunc) ChoiceSkillTargetFunc {
-	choiceSingleTarget := func(actor []*Actor) *Actor {
+	choiceSingleTarget := func(actionActor *Actor, state *BattleState) *Actor {
 		random := getRandom()
-		targetIndex := int(random * float64(len(actor)))
-		return actor[targetIndex]
+		possibleActors := state.GetOtherSideActors(actionActor)
+		targetIndex := int(random * float64(len(possibleActors)))
+		return possibleActors[targetIndex]
 	}
 	return func(
 		skill *SkillData,
-		actors []*Actor,
+		actor *Actor,
+		state *BattleState,
 	) []ActorId {
 		if skill.TargetType == SkillTargetTypeSingleOther {
-			actor := choiceSingleTarget(actors)
-			return []ActorId{actor.Id}
+			target := choiceSingleTarget(actor, state)
+			return []ActorId{target.Id}
 		}
 		panic("Not implemented")
 	}
