@@ -12,8 +12,9 @@ type BattleActorDisplay struct {
 	parameterDisplay *BattleParameterDisplay
 }
 
-func (d *BattleActorDisplay) SetDamage(damage core.Damage) {
+func (d *BattleActorDisplay) SetDamage(damage core.Damage, afterHP core.HP) {
 	d.displayDamage.DisplayDamage(damage)
+	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }
 
 func (d *BattleActorDisplay) Update(
@@ -95,8 +96,9 @@ func CreateNewBattleSubActorDisplay(
 	}
 }
 
-func (d *BattleSubActorDisplay) SetDamage(damage core.Damage) {
+func (d *BattleSubActorDisplay) SetDamage(damage core.Damage, afterHP core.HP) {
 	d.displayDamage.DisplayDamage(damage)
+	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }
 
 func (d *BattleSubActorDisplay) Shake() {

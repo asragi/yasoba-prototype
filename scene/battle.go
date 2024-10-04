@@ -269,17 +269,17 @@ func StandByNewBattleScene(
 			battleScene.shake.Shake(frontend.ShakeDefaultAmplitude, frontend.ShakeDefaultPeriod)
 		}
 
-		setDamage := func(actorId core.ActorId, damage core.Damage) {
+		setDamage := func(actorId core.ActorId, damage core.Damage, afterHp core.HP) {
 			actor := serveActor(actorId)
 			if actor.IsEnemy() {
 				battleEnemyDisplay.SetDamage(actorId, damage)
 				return
 			}
 			if actor.IsSubActor() {
-				subActorDisplay.SetDamage(damage)
+				subActorDisplay.SetDamage(damage, afterHp)
 				return
 			}
-			actorDisplay.SetDamage(damage)
+			actorDisplay.SetDamage(damage, afterHp)
 		}
 
 		// TODO: Expand these functions to handle player actor
@@ -362,8 +362,9 @@ func createPlayBattleSequence(
 					case *core.SkillSingleAttackResult:
 						result = append(
 							result, &component.DamageInformation{
-								Target: r.TargetId,
-								Damage: r.Damage,
+								Target:  r.TargetId,
+								Damage:  r.Damage,
+								AfterHP: r.AfterHp,
 							},
 						)
 					}

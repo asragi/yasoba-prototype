@@ -21,7 +21,7 @@ type BattleTextDisplay interface {
 type ShakeActor func(core.ActorId)
 type ChangeEmotion func(core.ActorId, BattleEmotionType)
 type ShakeScreen func()
-type DisplayDamageFunc func(core.ActorId, core.Damage)
+type DisplayDamageFunc func(core.ActorId, core.Damage, core.HP)
 type PlayEffect func(widget.EffectId, core.ActorId)
 type SetDisappear func(core.ActorId)
 
@@ -123,8 +123,9 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 }
 
 type DamageInformation struct {
-	Target core.ActorId
-	Damage core.Damage
+	Target  core.ActorId
+	Damage  core.Damage
+	AfterHP core.HP
 }
 
 type EventSequenceArgs struct {
@@ -181,7 +182,7 @@ func CreateExecBattleEventSequence(
 						shakeActor(target.Target)
 					case *DisplayDamageEvent:
 						target := args.Target[0]
-						displayDamage(target.Target, target.Damage)
+						displayDamage(target.Target, target.Damage, target.AfterHP)
 					case *ChangeEmotionEvent:
 						target := args.Target[0]
 						changeEmotion(target.Target, r.EmotionType)
