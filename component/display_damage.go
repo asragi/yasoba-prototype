@@ -22,7 +22,7 @@ type NewDisplayDamageFunc func() *DisplayDamage
 func CreateNewDisplayDamage(resource *frontend.ResourceManager) NewDisplayDamageFunc {
 	damageTextColor := color.White
 	font := resource.GetFont(frontend.MaruMinya)
-	positionDiff := &frontend.Vector{Y: 30}
+	positionDiff := &frontend.Vector{Y: 33}
 	return func() *DisplayDamage {
 		text := widget.NewText(
 			&widget.TextOptions{

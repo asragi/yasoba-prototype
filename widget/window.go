@@ -139,6 +139,10 @@ func (w *Window) Draw(drawFunc frontend.DrawFunc) {
 	)
 }
 
+func (w *Window) Size() *frontend.Vector {
+	return w.size
+}
+
 func NewWindow(option *WindowOption) *Window {
 	parentPosition := frontend.VectorZero
 	relativePosition := option.RelativePosition

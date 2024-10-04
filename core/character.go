@@ -34,8 +34,8 @@ func CreateCharacterServer() ServeCharacterFunc {
 	dict[CharacterLuneId] = &CharacterData{
 		Id:    CharacterLuneId,
 		Name:  TextIdLuneName,
-		MaxHP: 40,
-		HP:    40,
+		MaxHP: 110,
+		HP:    110,
 		ATK:   6,
 		MAG:   30,
 		DEF:   6,

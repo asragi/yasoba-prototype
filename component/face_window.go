@@ -47,13 +47,14 @@ func StandByNewFaceWindow(resource *frontend.ResourceManager) NewFaceWindowFunc 
 		texture frontend.TextureId,
 	) *FaceWindow {
 		const padding = 6
+		const faceSize = 74
 		face := widget.NewImage(
 			frontend.VectorZero,
 			frontend.PivotCenter,
 			depth,
 			resource.GetTexture(texture),
 		)
-		face.SetScaleBySize(&frontend.Vector{X: 74, Y: 74})
+		face.SetScaleBySize(&frontend.Vector{X: faceSize, Y: faceSize})
 		window := widget.NewWindow(
 			&widget.WindowOption{
 				Image:            resource.GetTexture(frontend.TextureWindow),

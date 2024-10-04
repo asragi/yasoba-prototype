@@ -59,8 +59,13 @@ func init() {
 		newDisplayDamage,
 	)
 	newHPDisplay := component.CreateNewBattleHPDisplay(frontend.MaruMinya, resource)
-	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newFaceWindow, newDisplayDamage, newHPDisplay)
-	newBattleSubActorDisplay := component.CreateNewBattleSubActorDisplay(newFaceWindow, newDisplayDamage)
+	newParameterDisplay := component.CreateNewBattleParameterDisplay(resource, newHPDisplay)
+	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newFaceWindow, newDisplayDamage, newParameterDisplay)
+	newBattleSubActorDisplay := component.CreateNewBattleSubActorDisplay(
+		newFaceWindow,
+		newDisplayDamage,
+		newParameterDisplay,
+	)
 	newBattleEnemyDisplay := component.CreateNewBattleEnemyDisplay(newBattleActorGraphics)
 	effectData := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(effectData, resource)

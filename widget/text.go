@@ -69,7 +69,7 @@ func (t *Text) Size() *frontend.Vector {
 	scale := float64(t.options.Scale)
 	// TODO: Size should be calculated from font Size
 	tmp := &frontend.Vector{
-		X: float64(len(t.characterSet[0])*t.options.XSpacing) - 1,
+		X: float64(len(t.characterSet[0])*t.options.XSpacing) - 2,
 		Y: float64(len(t.characterSet))*16 - 4,
 	}
 	return tmp.Multiply(scale)

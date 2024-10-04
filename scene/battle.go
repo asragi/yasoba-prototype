@@ -117,6 +117,8 @@ func StandByNewBattleScene(
 		battleResponse := initializeBattle(initializeRequest)
 		mainActorId := battleResponse.MainActorId
 		mainActor := serveActor(mainActorId)
+		subActorId := battleResponse.SubActorId
+		subActor := serveActor(subActorId)
 		actorIdToEnemy := func() map[core.ActorId]core.EnemyId {
 			result := make(map[core.ActorId]core.EnemyId)
 			for _, pair := range battleResponse.EnemyIds {
@@ -237,7 +239,7 @@ func StandByNewBattleScene(
 		battleSelectWindow.Open()
 
 		actorDisplay := newBattleActorDisplay(mainActor)
-		subActorDisplay := newBattleSubActorDisplay()
+		subActorDisplay := newBattleSubActorDisplay(subActor)
 
 		playEffect := func(effectId widget.EffectId, target core.ActorId) {
 			actor := serveActor(target)

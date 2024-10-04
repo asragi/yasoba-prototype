@@ -41,12 +41,11 @@ func CreateNewBattleHPDisplay(
 				Color:            color.White,
 				EnableOutline:    true,
 				Scale:            1,
-				XSpacing:         8,
+				XSpacing:         7,
 			},
 		)
 
 		text.SetText(initialHp.String(), true)
-
 		return &BattleHPDisplay{
 			text: text,
 		}
