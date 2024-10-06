@@ -19,6 +19,36 @@ type BattleState struct {
 	Actors []*Actor
 }
 
+type BattleEndType int
+
+const (
+	BattleEndTypeNone BattleEndType = iota
+	BattleEndTypeWin
+	BattleEndTypeLose
+)
+
+func (s *BattleState) IsBattleShouldBeEnd() BattleEndType {
+	if s.IsAllBeaten(ActorSidePlayer) {
+		return BattleEndTypeLose
+	}
+	if s.IsAllBeaten(ActorSideEnemy) {
+		return BattleEndTypeWin
+	}
+	return BattleEndTypeNone
+}
+
+func (s *BattleState) IsAllBeaten(side ActorSide) bool {
+	for _, actor := range s.Actors {
+		if actor.Side != side {
+			continue
+		}
+		if !actor.IsBeaten() {
+			return false
+		}
+	}
+	return true
+}
+
 func (s *BattleState) GetOtherSideActors(actionActor *Actor) []*Actor {
 	side := actionActor.Side
 	var result []*Actor
@@ -85,7 +115,17 @@ type ChoiceSkillTargetFunc func(
 func CreateChoiceSkillTarget(getRandom util.EmitRandomFunc) ChoiceSkillTargetFunc {
 	choiceSingleTarget := func(actionActor *Actor, state *BattleState) *Actor {
 		random := getRandom()
-		possibleActors := state.GetOtherSideActors(actionActor)
+		otherSideActors := state.GetOtherSideActors(actionActor)
+		possibleActors := func() []*Actor {
+			var result []*Actor
+			for _, actor := range otherSideActors {
+				if actor.IsBeaten() {
+					continue
+				}
+				result = append(result, actor)
+			}
+			return result
+		}()
 		targetIndex := int(random * float64(len(possibleActors)))
 		return possibleActors[targetIndex]
 	}

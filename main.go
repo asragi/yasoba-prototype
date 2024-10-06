@@ -15,7 +15,7 @@ import (
 const (
 	GameWidth  = 384
 	GameHeight = 288
-	DrawRate   = 1
+	DrawRate   = 2
 )
 
 var (

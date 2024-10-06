@@ -35,6 +35,10 @@ func (v *Vector) String() string {
 	return fmt.Sprintf("{X: %f, Y: %f}", v.X, v.Y)
 }
 
+func NewVectorShort(v float64) *Vector {
+	return &Vector{v, v}
+}
+
 type Pivot struct {
 	X, Y float64
 }

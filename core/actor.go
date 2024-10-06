@@ -48,6 +48,10 @@ func (a *Actor) IsEnemy() bool {
 	return a.Side == ActorSideEnemy
 }
 
+func (a *Actor) IsBeaten() bool {
+	return a.HP <= 0
+}
+
 type ServeActorCharacterFunc func(CharacterId) *Actor
 
 func characterToActor(character *CharacterData, id ActorId) *Actor {

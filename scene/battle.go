@@ -21,9 +21,18 @@ type BattleScene struct {
 	battleEnemyDisplay *component.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
 	shake              *frontend.EmitShake
+	endState           core.BattleEndType
 }
 
 func (s *BattleScene) OnSequenceEnd() {
+	if s.endState == core.BattleEndTypeWin {
+		s.messageWindow.SetText("しょうりした！", false)
+		return
+	}
+	if s.endState == core.BattleEndTypeLose {
+		s.messageWindow.SetText("やられてしまった……", false)
+		return
+	}
 	s.input.Set(s.battleSelectWindow)
 	s.battleSelectWindow.Open()
 }
@@ -282,11 +291,24 @@ func StandByNewBattleScene(
 			actorDisplay.SetDamage(damage, afterHp)
 		}
 
+		setEmotion := func(actorId core.ActorId, emotion component.BattleEmotionType) {
+			actor := serveActor(actorId)
+			if actor.IsEnemy() {
+				battleEnemyDisplay.SetEmotion(actorId, emotion)
+				return
+			}
+			if actor.IsSubActor() {
+				subActorDisplay.SetEmotion(emotion)
+				return
+			}
+			actorDisplay.SetEmotion(emotion)
+		}
+
 		// TODO: Expand these functions to handle player actor
 		newBattleSequence := createNewBattleSequence(
 			messageWindow,
 			doShake,
-			battleEnemyDisplay.SetEmotion,
+			setEmotion,
 			setDamage,
 			playEffect,
 			battleEnemyDisplay.SetDisappear,
@@ -318,6 +340,9 @@ func StandByNewBattleScene(
 			selectWindow.Close()
 			input.Set(frontend.InputReceiverEmptyInstance)
 		}
+		onEndBattle := func(endState core.BattleEndType) {
+			battleScene.endState = endState
+		}
 		onTargetSelect := createOnTargetSelect(
 			mainActorId,
 			closeWindowOnTargetSelect,
@@ -331,6 +356,7 @@ func StandByNewBattleScene(
 			serveBattleState,
 			serveActor,
 			playSequence,
+			onEndBattle,
 		)
 		selectWindow = newSelectWindow(
 			&frontend.Vector{X: 80, Y: 0},
@@ -425,6 +451,7 @@ func createOnTargetSelect(
 	serveState core.ServeBattleState,
 	serveActor core.ActorSupplier,
 	playSequence func([]*core.SkillApplyResult),
+	onBattleEnd func(core.BattleEndType),
 ) func(int) {
 	return func(index int) {
 		closeWindow()
@@ -437,29 +464,44 @@ func createOnTargetSelect(
 				Command:  command,
 			},
 		)
-		var appliedResponses []*core.SkillApplyResult
-		playerActionResponse := skillApply(response.Actions)
-		appliedResponses = append(appliedResponses, playerActionResponse)
-
-		orderedActorIdSet := decideActionOrder()
-		for _, actorId := range orderedActorIdSet {
-			if actorId == core.ActorLuneId {
-				// This block should not be executed
-				// TODO: Return to player action if main actor's actorId is given
-				continue
-			}
-			decideActionFunction := serveDecideAction(actorId)
-			actor := serveActor(actorId)
+		appliedResponses := func() []*core.SkillApplyResult {
+			result := []*core.SkillApplyResult{skillApply(response.Actions)}
 			state := serveState()
-			decidedAction := decideActionFunction(actor, state)
-			enemyActionRequest := &core.SelectedAction{
-				Id:       decidedAction.SelectedSkill,
-				Actor:    actorId,
-				SubActor: core.ActorEmptyId,
-				Target:   decidedAction.TargetActorIds,
+			endState := state.IsBattleShouldBeEnd()
+			if endState != core.BattleEndTypeNone {
+				onBattleEnd(endState)
+				return result
 			}
-			appliedResponses = append(appliedResponses, skillApply(enemyActionRequest))
-		}
+
+			orderedActorIdSet := decideActionOrder()
+			for _, actorId := range orderedActorIdSet {
+				if actorId == core.ActorLuneId {
+					// This block should not be executed
+					// TODO: Return to player action if main actor's actorId is given
+					continue
+				}
+				actor := serveActor(actorId)
+				if actor.IsBeaten() {
+					continue
+				}
+				decideActionFunction := serveDecideAction(actorId)
+				decidedAction := decideActionFunction(actor, state)
+				enemyActionRequest := &core.SelectedAction{
+					Id:       decidedAction.SelectedSkill,
+					Actor:    actorId,
+					SubActor: core.ActorEmptyId,
+					Target:   decidedAction.TargetActorIds,
+				}
+				result = append(result, skillApply(enemyActionRequest))
+				state = serveState()
+				endState = state.IsBattleShouldBeEnd()
+				if endState != core.BattleEndTypeNone {
+					onBattleEnd(endState)
+					return result
+				}
+			}
+			return result
+		}()
 
 		resetBattleSequence()
 		playSequence(appliedResponses)

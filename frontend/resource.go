@@ -16,7 +16,9 @@ const (
 	TextureWindow TextureId = iota
 	TextureCursor
 	TextureFaceLuneNormal
+	TextureFaceLuneDamage
 	TextureFaceSunnyNormal
+	TextureFaceSunnyDamage
 	TextureMarshmallowNormal
 	TextureMarshmallowDamage
 	TextureBattleEffectImpact
@@ -36,6 +38,10 @@ const (
 	AnimationMarshmallowDamage
 	AnimationBattleEffectImpact
 	AnimationBattleEffectFire
+	AnimationIdLuneNormal
+	AnimationIdLuneDamage
+	AnimationIdSunnyNormal
+	AnimationIdSunnyDamage
 )
 
 type ResourceManager struct {
@@ -58,7 +64,11 @@ func (r *ResourceManager) GetFont(id FontId) *text.GoTextFace {
 }
 
 func (r *ResourceManager) GetAnimationData(id AnimationId) *AnimationData {
-	return r.animationDict[id]
+	data, ok := r.animationDict[id]
+	if !ok {
+		panic(fmt.Sprintf("animation data not found: %d", id))
+	}
+	return data
 }
 
 func (r *ResourceManager) GetShader(id ShaderId) *Shader {
@@ -92,29 +102,23 @@ func CreateResourceManager() (*ResourceManager, error) {
 		return nil
 	}
 	// TODO: この辺の処理go:generateとかで自動生成したいね
-	if err := loadTexture(load.Window, TextureWindow); err != nil {
-		return handleError(err)
+	imageLoadMap := map[TextureId][]byte{
+		TextureWindow:             load.Window,
+		TextureCursor:             load.Cursor,
+		TextureFaceLuneNormal:     load.FaceLuneNormal,
+		TextureFaceLuneDamage:     load.FaceLuneDamage,
+		TextureFaceSunnyNormal:    load.FaceSunnyNormal,
+		TextureFaceSunnyDamage:    load.FaceSunnyDamage,
+		TextureMarshmallowNormal:  load.MarshmallowNormal,
+		TextureMarshmallowDamage:  load.MarshmallowDamage,
+		TextureBattleEffectImpact: load.BattleEffectImpact,
+		TextureBattleEffectFire:   load.BattleEffectFire,
 	}
-	if err := loadTexture(load.Cursor, TextureCursor); err != nil {
-		return handleError(err)
-	}
-	if err := loadTexture(load.FaceLuneNormal, TextureFaceLuneNormal); err != nil {
-		return handleError(err)
-	}
-	if err := loadTexture(load.FaceSunnyNormal, TextureFaceSunnyNormal); err != nil {
-		return handleError(err)
-	}
-	if err := loadTexture(load.MarshmallowNormal, TextureMarshmallowNormal); err != nil {
-		return handleError(err)
-	}
-	if err := loadTexture(load.MarshmallowDamage, TextureMarshmallowDamage); err != nil {
-		return handleError(err)
-	}
-	if err := loadTexture(load.BattleEffectImpact, TextureBattleEffectImpact); err != nil {
-		return handleError(err)
-	}
-	if err := loadTexture(load.BattleEffectFire, TextureBattleEffectFire); err != nil {
-		return handleError(err)
+
+	for id, data := range imageLoadMap {
+		if err := loadTexture(data, id); err != nil {
+			return handleError(err)
+		}
 	}
 
 	fontDict := map[FontId]*text.GoTextFace{}
@@ -125,6 +129,38 @@ func CreateResourceManager() (*ResourceManager, error) {
 	fontDict[MaruMinya] = &text.GoTextFace{Source: s, Size: 12}
 
 	animationDict := map[AnimationId]*AnimationData{
+		AnimationIdLuneNormal: {
+			TextureId:      TextureFaceLuneNormal,
+			RowCount:       1,
+			ColumnCount:    2,
+			AnimationCount: 2,
+			Duration:       20,
+			IsLoop:         true,
+		},
+		AnimationIdLuneDamage: {
+			TextureId:      TextureFaceLuneDamage,
+			RowCount:       1,
+			ColumnCount:    1,
+			AnimationCount: 1,
+			Duration:       20,
+			IsLoop:         true,
+		},
+		AnimationIdSunnyNormal: {
+			TextureId:      TextureFaceSunnyNormal,
+			RowCount:       1,
+			ColumnCount:    1,
+			AnimationCount: 1,
+			Duration:       20,
+			IsLoop:         true,
+		},
+		AnimationIdSunnyDamage: {
+			TextureId:      TextureFaceSunnyDamage,
+			RowCount:       1,
+			ColumnCount:    1,
+			AnimationCount: 1,
+			Duration:       20,
+			IsLoop:         true,
+		},
 		AnimationMarshmallowNormal: {
 			TextureId:      TextureMarshmallowNormal,
 			RowCount:       1,

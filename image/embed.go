@@ -9,8 +9,12 @@ var (
 	Window []byte
 	//go:embed face_lune_normal.png
 	FaceLuneNormal []byte
+	//go:embed face_lune_damage.png
+	FaceLuneDamage []byte
 	//go:embed face_sunny_normal.png
 	FaceSunnyNormal []byte
+	//go:embed face_sunny_damage.png
+	FaceSunnyDamage []byte
 	//go:embed marshmallow_normal.png
 	MarshmallowNormal []byte
 	//go:embed marshmallow_damage.png

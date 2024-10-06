@@ -41,6 +41,10 @@ func (d *BattleActorDisplay) GetMainCharacterTopLeftPosition() *frontend.Vector 
 	return d.faceWindow.GetTopLeftPosition()
 }
 
+func (d *BattleActorDisplay) SetEmotion(emotion BattleEmotionType) {
+	d.faceWindow.SetEmotion(emotion)
+}
+
 type NewBattleActorDisplayFunc func(*core.Actor) *BattleActorDisplay
 
 func CreateNewBattleActorDisplay(
@@ -57,7 +61,7 @@ func CreateNewBattleActorDisplay(
 				&frontend.Vector{X: 0, Y: -parameter.GetHeight()},
 				frontend.DepthPlayer,
 				frontend.PivotBottomLeft,
-				frontend.TextureFaceLuneNormal,
+				core.CharacterLuneId,
 			),
 			displayDamage:    newDisplayDamage(),
 			parameterDisplay: parameter,
@@ -87,7 +91,7 @@ func CreateNewBattleSubActorDisplay(
 				&frontend.Vector{X: 0, Y: -height},
 				frontend.DepthPlayer,
 				frontend.PivotBottomRight,
-				frontend.TextureFaceSunnyNormal,
+				core.CharacterSunnyId,
 			),
 			displayDamage:    newDisplayDamage(),
 			parameterDisplay: parameterDisplay,
@@ -128,6 +132,10 @@ func (d *BattleSubActorDisplay) Draw(
 
 func (d *BattleSubActorDisplay) GetCenterPosition() *frontend.Vector {
 	return d.faceWindow.GetCenterPosition()
+}
+
+func (d *BattleSubActorDisplay) SetEmotion(emotion BattleEmotionType) {
+	d.faceWindow.SetEmotion(emotion)
 }
 
 type BattleParameterDisplay struct {

@@ -78,3 +78,9 @@ func (a *Animation) IsEnd() bool {
 func (a *Animation) SetShader(shader *frontend.Shader) {
 	a.image.SetShader(shader)
 }
+
+func (a *Animation) SetScaleBySize(size *frontend.Vector) {
+	width := size.X * float64(a.data.ColumnCount)
+	height := size.Y * float64(a.data.RowCount)
+	a.image.SetScaleBySize(&frontend.Vector{X: width, Y: height})
+}
