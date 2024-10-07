@@ -61,6 +61,24 @@ func (s *BattleState) GetOtherSideActors(actionActor *Actor) []*Actor {
 	return result
 }
 
+func (s *BattleState) GetMainActor() *Actor {
+	for _, actor := range s.Actors {
+		if actor.IsMainActor() {
+			return actor
+		}
+	}
+	return nil
+}
+
+func (s *BattleState) GetSubActor() *Actor {
+	for _, actor := range s.Actors {
+		if actor.IsSubActor() {
+			return actor
+		}
+	}
+	return nil
+}
+
 type BattleAction struct {
 	SelectedSkill  SkillId
 	TargetActorIds []ActorId
@@ -99,7 +117,7 @@ func StandByCreateRandomAction(
 			skill := skills[skillIndex]
 			targets := choiceSkillTarget(skill, actor, state)
 			return &BattleAction{
-				SelectedSkill:  skill.Id,
+				SelectedSkill:  skill.SkillId,
 				TargetActorIds: targets,
 			}
 		}

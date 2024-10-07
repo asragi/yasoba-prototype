@@ -10,11 +10,15 @@ import (
 type SkillId string
 
 const (
-	SkillIdLuneAttack       SkillId = "lune-attack"
-	SkillIdLuneFireEnemy    SkillId = "lune-fire-enemy"
-	SkillIdLuneFireAlly     SkillId = "lune-fire-ally"
-	SkillIdLuneThunderEnemy SkillId = "lune-thunder-enemy"
-	SkillIdNormalTackle     SkillId = "normal-tackle"
+	SkillIdLuneAttack         SkillId = "lune-attack"
+	SkillIdLuneFireEnemy      SkillId = "lune-fire-enemy"
+	SkillIdLuneFireAlly       SkillId = "lune-fire-ally"
+	SkillIdLuneThunderEnemy   SkillId = "lune-thunder-enemy"
+	SkillIdSunnyKick          SkillId = "sunny-attack"
+	SkillIdSunnyUppercut      SkillId = "sunny-uppercut"
+	SkillIdCombinationFire    SkillId = "combination-fire"
+	SkillIdCombinationThunder SkillId = "combination-thunder"
+	SkillIdNormalTackle       SkillId = "normal-tackle"
 )
 
 type SkillType int
@@ -35,35 +39,58 @@ const (
 type ServeSkillData func(id SkillId) *SkillData
 
 func NewSkillServer() ServeSkillData {
+	const (
+		FirePower             = 6.0
+		ThunderPower          = 7.5
+		KickPower             = 1.0
+		CombinationEfficiency = 1.5
+	)
 	dict := map[SkillId]*SkillData{}
-	register := func(id SkillId, targetType SkillTargetType, rows []SkillDataRow) {
+	register := func(id SkillId, targetType SkillTargetType, rows []*SkillDataDetail) {
 		dict[id] = &SkillData{
-			Id:         id,
+			SkillId:    id,
 			TargetType: targetType,
 			Rows:       rows,
 		}
 	}
 	register(
-		SkillIdLuneAttack, SkillTargetTypeSingleOther, []SkillDataRow{
-			&SkillSingleAttackRow{
-				Power: 1.0,
-				Type:  SkillTypePhysical,
+		SkillIdLuneAttack, SkillTargetTypeSingleOther, []*SkillDataDetail{
+			{
+				Power:     1.0,
+				Type:      SkillTypePhysical,
+				ActorType: ActorTypeMain,
 			},
 		},
 	)
 	register(
-		SkillIdLuneFireEnemy, SkillTargetTypeSingleOther, []SkillDataRow{
-			&SkillSingleAttackRow{
-				Power: 5,
-				Type:  SkillTypeMagical,
+		SkillIdLuneFireEnemy, SkillTargetTypeSingleOther, []*SkillDataDetail{
+			{
+				Power:     FirePower,
+				Type:      SkillTypeMagical,
+				ActorType: ActorTypeMain,
 			},
 		},
 	)
 	register(
-		SkillIdNormalTackle, SkillTargetTypeSingleOther, []SkillDataRow{
-			&SkillSingleAttackRow{
-				Power: 1.0,
-				Type:  SkillTypePhysical,
+		SkillIdNormalTackle, SkillTargetTypeSingleOther, []*SkillDataDetail{
+			{
+				Power:     1.0,
+				Type:      SkillTypePhysical,
+				ActorType: ActorTypeMain,
+			},
+		},
+	)
+	register(
+		SkillIdCombinationThunder, SkillTargetTypeNone, []*SkillDataDetail{
+			{
+				Power:     ThunderPower * CombinationEfficiency,
+				Type:      SkillTypeMagical,
+				ActorType: ActorTypeMain,
+			},
+			{
+				Power:     KickPower * CombinationEfficiency,
+				Type:      SkillTypePhysical,
+				ActorType: ActorTypeSub,
 			},
 		},
 	)
@@ -74,6 +101,25 @@ func NewSkillServer() ServeSkillData {
 		}
 		return skill
 	}
+}
+
+type ActorType int
+
+const (
+	ActorTypeMain ActorType = iota
+	ActorTypeSub
+)
+
+type SkillDataDetail struct {
+	Power     SkillPower
+	Type      SkillType
+	ActorType ActorType
+}
+
+type SkillData struct {
+	SkillId    SkillId
+	TargetType SkillTargetType
+	Rows       []*SkillDataDetail
 }
 
 type SkillDataRow interface{}
@@ -93,7 +139,19 @@ type SkillSingleAttackResult struct {
 	AfterHp        HP
 }
 
-type SkillData struct {
+type SkillSingleCombinationAttackResult struct {
+	ActorId        ActorId
+	SubActorId     ActorId
+	TargetId       ActorId
+	TargetSide     ActorSide
+	SkillId        SkillId
+	Damage         Damage
+	IsTargetBeaten bool
+	AfterHp        HP
+}
+
+// deprecated: use SkillData
+type SkillDataOld struct {
 	Id         SkillId
 	TargetType SkillTargetType
 	Rows       []SkillDataRow
@@ -106,11 +164,21 @@ type SelectedAction struct {
 	Target   []ActorId
 }
 
-type SkillApplyResultRow interface{}
+type SkillApplyResultRow struct {
+	ActorId        ActorId
+	TargetId       ActorId
+	TargetSide     ActorSide
+	SkillId        SkillId
+	Damage         Damage
+	IsTargetBeaten bool
+	AfterHp        HP
+}
+
 type SkillApplyResult struct {
-	Actor   ActorId
-	SkillId SkillId
-	Rows    []SkillApplyResultRow
+	Actor    ActorId
+	SubActor ActorId
+	SkillId  SkillId
+	Rows     []*SkillApplyResultRow
 }
 
 // SkillApplyFunc is a function that calculate skill effect to the target
@@ -124,40 +192,43 @@ func CreateSkillApply(
 	random util.EmitRandomFunc,
 ) SkillApplyFunc {
 	return func(args *SelectedAction) *SkillApplyResult {
-		result := make([]SkillApplyResultRow, 0)
+		result := make([]*SkillApplyResultRow, 0)
 		data := skillServer(args.Id)
 		for _, row := range data.Rows {
-			switch r := row.(type) {
-			case *SkillSingleAttackRow:
-				actor := supplyActor(args.Actor)
-				target := supplyActor(args.Target[0])
-				damage := calculateNormalAttackDamage(
-					actor.ATK,
-					actor.MAG,
-					target.DEF,
-					target.MAG,
-					r.Power,
-					r.Type,
-					random,
-				)
-				afterHP := damage.Apply(target.HP)
-				target.HP = afterHP
-				fmt.Printf("actor: %s, target: %s\n", actor.Id, target.Id)
-				fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
-				fmt.Println("---")
-				updateActor(target)
-				result = append(
-					result, &SkillSingleAttackResult{
-						ActorId:        args.Actor,
-						TargetId:       args.Target[0],
-						TargetSide:     target.Side,
-						SkillId:        args.Id,
-						Damage:         damage,
-						IsTargetBeaten: afterHP <= 0,
-						AfterHp:        afterHP,
-					},
-				)
-			}
+			actualActorId := func() ActorId {
+				if row.ActorType == ActorTypeMain {
+					return args.Actor
+				}
+				return args.SubActor
+			}()
+			actualActor := supplyActor(actualActorId)
+			target := supplyActor(args.Target[0])
+			damage := calculateNormalAttackDamage(
+				actualActor.ATK,
+				actualActor.MAG,
+				target.DEF,
+				target.MAG,
+				row.Power,
+				row.Type,
+				random,
+			)
+			afterHP := damage.Apply(target.HP)
+			target.HP = afterHP
+			fmt.Printf("actualActor: %s, target: %s\n", actualActor.Id, target.Id)
+			fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
+			fmt.Println("---")
+			updateActor(target)
+			result = append(
+				result, &SkillApplyResultRow{
+					ActorId:        args.Actor,
+					TargetId:       args.Target[0],
+					TargetSide:     target.Side,
+					SkillId:        args.Id,
+					Damage:         damage,
+					IsTargetBeaten: afterHP <= 0,
+					AfterHp:        afterHP,
+				},
+			)
 		}
 		return &SkillApplyResult{
 			Actor:   args.Actor,

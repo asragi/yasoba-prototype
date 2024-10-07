@@ -106,6 +106,8 @@ func StandByNewBattleScene(
 	serveBattleState core.ServeBattleState,
 	decideActionOrder core.DecideActionOrderFunc,
 	serveActor core.ActorSupplier,
+	checkCombination core.CheckCombinationFunc,
+	decidePartnerAction core.DecidePartnerActionFunc,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -345,6 +347,7 @@ func StandByNewBattleScene(
 		}
 		onTargetSelect := createOnTargetSelect(
 			mainActorId,
+			subActorId,
 			closeWindowOnTargetSelect,
 			func(index int) core.ActorId { return allActorId[index] },
 			func() core.PlayerCommand { return selectedCommand },
@@ -357,6 +360,8 @@ func StandByNewBattleScene(
 			serveActor,
 			playSequence,
 			onEndBattle,
+			checkCombination,
+			decidePartnerAction,
 		)
 		selectWindow = newSelectWindow(
 			&frontend.Vector{X: 80, Y: 0},
@@ -384,16 +389,13 @@ func createPlayBattleSequence(
 			damageInformation := func() []*component.DamageInformation {
 				result := make([]*component.DamageInformation, 0)
 				for _, row := range skillApplyResult.Rows {
-					switch r := row.(type) {
-					case *core.SkillSingleAttackResult:
-						result = append(
-							result, &component.DamageInformation{
-								Target:  r.TargetId,
-								Damage:  r.Damage,
-								AfterHP: r.AfterHp,
-							},
-						)
-					}
+					result = append(
+						result, &component.DamageInformation{
+							Target:  row.TargetId,
+							Damage:  row.Damage,
+							AfterHP: row.AfterHp,
+						},
+					)
 				}
 				return result
 			}()
@@ -406,40 +408,39 @@ func createPlayBattleSequence(
 			)
 			addBattleSequence(sequence)
 			for _, row := range skillApplyResult.Rows {
-				switch r := row.(type) {
-				case *core.SkillSingleAttackResult:
-					if !r.IsTargetBeaten {
-						continue
-					}
-					actualTarget := r.TargetId
-					targetSide := r.TargetSide
-					if targetSide == core.ActorSideEnemy {
-						enemyId := actorIdToEnemy[actualTarget]
-						viewData := serveEnemyView(enemyId)
-						beatenSequence := newBattleSequence(
-							&component.EventSequenceArgs{
-								SequenceId: viewData.BeatenSequenceId,
-								Actor:      actualTarget,
-								Target: []*component.DamageInformation{
-									{
-										Target: actualTarget,
-										Damage: 0,
-									},
+				if !row.IsTargetBeaten {
+					continue
+				}
+				actualTarget := row.TargetId
+				targetSide := row.TargetSide
+				if targetSide == core.ActorSideEnemy {
+					enemyId := actorIdToEnemy[actualTarget]
+					viewData := serveEnemyView(enemyId)
+					beatenSequence := newBattleSequence(
+						&component.EventSequenceArgs{
+							SequenceId: viewData.BeatenSequenceId,
+							Actor:      actualTarget,
+							Target: []*component.DamageInformation{
+								{
+									Target: actualTarget,
+									Damage: 0,
 								},
 							},
-						)
-						addBattleSequence(beatenSequence)
-						return
-					}
-					// TODO: Implement player beaten sequence
+						},
+					)
+					addBattleSequence(beatenSequence)
+					return
 				}
+				// TODO: Implement player beaten sequence
 			}
 		}
 	}
 }
 
+// TODO: View非依存のLogic部分だけ抽出してCoreに移動したい
 func createOnTargetSelect(
 	mainActorId core.ActorId,
+	subActorId core.ActorId,
 	closeWindow func(),
 	indexToActor func(int) core.ActorId,
 	serveSelectedCommand func() core.PlayerCommand,
@@ -452,9 +453,12 @@ func createOnTargetSelect(
 	serveActor core.ActorSupplier,
 	playSequence func([]*core.SkillApplyResult),
 	onBattleEnd func(core.BattleEndType),
+	checkCombination core.CheckCombinationFunc,
+	partnerForecast core.DecidePartnerActionFunc,
 ) func(int) {
 	return func(index int) {
 		closeWindow()
+		state := serveState()
 		target := indexToActor(index)
 		command := serveSelectedCommand()
 		response := postCommand(
@@ -464,9 +468,29 @@ func createOnTargetSelect(
 				Command:  command,
 			},
 		)
+		forecast := partnerForecast(state)
+		combinationResult := checkCombination(
+			&core.CheckCombinationRequest{
+				MainActorSkillId: response.Actions.Id,
+				MainActorTarget:  response.Actions.Target[0],
+				SubActorSkillId:  forecast.SelectedSkill,
+				SubActorTarget:   forecast.SelectedTarget,
+			},
+		)
+		selectedAction := func() *core.SelectedAction {
+			if combinationResult.IsCombination {
+				return &core.SelectedAction{
+					Id:       combinationResult.SkillId,
+					Actor:    mainActorId,
+					SubActor: subActorId,
+					Target:   []core.ActorId{combinationResult.TargetId},
+				}
+			}
+			return response.Actions
+		}()
 		appliedResponses := func() []*core.SkillApplyResult {
-			result := []*core.SkillApplyResult{skillApply(response.Actions)}
-			state := serveState()
+			apply := skillApply(selectedAction)
+			result := []*core.SkillApplyResult{apply}
 			endState := state.IsBattleShouldBeEnd()
 			if endState != core.BattleEndTypeNone {
 				onBattleEnd(endState)

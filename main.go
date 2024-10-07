@@ -15,7 +15,7 @@ import (
 const (
 	GameWidth  = 384
 	GameHeight = 288
-	DrawRate   = 2
+	DrawRate   = 1
 )
 
 var (
@@ -79,6 +79,8 @@ func init() {
 	choiceAction := core.CreateNewChoiceAction(newChoiceRandomAction)
 	decideActionOrder := core.CreateDecideActionOrder(actorServer)
 	serveBattleState := core.CreateServeBattleState(actorServer)
+	checkCombination := core.CreateCheckCombination()
+	partnerForecast := core.CreateDecidePartnerAction(random)
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
 		newSelectWindow,
@@ -99,6 +101,8 @@ func init() {
 		serveBattleState,
 		decideActionOrder,
 		actorServer.Get,
+		checkCombination,
+		partnerForecast,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{
