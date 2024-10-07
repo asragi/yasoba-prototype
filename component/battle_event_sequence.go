@@ -1,17 +1,17 @@
 package component
 
 import (
+	"fmt"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
+// EventSequenceId is an identifier for the event sequence.
+// One Skill has one sequence, so it is the same as SkillId.
 type EventSequenceId string
 
 const (
-	EventSequenceIdLuneAttack        EventSequenceId = "lune-attack"
-	EventSequenceIdLuneFire          EventSequenceId = "lune-fire"
-	EventSequenceIdPunchingBagBeaten EventSequenceId = "punching-bag-beaten"
-	EventSequenceIdNormalTackle      EventSequenceId = "normal-tackle"
+	EventSequenceIdPunchingBagBeaten EventSequenceId = "punching_bag_beaten"
 )
 
 type BattleTextDisplay interface {
@@ -27,23 +27,19 @@ type SetDisappear func(core.ActorId)
 
 type SkillToSequenceFunc func(core.SkillId) EventSequenceId
 
-func CreateSkillToSequenceId() SkillToSequenceFunc {
-	dict := map[core.SkillId]EventSequenceId{
-		core.SkillIdLuneAttack:    EventSequenceIdLuneAttack,
-		core.SkillIdLuneFireEnemy: EventSequenceIdLuneFire,
-		core.SkillIdNormalTackle:  EventSequenceIdLuneAttack,
-	}
-	return func(id core.SkillId) EventSequenceId {
-		seq, ok := dict[id]
-		if !ok {
-			panic("sequence not found")
-		}
-		return seq
-	}
+func ToEventSequenceId(skillId core.SkillId) EventSequenceId {
+	return EventSequenceId(skillId)
 }
 
 func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	dict := map[EventSequenceId]*BattleEventSequence{}
+	register := func(id core.SkillId, rows []BattleEventRow) {
+		eventId := ToEventSequenceId(id)
+		dict[eventId] = &BattleEventSequence{
+			Id:   eventId,
+			Rows: rows,
+		}
+	}
 	normalAttack := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
@@ -68,10 +64,8 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			EmotionType: BattleEmotionNormal,
 		},
 	}
-	dict[EventSequenceIdLuneAttack] = &BattleEventSequence{
-		Id:   EventSequenceIdLuneAttack,
-		Rows: normalAttack,
-	}
+	register(core.SkillIdLuneAttack, normalAttack)
+	register(core.SkillIdNormalTackle, normalAttack)
 	luneFire := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
@@ -96,10 +90,32 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			EmotionType: BattleEmotionNormal,
 		},
 	}
-	dict[EventSequenceIdLuneFire] = &BattleEventSequence{
-		Id:   EventSequenceIdLuneFire,
-		Rows: luneFire,
+	register(core.SkillIdLuneFireEnemy, luneFire)
+	combinationThunder := []BattleEventRow{
+		&DisplayMessageEvent{
+			Frame: 1,
+			Text:  core.TextIdCombinationThunder,
+		},
+		&PlayEffectEvent{
+			Frame:    60,
+			EffectId: widget.EffectIdExplode,
+		},
+		&ChangeEmotionEvent{
+			Frame:       126,
+			EmotionType: BattleEmotionDamage,
+		},
+		&ShakeActorAnimationEvent{
+			Frame: 126,
+		},
+		&DisplayDamageEvent{
+			Frame: 126,
+		},
+		&ChangeEmotionEvent{
+			Frame:       180,
+			EmotionType: BattleEmotionNormal,
+		},
 	}
+	register(core.SkillIdCombinationThunder, combinationThunder)
 	punchingBagBeaten := []BattleEventRow{
 		&ChangeEmotionEvent{
 			Frame:       1,
@@ -118,7 +134,11 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 		Rows: punchingBagBeaten,
 	}
 	return func(id EventSequenceId) *BattleEventSequence {
-		return dict[id]
+		data, ok := dict[id]
+		if !ok {
+			panic(fmt.Sprintf("event sequence not found: %s", id))
+		}
+		return data
 	}
 }
 
@@ -181,8 +201,24 @@ func CreateExecBattleEventSequence(
 						target := args.Target[0]
 						shakeActor(target.Target)
 					case *DisplayDamageEvent:
-						target := args.Target[0]
-						displayDamage(target.Target, target.Damage, target.AfterHP)
+						damageMap := func() map[core.ActorId][]*DamageInformation {
+							result := map[core.ActorId][]*DamageInformation{}
+							for _, target := range args.Target {
+								result[target.Target] = append(result[target.Target], target)
+							}
+							return result
+						}()
+						for target, damages := range damageMap {
+							allDamage := func() core.Damage {
+								var result core.Damage = 0
+								for _, d := range damages {
+									result += d.Damage
+								}
+								return result
+							}()
+							finalAfterHp := damages[len(damages)-1].AfterHP
+							displayDamage(target, allDamage, finalAfterHp)
+						}
 					case *ChangeEmotionEvent:
 						target := args.Target[0]
 						changeEmotion(target.Target, r.EmotionType)
@@ -251,9 +287,17 @@ func (e *DisplayDamageEvent) IsEnd(frame int) bool {
 	return e.Frame < frame
 }
 
+type ReferencePoint int
+
+const (
+	ReferencePointActorCenter ReferencePoint = iota
+	ReferencePointScreenCenter
+)
+
 type PlayEffectEvent struct {
-	Frame    int
-	EffectId widget.EffectId
+	Frame          int
+	EffectId       widget.EffectId
+	ReferencePoint ReferencePoint
 }
 
 func (e *PlayEffectEvent) IsActive(frame int) bool {

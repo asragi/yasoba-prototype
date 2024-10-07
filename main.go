@@ -15,7 +15,7 @@ import (
 const (
 	GameWidth  = 384
 	GameHeight = 288
-	DrawRate   = 1
+	DrawRate   = 2
 )
 
 var (
@@ -50,7 +50,6 @@ func init() {
 		textServer,
 		battleSequenceServer,
 	)
-	skillToSequence := component.CreateSkillToSequenceId()
 	enemyGraphicServer := component.CreateGetEnemyGraphics()
 	newDisplayDamage := component.CreateNewDisplayDamage(resource)
 	newBattleActorGraphics := component.NewBattleActorGraphics(
@@ -93,7 +92,7 @@ func init() {
 		applySkill,
 		battleSettingServer,
 		prepareBattleSequence,
-		skillToSequence,
+		component.ToEventSequenceId,
 		newBattleEnemyDisplay,
 		effectManager,
 		serveEnemyView,

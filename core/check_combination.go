@@ -17,7 +17,7 @@ type CheckCombinationFunc func(request *CheckCombinationRequest) *CheckCombinati
 func CreateCheckCombination() CheckCombinationFunc {
 	combinationDict := map[SkillId]map[SkillId]SkillId{
 		SkillIdLuneFireEnemy: {
-			SkillIdSunnyUppercut: SkillIdCombinationFire,
+			SkillIdSunnyUppercut: SkillIdCombinationThunder,
 		},
 	}
 	return func(request *CheckCombinationRequest) *CheckCombinationResponse {

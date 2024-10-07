@@ -23,6 +23,7 @@ const (
 	TextureMarshmallowDamage
 	TextureBattleEffectImpact
 	TextureBattleEffectFire
+	TextureBattleEffectExplode
 )
 
 type FontId int
@@ -38,6 +39,7 @@ const (
 	AnimationMarshmallowDamage
 	AnimationBattleEffectImpact
 	AnimationBattleEffectFire
+	AnimationBattleEffectExplode
 	AnimationIdLuneNormal
 	AnimationIdLuneDamage
 	AnimationIdSunnyNormal
@@ -103,16 +105,17 @@ func CreateResourceManager() (*ResourceManager, error) {
 	}
 	// TODO: この辺の処理go:generateとかで自動生成したいね
 	imageLoadMap := map[TextureId][]byte{
-		TextureWindow:             load.Window,
-		TextureCursor:             load.Cursor,
-		TextureFaceLuneNormal:     load.FaceLuneNormal,
-		TextureFaceLuneDamage:     load.FaceLuneDamage,
-		TextureFaceSunnyNormal:    load.FaceSunnyNormal,
-		TextureFaceSunnyDamage:    load.FaceSunnyDamage,
-		TextureMarshmallowNormal:  load.MarshmallowNormal,
-		TextureMarshmallowDamage:  load.MarshmallowDamage,
-		TextureBattleEffectImpact: load.BattleEffectImpact,
-		TextureBattleEffectFire:   load.BattleEffectFire,
+		TextureWindow:              load.Window,
+		TextureCursor:              load.Cursor,
+		TextureFaceLuneNormal:      load.FaceLuneNormal,
+		TextureFaceLuneDamage:      load.FaceLuneDamage,
+		TextureFaceSunnyNormal:     load.FaceSunnyNormal,
+		TextureFaceSunnyDamage:     load.FaceSunnyDamage,
+		TextureMarshmallowNormal:   load.MarshmallowNormal,
+		TextureMarshmallowDamage:   load.MarshmallowDamage,
+		TextureBattleEffectImpact:  load.BattleEffectImpact,
+		TextureBattleEffectFire:    load.BattleEffectFire,
+		TextureBattleEffectExplode: load.BattleEffectExplode,
 	}
 
 	for id, data := range imageLoadMap {
@@ -190,6 +193,14 @@ func CreateResourceManager() (*ResourceManager, error) {
 			RowCount:       5,
 			ColumnCount:    6,
 			AnimationCount: 25,
+			Duration:       4,
+			IsLoop:         false,
+		},
+		AnimationBattleEffectExplode: {
+			TextureId:      TextureBattleEffectExplode,
+			RowCount:       5,
+			ColumnCount:    6,
+			AnimationCount: 30,
 			Duration:       4,
 			IsLoop:         false,
 		},

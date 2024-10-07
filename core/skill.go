@@ -202,33 +202,35 @@ func CreateSkillApply(
 				return args.SubActor
 			}()
 			actualActor := supplyActor(actualActorId)
-			target := supplyActor(args.Target[0])
-			damage := calculateNormalAttackDamage(
-				actualActor.ATK,
-				actualActor.MAG,
-				target.DEF,
-				target.MAG,
-				row.Power,
-				row.Type,
-				random,
-			)
-			afterHP := damage.Apply(target.HP)
-			target.HP = afterHP
-			fmt.Printf("actualActor: %s, target: %s\n", actualActor.Id, target.Id)
-			fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
-			fmt.Println("---")
-			updateActor(target)
-			result = append(
-				result, &SkillApplyResultRow{
-					ActorId:        args.Actor,
-					TargetId:       args.Target[0],
-					TargetSide:     target.Side,
-					SkillId:        args.Id,
-					Damage:         damage,
-					IsTargetBeaten: afterHP <= 0,
-					AfterHp:        afterHP,
-				},
-			)
+			for _, targetId := range args.Target {
+				target := supplyActor(targetId)
+				damage := calculateNormalAttackDamage(
+					actualActor.ATK,
+					actualActor.MAG,
+					target.DEF,
+					target.MAG,
+					row.Power,
+					row.Type,
+					random,
+				)
+				afterHP := damage.Apply(target.HP)
+				target.HP = afterHP
+				fmt.Printf("actualActor: %s, target: %s\n", actualActor.Id, target.Id)
+				fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
+				fmt.Println("---")
+				updateActor(target)
+				result = append(
+					result, &SkillApplyResultRow{
+						ActorId:        args.Actor,
+						TargetId:       args.Target[0],
+						TargetSide:     target.Side,
+						SkillId:        args.Id,
+						Damage:         damage,
+						IsTargetBeaten: afterHP <= 0,
+						AfterHp:        afterHP,
+					},
+				)
+			}
 		}
 		return &SkillApplyResult{
 			Actor:   args.Actor,

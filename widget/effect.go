@@ -10,6 +10,7 @@ type EffectId string
 const (
 	EffectIdLuneAttack EffectId = "lune_attack"
 	EffectIdLuneFire   EffectId = "lune_fire"
+	EffectIdExplode    EffectId = "explode"
 )
 
 type Effect struct {
@@ -92,6 +93,10 @@ func CreateServeEffectData() ServeEffectDataFunc {
 		EffectIdLuneFire: {
 			EffectId:    EffectIdLuneFire,
 			AnimationId: frontend.AnimationBattleEffectFire,
+		},
+		EffectIdExplode: {
+			EffectId:    EffectIdExplode,
+			AnimationId: frontend.AnimationBattleEffectExplode,
 		},
 	}
 	return func(effectId EffectId) *EffectData {

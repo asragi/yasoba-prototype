@@ -1,5 +1,7 @@
 package core
 
+import "fmt"
+
 type TextId string
 
 const (
@@ -15,6 +17,7 @@ const (
 	TextIdPunchingBagName      TextId = "enemy_punching_bag_name"
 	TextIdLuneAttackDesc       TextId = "lune_attack_desc"
 	TextIdLuneFireDesc         TextId = "lune_fire_desc"
+	TextIdCombinationThunder   TextId = "combination_thunder"
 	TextIdEnemyBeaten          TextId = "enemy_beaten_desc"
 	TextIdBattleWin            TextId = "battle_win"
 	TextIdBattleLose           TextId = "battle_lose"
@@ -49,13 +52,14 @@ func CreateServeTextData() ServeTextDataFunc {
 	register(TextIdPunchingBagName, "マシュマロス")
 	register(TextIdLuneAttackDesc, "たいあたりした！")
 	register(TextIdLuneFireDesc, "ファイアをとなえた！")
+	register(TextIdCombinationThunder, "サニーはルーネのまほうにあわせた！\nおおきなばくはつがおこった！")
 	register(TextIdEnemyBeaten, "てきをやっつけた！")
 	register(TextIdBattleWin, "しょうりした！")
 	register(TextIdBattleLose, "やられてしまった……")
 
 	return func(id TextId) *TextData {
 		if _, ok := dict[id]; !ok {
-			panic("text not found")
+			panic(fmt.Sprintf("text not found: %s", id))
 		}
 		return dict[id]
 	}

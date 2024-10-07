@@ -23,6 +23,8 @@ var (
 	BattleEffectImpact []byte
 	//go:embed battle_effect_fire.png
 	BattleEffectFire []byte
+	//go:embed battle_effect_explode.png
+	BattleEffectExplode []byte
 	//go:embed disappear.go
 	DisappearShader []byte
 )
