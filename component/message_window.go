@@ -6,7 +6,7 @@ import (
 )
 
 type MessageWindow struct {
-	text   *widget.Text
+	text   widget.TextInterface
 	window widget.WindowInterface
 	shake  *frontend.EmitShake
 }
@@ -38,12 +38,11 @@ type NewMessageWindowFunc func(
 ) *MessageWindow
 
 func StandByNewMessageWindow(
-	resource *frontend.ResourceManager,
+	newText widget.NewTextFunc,
 	newWindow widget.NewWindowFunc,
 ) NewMessageWindowFunc {
 	cornerSize := 6
 	padding := &frontend.Vector{X: 16, Y: 8}
-	font := resource.GetFont(frontend.MaruMinya)
 	speed := 5
 	return func(
 		relativePosition *frontend.Vector,
@@ -63,11 +62,11 @@ func StandByNewMessageWindow(
 			},
 		)
 
-		text := widget.NewText(
-			&widget.TextOptions{
+		text := newText(
+			&widget.TextOptionsNew{
 				RelativePosition: window.GetContentUpperLeft(),
 				Pivot:            frontend.PivotTopLeft,
-				TextFace:         font,
+				Font:             frontend.MaruMinya,
 				Speed:            speed,
 				Depth:            depth,
 			},

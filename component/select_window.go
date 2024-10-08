@@ -7,7 +7,7 @@ import (
 )
 
 type SelectWindow struct {
-	texts           []*widget.Text
+	texts           []widget.TextInterface
 	cursor          *widget.Image
 	cursorPositions []*frontend.Vector
 	index           int
@@ -85,9 +85,9 @@ type NewSelectWindowFunc func(
 
 func StandByNewSelectWindow(
 	resource *frontend.ResourceManager,
+	newText widget.NewTextFunc,
 	textServer core.ServeTextDataFunc,
 ) NewSelectWindowFunc {
-	font := resource.GetFont(frontend.MaruMinya)
 	return func(
 		relativePosition *frontend.Vector,
 		pivot *frontend.Pivot,
@@ -120,7 +120,7 @@ func StandByNewSelectWindow(
 			resource.GetTexture(frontend.TextureCursor),
 		)
 		cursorWidth := cursor.Size().X
-		texts := func() []*widget.Text {
+		texts := func() []widget.TextInterface {
 			relativePositions := func() []*frontend.Vector {
 				var positions []*frontend.Vector
 				for i := 0; i < count; i++ {
@@ -133,13 +133,13 @@ func StandByNewSelectWindow(
 				}
 				return positions
 			}()
-			var texts []*widget.Text
+			var texts []widget.TextInterface
 			for i, command := range commands {
-				text := widget.NewText(
-					&widget.TextOptions{
+				text := newText(
+					&widget.TextOptionsNew{
 						RelativePosition: relativePositions[i],
 						Pivot:            frontend.PivotTopLeft,
-						TextFace:         font,
+						Font:             frontend.MaruMinya,
 						Speed:            1,
 						Depth:            depth,
 					},

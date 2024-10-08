@@ -9,13 +9,22 @@ import (
 	"strings"
 )
 
+type TextInterface interface {
+	PositionUpdater
+	Drawer
+	ForceComplete()
+	SetText(string, bool)
+	Size() *frontend.Vector
+}
+
 type Text struct {
 	currentIndex   int
 	characterSet   [][]string
 	sizes          []int
 	textSize       int
 	frameCounter   int
-	options        *TextOptions
+	options        *TextOptionsNew
+	textFace       *text.GoTextFace
 	parentPosition *frontend.Vector
 }
 
@@ -119,28 +128,15 @@ func (t *Text) drawText(
 					for j := 0; j < len(diffSet); j++ {
 						v := diffSet[j].Multiply(scale)
 						outlineOp.GeoM.Translate(v.X, v.Y)
-						text.Draw(screen, targetCharacter, t.options.TextFace, outlineOp)
+						text.Draw(screen, targetCharacter, t.textFace, outlineOp)
 						outlineOp.GeoM.Translate(-v.X, -v.Y)
 					}
 				}
 				op.ColorScale.ScaleWithColor(t.options.Color)
-				text.Draw(screen, targetCharacter, t.options.TextFace, op)
+				text.Draw(screen, targetCharacter, t.textFace, op)
 			}, t.options.Depth,
 		)
 	}
-}
-
-type TextOptions struct {
-	RelativePosition *frontend.Vector
-	Pivot            *frontend.Pivot
-	TextFace         *text.GoTextFace
-	Speed            int
-	Depth            frontend.Depth
-	Color            color.Color
-	OutlineColor     color.Color
-	EnableOutline    bool
-	Scale            int
-	XSpacing         int
 }
 
 type TextOptionsNew struct {
@@ -156,37 +152,34 @@ type TextOptionsNew struct {
 	XSpacing         int
 }
 
-type NewTextFunc func(*TextOptionsNew) *Text
+type NewTextFunc func(*TextOptionsNew) TextInterface
 
-/*
-func CreateNewText() NewTextFunc {
-	/*return func() *Text {
-
-	}
-
-}
-*/
-
-func NewText(options *TextOptions) *Text {
-	const characterSizeX = 13
-	if options.Color == nil {
-		options.Color = color.White
-	}
-	if options.OutlineColor == nil {
-		options.OutlineColor = color.Black
-	}
-	if options.Scale == 0 {
-		options.Scale = 1
-	}
-	if options.XSpacing == 0 {
-		options.XSpacing = characterSizeX
-	}
-	return &Text{
-		currentIndex: 0,
-		characterSet: nil,
-		sizes:        nil,
-		textSize:     0,
-		frameCounter: 0,
-		options:      options,
+func CreateNewText(
+	resource *frontend.ResourceManager,
+) NewTextFunc {
+	return func(options *TextOptionsNew) TextInterface {
+		const characterSizeX = 13
+		if options.Color == nil {
+			options.Color = color.White
+		}
+		if options.OutlineColor == nil {
+			options.OutlineColor = color.Black
+		}
+		if options.Scale == 0 {
+			options.Scale = 1
+		}
+		if options.XSpacing == 0 {
+			options.XSpacing = characterSizeX
+		}
+		return &Text{
+			currentIndex:   0,
+			characterSet:   nil,
+			sizes:          nil,
+			textSize:       0,
+			frameCounter:   0,
+			options:        options,
+			parentPosition: nil,
+			textFace:       resource.GetFont(options.Font),
+		}
 	}
 }

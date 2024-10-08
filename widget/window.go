@@ -22,6 +22,7 @@ type WindowInterface interface {
 	GetPositionCenter() *frontend.Vector
 	GetPositionLowerRight() *frontend.Vector
 	GetContentUpperLeft() *frontend.Vector
+	SetSize(size *frontend.Vector)
 }
 
 type Window struct {
@@ -38,6 +39,18 @@ type Window struct {
 	cornerSize       int
 	depth            frontend.Depth
 	padding          *frontend.Vector
+}
+
+func (w *Window) SetSize(size *frontend.Vector) {
+	w.size = size
+	w.cornerPosition = calculateCornerPosition(size, float64(w.cornerSize))
+	w.sidePosition = calculateSidePosition(size, float64(w.cornerSize))
+	w.sideScale = calculateSideScale(
+		size,
+		float64(w.cornerSize),
+		float64(w.image.Bounds().Dx()),
+		float64(w.image.Bounds().Dy()),
+	)
 }
 
 func (w *Window) GetPositionUpperLeft() *frontend.Vector {
@@ -131,6 +144,48 @@ func (w *Window) Size() *frontend.Vector {
 	return w.size
 }
 
+func calculateCornerPosition(
+	size *frontend.Vector,
+	cornerSize float64,
+) []*frontend.Vector {
+	return []*frontend.Vector{
+		{0, 0},
+		{size.X - cornerSize, 0},
+		{0, size.Y - cornerSize},
+		{size.X - cornerSize, size.Y - cornerSize},
+	}
+}
+
+func calculateSidePosition(
+	size *frontend.Vector,
+	cornerSize float64,
+) []*frontend.Vector {
+	return []*frontend.Vector{
+		{cornerSize, 0},
+		{size.X - cornerSize, cornerSize},
+		{0, cornerSize},
+		{cornerSize, size.Y - cornerSize},
+	}
+}
+
+func calculateSideScale(
+	size *frontend.Vector,
+	cornerSize float64,
+	textureWidth float64,
+	textureHeight float64,
+) []*frontend.Vector {
+	sideXSize := textureWidth - cornerSize*2
+	targetXSize := size.X - cornerSize*2
+	sideYSize := textureHeight - cornerSize*2
+	targetYSize := size.Y - cornerSize*2
+	return []*frontend.Vector{
+		{targetXSize / sideXSize, 1},
+		{1, targetYSize / sideYSize},
+		{1, targetYSize / sideYSize},
+		{targetXSize / sideXSize, 1},
+	}
+}
+
 type WindowOption struct {
 	Texture          frontend.TextureId
 	CornerSize       int
@@ -194,28 +249,14 @@ func CreateNewWindow(resource *frontend.ResourceManager) NewWindowFunc {
 				img.Bounds().Dy(),
 			},
 		}
-		cornerPosition := []*frontend.Vector{
-			{0, 0},
-			{option.Size.X - float64(option.CornerSize), 0},
-			{0, option.Size.Y - float64(option.CornerSize)},
-			{option.Size.X - float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
-		}
-		sidePosition := []*frontend.Vector{
-			{float64(option.CornerSize), 0},
-			{option.Size.X - float64(option.CornerSize), float64(option.CornerSize)},
-			{0, float64(option.CornerSize)},
-			{float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
-		}
-		sideXSize := float64(textureWidth - option.CornerSize*2)
-		targetXSize := option.Size.X - float64(option.CornerSize*2)
-		sideYSize := float64(textureHeight - option.CornerSize*2)
-		targetYSize := option.Size.Y - float64(option.CornerSize*2)
-		sideScales := []*frontend.Vector{
-			{targetXSize / sideXSize, 1},
-			{1, targetYSize / sideYSize},
-			{1, targetYSize / sideYSize},
-			{targetXSize / sideXSize, 1},
-		}
+		cornerPosition := calculateCornerPosition(option.Size, float64(option.CornerSize))
+		sidePosition := calculateSidePosition(option.Size, float64(option.CornerSize))
+		sideScales := calculateSideScale(
+			option.Size,
+			float64(option.CornerSize),
+			float64(textureWidth),
+			float64(textureHeight),
+		)
 
 		return &Window{
 			image:            img,

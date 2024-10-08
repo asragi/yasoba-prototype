@@ -13,22 +13,21 @@ const DamageDisplayPopFrame = 30
 const DamageDisplayPopHeight = 10
 
 type DisplayDamage struct {
-	text     *widget.Text
+	text     widget.TextInterface
 	popFrame int
 }
 
 type NewDisplayDamageFunc func() *DisplayDamage
 
-func CreateNewDisplayDamage(resource *frontend.ResourceManager) NewDisplayDamageFunc {
+func CreateNewDisplayDamage(newText widget.NewTextFunc) NewDisplayDamageFunc {
 	damageTextColor := color.White
-	font := resource.GetFont(frontend.MaruMinya)
 	positionDiff := &frontend.Vector{Y: 33}
 	return func() *DisplayDamage {
-		text := widget.NewText(
-			&widget.TextOptions{
+		text := newText(
+			&widget.TextOptionsNew{
 				RelativePosition: positionDiff,
 				Pivot:            frontend.PivotCenter,
-				TextFace:         font,
+				Font:             frontend.MaruMinya,
 				Speed:            4,
 				Depth:            frontend.DepthDamageText,
 				Color:            damageTextColor,

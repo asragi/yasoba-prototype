@@ -38,8 +38,9 @@ func init() {
 	processCommand := core.CreateProcessPlayerCommand(actorServer.Get)
 	postCommand := core.CreatePostCommand(processCommand)
 	newWindow := widget.CreateNewWindow(resource)
-	newMessageWindow := component.StandByNewMessageWindow(resource, newWindow)
-	newSelectWindow := component.StandByNewSelectWindow(resource, textServer)
+	newText := widget.CreateNewText(resource)
+	newMessageWindow := component.StandByNewMessageWindow(newText, newWindow)
+	newSelectWindow := component.StandByNewSelectWindow(resource, newText, textServer)
 	newBattleSelectWindow := component.StandByNewBattleSelectWindow(newSelectWindow)
 	newFaceWindow := component.StandByNewFaceWindow(resource, newWindow)
 	battleSettingServer := game.CreateServeBattleSetting()
@@ -52,13 +53,13 @@ func init() {
 		battleSequenceServer,
 	)
 	enemyGraphicServer := component.CreateGetEnemyGraphics()
-	newDisplayDamage := component.CreateNewDisplayDamage(resource)
+	newDisplayDamage := component.CreateNewDisplayDamage(newText)
 	newBattleActorGraphics := component.NewBattleActorGraphics(
 		resource,
 		enemyGraphicServer,
 		newDisplayDamage,
 	)
-	newHPDisplay := component.CreateNewBattleHPDisplay(frontend.MaruMinya, resource)
+	newHPDisplay := component.CreateNewBattleHPDisplay(frontend.MaruMinya, newText)
 	newParameterDisplay := component.CreateNewBattleParameterDisplay(newWindow, newHPDisplay)
 	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newFaceWindow, newDisplayDamage, newParameterDisplay)
 	newBattleSubActorDisplay := component.CreateNewBattleSubActorDisplay(

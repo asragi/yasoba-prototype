@@ -10,11 +10,12 @@ type VariableMessageWindowInterface interface {
 	widget.PositionUpdater
 	widget.Drawer
 	SetActive(bool)
+	SetText(core.TextId)
 }
 
 type VariableMessageWindow struct {
 	isActive  bool
-	text      *widget.Text
+	text      widget.TextInterface
 	window    widget.WindowInterface
 	serveText core.ServeTextDataFunc
 }
