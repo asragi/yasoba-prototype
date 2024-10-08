@@ -8,6 +8,7 @@ type Vector struct {
 
 var (
 	VectorZero = &Vector{0, 0}
+	VectorOne  = &Vector{1, 1}
 )
 
 func (v *Vector) Add(v2 *Vector) *Vector {

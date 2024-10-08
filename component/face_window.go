@@ -9,7 +9,7 @@ import (
 type FaceWindow struct {
 	emotion BattleEmotionType
 	face    map[BattleEmotionType]*widget.Animation
-	window  *widget.Window
+	window  widget.WindowInterface
 }
 
 type NewFaceWindowFunc func(
@@ -49,7 +49,10 @@ func (f *FaceWindow) GetCenterPosition() *frontend.Vector {
 	return f.window.GetPositionCenter()
 }
 
-func StandByNewFaceWindow(resource *frontend.ResourceManager) NewFaceWindowFunc {
+func StandByNewFaceWindow(
+	resource *frontend.ResourceManager,
+	newWindow widget.NewWindowFunc,
+) NewFaceWindowFunc {
 	getEmotion := createEmotionProvider()
 	return func(
 		relativePosition *frontend.Vector,
@@ -77,9 +80,9 @@ func StandByNewFaceWindow(resource *frontend.ResourceManager) NewFaceWindowFunc 
 			}
 			return result
 		}()
-		window := widget.NewWindow(
+		window := newWindow(
 			&widget.WindowOption{
-				Image:            resource.GetTexture(frontend.TextureWindow),
+				Texture:          frontend.TextureWindow,
 				CornerSize:       6,
 				RelativePosition: relativePosition,
 				Size:             frontend.NewVectorShort(faceSize).Add(&frontend.Vector{X: padding, Y: padding}),

@@ -7,32 +7,6 @@ import (
 	"image"
 )
 
-type WindowOption struct {
-	Image            *ebiten.Image
-	CornerSize       int
-	RelativePosition *frontend.Vector
-	Size             *frontend.Vector
-	Depth            frontend.Depth
-	Pivot            *frontend.Pivot
-	Padding          *frontend.Vector
-}
-
-func (o *WindowOption) Validation() error {
-	if o.Image == nil {
-		return errors.New("image is required")
-	}
-	if o.CornerSize <= 0 {
-		return errors.New("corner Size must be greater than 0")
-	}
-	if o.Size == nil {
-		return errors.New("size is required")
-	}
-	if o.Depth == frontend.Zero {
-		return errors.New("depth is required")
-	}
-	return nil
-}
-
 type windowRect struct {
 	x0 int
 	y0 int
@@ -40,20 +14,30 @@ type windowRect struct {
 	y1 int
 }
 
+type WindowInterface interface {
+	PositionUpdater
+	Drawer
+	Size() *frontend.Vector
+	GetPositionUpperLeft() *frontend.Vector
+	GetPositionCenter() *frontend.Vector
+	GetPositionLowerRight() *frontend.Vector
+	GetContentUpperLeft() *frontend.Vector
+}
+
 type Window struct {
-	image               *ebiten.Image
-	relativePosition    *frontend.Vector
-	parentPosition      *frontend.Vector
-	size                *frontend.Vector
-	pivot               *frontend.Pivot
-	GetContentUpperLeft func() *frontend.Vector
-	corners             []*windowRect
-	sides               []*windowRect
-	cornerPosition      []*frontend.Vector
-	sidePosition        []*frontend.Vector
-	sideScale           []*frontend.Vector
-	cornerSize          int
-	depth               frontend.Depth
+	image            *ebiten.Image
+	relativePosition *frontend.Vector
+	parentPosition   *frontend.Vector
+	size             *frontend.Vector
+	pivot            *frontend.Pivot
+	corners          []*windowRect
+	sides            []*windowRect
+	cornerPosition   []*frontend.Vector
+	sidePosition     []*frontend.Vector
+	sideScale        []*frontend.Vector
+	cornerSize       int
+	depth            frontend.Depth
+	padding          *frontend.Vector
 }
 
 func (w *Window) GetPositionUpperLeft() *frontend.Vector {
@@ -78,6 +62,10 @@ func (w *Window) GetPositionLowerRight() *frontend.Vector {
 		X: w.relativePosition.X + w.parentPosition.X - pivotDiff.X + w.size.X,
 		Y: w.relativePosition.Y + w.parentPosition.Y - pivotDiff.Y + w.size.Y,
 	}
+}
+
+func (w *Window) GetContentUpperLeft() *frontend.Vector {
+	return w.padding
 }
 
 func (w *Window) Update(passedPosition *frontend.Vector) {
@@ -143,89 +131,106 @@ func (w *Window) Size() *frontend.Vector {
 	return w.size
 }
 
-func NewWindow(option *WindowOption) *Window {
-	parentPosition := frontend.VectorZero
-	relativePosition := option.RelativePosition
+type WindowOption struct {
+	Texture          frontend.TextureId
+	CornerSize       int
+	RelativePosition *frontend.Vector
+	Size             *frontend.Vector
+	Depth            frontend.Depth
+	Pivot            *frontend.Pivot
+	Padding          *frontend.Vector
+}
 
-	if err := option.Validation(); err != nil {
-		panic(err)
-	}
-	img := option.Image
-	textureWidth := img.Bounds().Dx()
-	textureHeight := img.Bounds().Dy()
-	corners := []*windowRect{
-		{0, 0, option.CornerSize, option.CornerSize},
-		{img.Bounds().Dx() - option.CornerSize, 0, img.Bounds().Dx(), option.CornerSize},
-		{0, img.Bounds().Dy() - option.CornerSize, option.CornerSize, img.Bounds().Dy()},
-		{
-			img.Bounds().Dx() - option.CornerSize,
-			img.Bounds().Dy() - option.CornerSize,
-			img.Bounds().Dx(),
-			img.Bounds().Dy(),
-		},
-	}
-	sides := []*windowRect{
-		{option.CornerSize, 0, img.Bounds().Dx() - option.CornerSize, option.CornerSize},
-		{
-			img.Bounds().Dx() - option.CornerSize,
-			option.CornerSize,
-			img.Bounds().Dx(),
-			img.Bounds().Dy() - option.CornerSize,
-		},
-		{0, option.CornerSize, option.CornerSize, img.Bounds().Dy() - option.CornerSize},
-		{
-			option.CornerSize,
-			img.Bounds().Dy() - option.CornerSize,
-			img.Bounds().Dx() - option.CornerSize,
-			img.Bounds().Dy(),
-		},
-	}
-	cornerPosition := []*frontend.Vector{
-		{0, 0},
-		{option.Size.X - float64(option.CornerSize), 0},
-		{0, option.Size.Y - float64(option.CornerSize)},
-		{option.Size.X - float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
-	}
-	sidePosition := []*frontend.Vector{
-		{float64(option.CornerSize), 0},
-		{option.Size.X - float64(option.CornerSize), float64(option.CornerSize)},
-		{0, float64(option.CornerSize)},
-		{float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
-	}
-	sideXSize := float64(textureWidth - option.CornerSize*2)
-	targetXSize := option.Size.X - float64(option.CornerSize*2)
-	sideYSize := float64(textureHeight - option.CornerSize*2)
-	targetYSize := option.Size.Y - float64(option.CornerSize*2)
-	sideScales := []*frontend.Vector{
-		{targetXSize / sideXSize, 1},
-		{1, targetYSize / sideYSize},
-		{1, targetYSize / sideYSize},
-		{targetXSize / sideXSize, 1},
-	}
+type NewWindowFunc func(*WindowOption) WindowInterface
 
-	getContentPosition := func() *frontend.Vector {
-		return option.Padding
-		/*
-			return &frontend.Vector{
-				X: relativePosition.X - pivotDiff.X + parentPosition.X + option.Padding.X,
-				Y: relativePosition.Y - pivotDiff.Y + parentPosition.Y + option.Padding.Y,
-			}
-		*/
+func (o *WindowOption) Validation() error {
+	if o.CornerSize <= 0 {
+		return errors.New("corner Size must be greater than 0")
 	}
+	if o.Size == nil {
+		return errors.New("size is required")
+	}
+	if o.Depth == frontend.Zero {
+		return errors.New("depth is required")
+	}
+	return nil
+}
 
-	return &Window{
-		image:               img,
-		relativePosition:    relativePosition,
-		parentPosition:      parentPosition,
-		size:                option.Size,
-		pivot:               option.Pivot,
-		GetContentUpperLeft: getContentPosition,
-		corners:             corners,
-		sides:               sides,
-		cornerPosition:      cornerPosition,
-		sidePosition:        sidePosition,
-		sideScale:           sideScales,
-		cornerSize:          option.CornerSize,
-		depth:               option.Depth,
+func CreateNewWindow(resource *frontend.ResourceManager) NewWindowFunc {
+	return func(option *WindowOption) WindowInterface {
+		parentPosition := frontend.VectorZero
+		relativePosition := option.RelativePosition
+
+		if err := option.Validation(); err != nil {
+			panic(err)
+		}
+		img := resource.GetTexture(option.Texture)
+		textureWidth := img.Bounds().Dx()
+		textureHeight := img.Bounds().Dy()
+		corners := []*windowRect{
+			{0, 0, option.CornerSize, option.CornerSize},
+			{img.Bounds().Dx() - option.CornerSize, 0, img.Bounds().Dx(), option.CornerSize},
+			{0, img.Bounds().Dy() - option.CornerSize, option.CornerSize, img.Bounds().Dy()},
+			{
+				img.Bounds().Dx() - option.CornerSize,
+				img.Bounds().Dy() - option.CornerSize,
+				img.Bounds().Dx(),
+				img.Bounds().Dy(),
+			},
+		}
+		sides := []*windowRect{
+			{option.CornerSize, 0, img.Bounds().Dx() - option.CornerSize, option.CornerSize},
+			{
+				img.Bounds().Dx() - option.CornerSize,
+				option.CornerSize,
+				img.Bounds().Dx(),
+				img.Bounds().Dy() - option.CornerSize,
+			},
+			{0, option.CornerSize, option.CornerSize, img.Bounds().Dy() - option.CornerSize},
+			{
+				option.CornerSize,
+				img.Bounds().Dy() - option.CornerSize,
+				img.Bounds().Dx() - option.CornerSize,
+				img.Bounds().Dy(),
+			},
+		}
+		cornerPosition := []*frontend.Vector{
+			{0, 0},
+			{option.Size.X - float64(option.CornerSize), 0},
+			{0, option.Size.Y - float64(option.CornerSize)},
+			{option.Size.X - float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
+		}
+		sidePosition := []*frontend.Vector{
+			{float64(option.CornerSize), 0},
+			{option.Size.X - float64(option.CornerSize), float64(option.CornerSize)},
+			{0, float64(option.CornerSize)},
+			{float64(option.CornerSize), option.Size.Y - float64(option.CornerSize)},
+		}
+		sideXSize := float64(textureWidth - option.CornerSize*2)
+		targetXSize := option.Size.X - float64(option.CornerSize*2)
+		sideYSize := float64(textureHeight - option.CornerSize*2)
+		targetYSize := option.Size.Y - float64(option.CornerSize*2)
+		sideScales := []*frontend.Vector{
+			{targetXSize / sideXSize, 1},
+			{1, targetYSize / sideYSize},
+			{1, targetYSize / sideYSize},
+			{targetXSize / sideXSize, 1},
+		}
+
+		return &Window{
+			image:            img,
+			relativePosition: relativePosition,
+			parentPosition:   parentPosition,
+			size:             option.Size,
+			pivot:            option.Pivot,
+			padding:          option.Padding,
+			corners:          corners,
+			sides:            sides,
+			cornerPosition:   cornerPosition,
+			sidePosition:     sidePosition,
+			sideScale:        sideScales,
+			cornerSize:       option.CornerSize,
+			depth:            option.Depth,
+		}
 	}
 }

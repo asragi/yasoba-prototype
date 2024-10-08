@@ -7,7 +7,7 @@ import (
 
 type MessageWindow struct {
 	text   *widget.Text
-	window *widget.Window
+	window widget.WindowInterface
 	shake  *frontend.EmitShake
 }
 
@@ -37,8 +37,10 @@ type NewMessageWindowFunc func(
 	*frontend.Pivot,
 ) *MessageWindow
 
-func StandByNewMessageWindow(resource *frontend.ResourceManager) NewMessageWindowFunc {
-	image := resource.GetTexture(frontend.TextureWindow)
+func StandByNewMessageWindow(
+	resource *frontend.ResourceManager,
+	newWindow widget.NewWindowFunc,
+) NewMessageWindowFunc {
 	cornerSize := 6
 	padding := &frontend.Vector{X: 16, Y: 8}
 	font := resource.GetFont(frontend.MaruMinya)
@@ -49,9 +51,9 @@ func StandByNewMessageWindow(resource *frontend.ResourceManager) NewMessageWindo
 		depth frontend.Depth,
 		pivot *frontend.Pivot,
 	) *MessageWindow {
-		window := widget.NewWindow(
+		window := newWindow(
 			&widget.WindowOption{
-				Image:            image,
+				Texture:          frontend.TextureWindow,
 				CornerSize:       cornerSize,
 				RelativePosition: relativePosition,
 				Size:             size,

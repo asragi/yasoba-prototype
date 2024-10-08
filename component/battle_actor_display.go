@@ -140,7 +140,7 @@ func (d *BattleSubActorDisplay) SetEmotion(emotion BattleEmotionType) {
 
 type BattleParameterDisplay struct {
 	hpDisplay *BattleHPDisplay
-	window    *widget.Window
+	window    widget.WindowInterface
 }
 
 func (d *BattleParameterDisplay) GetHeight() float64 {
@@ -164,19 +164,18 @@ func (d *BattleParameterDisplay) Draw(
 type NewBattleParameterDisplayFunc func(core.HP, *frontend.Pivot) *BattleParameterDisplay
 
 func CreateNewBattleParameterDisplay(
-	resource *frontend.ResourceManager,
+	newWindow widget.NewWindowFunc,
 	newBattleHPDisplay NewBattleHPDisplayFunc,
 ) NewBattleParameterDisplayFunc {
-	img := resource.GetTexture(frontend.TextureWindow)
 	const windowCornerSize = 3
 	const faceSize = 80
 	height := windowCornerSize*2 + 13.0
 	return func(initialHp core.HP, pivot *frontend.Pivot) *BattleParameterDisplay {
 		return &BattleParameterDisplay{
 			hpDisplay: newBattleHPDisplay(initialHp),
-			window: widget.NewWindow(
+			window: newWindow(
 				&widget.WindowOption{
-					Image:            img,
+					Texture:          frontend.TextureWindow,
 					CornerSize:       windowCornerSize,
 					RelativePosition: &frontend.Vector{X: 0, Y: 0},
 					Size:             &frontend.Vector{X: faceSize, Y: height},

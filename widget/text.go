@@ -143,6 +143,30 @@ type TextOptions struct {
 	XSpacing         int
 }
 
+type TextOptionsNew struct {
+	RelativePosition *frontend.Vector
+	Pivot            *frontend.Pivot
+	Font             frontend.FontId
+	Speed            int
+	Depth            frontend.Depth
+	Color            color.Color
+	OutlineColor     color.Color
+	EnableOutline    bool
+	Scale            int
+	XSpacing         int
+}
+
+type NewTextFunc func(*TextOptionsNew) *Text
+
+/*
+func CreateNewText() NewTextFunc {
+	/*return func() *Text {
+
+	}
+
+}
+*/
+
 func NewText(options *TextOptions) *Text {
 	const characterSizeX = 13
 	if options.Color == nil {

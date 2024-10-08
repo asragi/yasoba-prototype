@@ -37,10 +37,11 @@ func init() {
 	initializeBattle := core.CreateInitializeBattle(prepareActor)
 	processCommand := core.CreateProcessPlayerCommand(actorServer.Get)
 	postCommand := core.CreatePostCommand(processCommand)
-	newMessageWindow := component.StandByNewMessageWindow(resource)
+	newWindow := widget.CreateNewWindow(resource)
+	newMessageWindow := component.StandByNewMessageWindow(resource, newWindow)
 	newSelectWindow := component.StandByNewSelectWindow(resource, textServer)
 	newBattleSelectWindow := component.StandByNewBattleSelectWindow(newSelectWindow)
-	newFaceWindow := component.StandByNewFaceWindow(resource)
+	newFaceWindow := component.StandByNewFaceWindow(resource, newWindow)
 	battleSettingServer := game.CreateServeBattleSetting()
 	skillServer := core.NewSkillServer()
 	random := rand.Float64
@@ -58,7 +59,7 @@ func init() {
 		newDisplayDamage,
 	)
 	newHPDisplay := component.CreateNewBattleHPDisplay(frontend.MaruMinya, resource)
-	newParameterDisplay := component.CreateNewBattleParameterDisplay(resource, newHPDisplay)
+	newParameterDisplay := component.CreateNewBattleParameterDisplay(newWindow, newHPDisplay)
 	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newFaceWindow, newDisplayDamage, newParameterDisplay)
 	newBattleSubActorDisplay := component.CreateNewBattleSubActorDisplay(
 		newFaceWindow,
