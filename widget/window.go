@@ -19,9 +19,10 @@ type WindowInterface interface {
 	Drawer
 	Size() *frontend.Vector
 	GetPositionUpperLeft() *frontend.Vector
+	GetPositionTopCenter() *frontend.Vector
 	GetPositionCenter() *frontend.Vector
 	GetPositionLowerRight() *frontend.Vector
-	GetContentUpperLeft() *frontend.Vector
+	GetPadding() *frontend.Vector
 	SetSize(size *frontend.Vector)
 }
 
@@ -61,6 +62,10 @@ func (w *Window) GetPositionUpperLeft() *frontend.Vector {
 	}
 }
 
+func (w *Window) GetPositionTopCenter() *frontend.Vector {
+	return w.GetPositionUpperLeft().Add(&frontend.Vector{X: w.size.X / 2, Y: 0})
+}
+
 func (w *Window) GetPositionCenter() *frontend.Vector {
 	pivotDiff := w.pivot.ApplyToSize(w.size)
 	return &frontend.Vector{
@@ -77,7 +82,7 @@ func (w *Window) GetPositionLowerRight() *frontend.Vector {
 	}
 }
 
-func (w *Window) GetContentUpperLeft() *frontend.Vector {
+func (w *Window) GetPadding() *frontend.Vector {
 	return w.padding
 }
 

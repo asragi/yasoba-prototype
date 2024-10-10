@@ -13,6 +13,7 @@ type BattleScene struct {
 	battleSelectWindow *component.BattleSelectWindow
 	actorDisplay       *component.BattleActorDisplay
 	subActorDisplay    *component.BattleSubActorDisplay
+	subActorDialog     component.VariableMessageWindowInterface
 	enemyData          []*core.EnemyIdPair
 	actorNames         map[core.ActorId]core.TextId
 	targetSelectWindow *component.SelectWindow
@@ -53,6 +54,7 @@ func (s *BattleScene) Update() {
 	s.messageWindow.Update(zeroVector)
 	s.actorDisplay.Update(bottomLeft)
 	s.subActorDisplay.Update(bottomRight)
+	s.subActorDialog.Update(s.subActorDisplay.GetTopCenterPosition())
 	s.battleEnemyDisplay.Update(center)
 	s.battleSelectWindow.Update(mainCharacterTopLeftPosition)
 	s.targetSelectWindow.Update(mainCharacterTopLeftPosition)
@@ -72,6 +74,7 @@ func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.targetSelectWindow.Draw(drawFunc)
 	s.battleEnemyDisplay.Draw(drawFunc)
 	s.subActorDisplay.Draw(drawFunc)
+	s.subActorDialog.Draw(drawFunc)
 	s.actorDisplay.Draw(drawFunc)
 	s.effectManager.Draw(drawFunc)
 }
@@ -108,6 +111,7 @@ func StandByNewBattleScene(
 	serveActor core.ActorSupplier,
 	checkCombination core.CheckCombinationFunc,
 	decidePartnerAction core.DecidePartnerActionFunc,
+	newVariableMessageWindow component.NewVariableMessageWindowFunc,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -251,6 +255,13 @@ func StandByNewBattleScene(
 
 		actorDisplay := newBattleActorDisplay(mainActor)
 		subActorDisplay := newBattleSubActorDisplay(subActor)
+		subActorDialog := newVariableMessageWindow(
+			&frontend.Vector{X: 0, Y: 0},
+			frontend.DepthWindow,
+			frontend.PivotBottomRight,
+		)
+		subActorDialog.SetText(core.TextIdBattleDialogText)
+		subActorDialog.SetActive(true)
 
 		playEffect := func(effectId widget.EffectId, target core.ActorId) {
 			actor := serveActor(target)
@@ -328,6 +339,7 @@ func StandByNewBattleScene(
 			subActorDisplay:    subActorDisplay,
 			effectManager:      effectManager,
 			shake:              frontend.NewShake(),
+			subActorDialog:     subActorDialog,
 		}
 
 		playSequence := createPlayBattleSequence(

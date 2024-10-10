@@ -21,6 +21,7 @@ const (
 	TextIdEnemyBeaten          TextId = "enemy_beaten_desc"
 	TextIdBattleWin            TextId = "battle_win"
 	TextIdBattleLose           TextId = "battle_lose"
+	TextIdBattleDialogText     TextId = "battle_dialog_text"
 )
 
 type ServeTextDataFunc func(id TextId) *TextData
@@ -56,6 +57,7 @@ func CreateServeTextData() ServeTextDataFunc {
 	register(TextIdEnemyBeaten, "てきをやっつけた！")
 	register(TextIdBattleWin, "しょうりした！")
 	register(TextIdBattleLose, "やられてしまった……")
+	register(TextIdBattleDialogText, "かかってこい！")
 
 	return func(id TextId) *TextData {
 		if _, ok := dict[id]; !ok {

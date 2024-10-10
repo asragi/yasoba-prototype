@@ -64,7 +64,7 @@ func StandByNewMessageWindow(
 
 		text := newText(
 			&widget.TextOptionsNew{
-				RelativePosition: window.GetContentUpperLeft(),
+				RelativePosition: window.GetPadding(),
 				Pivot:            frontend.PivotTopLeft,
 				Font:             frontend.MaruMinya,
 				Speed:            speed,

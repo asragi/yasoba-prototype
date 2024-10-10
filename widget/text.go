@@ -13,7 +13,7 @@ type TextInterface interface {
 	PositionUpdater
 	Drawer
 	ForceComplete()
-	SetText(string, bool)
+	SetText(text string, displayAll bool)
 	Size() *frontend.Vector
 }
 

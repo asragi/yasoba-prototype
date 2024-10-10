@@ -130,6 +130,10 @@ func (d *BattleSubActorDisplay) Draw(
 	d.displayDamage.Draw(drawFunc)
 }
 
+func (d *BattleSubActorDisplay) GetTopCenterPosition() *frontend.Vector {
+	return d.faceWindow.GetTopCenterPosition()
+}
+
 func (d *BattleSubActorDisplay) GetCenterPosition() *frontend.Vector {
 	return d.faceWindow.GetCenterPosition()
 }

@@ -37,6 +37,10 @@ func (f *FaceWindow) Draw(drawFunc frontend.DrawFunc) {
 	f.getCurrentAnimation().Draw(drawFunc)
 }
 
+func (f *FaceWindow) GetTopCenterPosition() *frontend.Vector {
+	return f.window.GetPositionTopCenter()
+}
+
 func (f *FaceWindow) GetTopLeftPosition() *frontend.Vector {
 	return f.window.GetPositionUpperLeft()
 }

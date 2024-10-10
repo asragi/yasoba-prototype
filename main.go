@@ -82,6 +82,7 @@ func init() {
 	serveBattleState := core.CreateServeBattleState(actorServer)
 	checkCombination := core.CreateCheckCombination()
 	partnerForecast := core.CreateDecidePartnerAction(random)
+	newVariableMessageWindow := component.StandByNewVariableMessageWindow(newWindow, newText, textServer)
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
 		newSelectWindow,
@@ -104,6 +105,7 @@ func init() {
 		actorServer.Get,
 		checkCombination,
 		partnerForecast,
+		newVariableMessageWindow,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{
