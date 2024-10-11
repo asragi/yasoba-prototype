@@ -4,7 +4,6 @@ import (
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
-	"github.com/asragi/yasoba-prototype/game"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -43,7 +42,7 @@ func init() {
 	newSelectWindow := component.StandByNewSelectWindow(resource, newText, textServer)
 	newBattleSelectWindow := component.StandByNewBattleSelectWindow(newSelectWindow)
 	newFaceWindow := component.StandByNewFaceWindow(resource, newWindow)
-	battleSettingServer := game.CreateServeBattleSetting()
+	battleSettingServer := core.CreateServeBattleSetting()
 	skillServer := core.NewSkillServer()
 	random := rand.Float64
 	applySkill := core.CreateSkillApply(skillServer, actorServer.Get, actorServer.Upsert, random)
@@ -110,7 +109,7 @@ func init() {
 	battleScene = newBattleScene(
 		&scene.BattleOption{
 			OnEnd:           nil,
-			BattleSettingId: game.BattleSettingTest,
+			BattleSettingId: core.BattleSettingTripleTest,
 		},
 	)
 }

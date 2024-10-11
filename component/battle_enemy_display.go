@@ -72,6 +72,40 @@ type BattleDisplayArgs struct {
 	Position *frontend.Vector
 }
 
+func ToDisplayArgs(
+	enemyIdPair []*core.EnemyIdPair,
+	enemySettings []*core.EnemySetting,
+) []*BattleDisplayArgs {
+	enemySettingMap := func() map[core.EnemyId][]*core.EnemySetting {
+		result := make(map[core.EnemyId][]*core.EnemySetting)
+		for _, setting := range enemySettings {
+			result[setting.EnemyId] = append(result[setting.EnemyId], setting)
+		}
+		return result
+	}()
+	result := make([]*BattleDisplayArgs, len(enemyIdPair))
+	enemyIndex := func() map[core.EnemyId]int {
+		result := make(map[core.EnemyId]int)
+		for _, pair := range enemyIdPair {
+			result[pair.EnemyId] = 0
+		}
+		return result
+	}()
+	for i, id := range enemyIdPair {
+		actorId := id.ActorId
+		enemyId := id.EnemyId
+		index := enemyIndex[enemyId]
+		setting := enemySettingMap[enemyId][index]
+		result[i] = &BattleDisplayArgs{
+			ActorId:  actorId,
+			EnemyId:  enemyId,
+			Position: setting.Position,
+		}
+		enemyIndex[enemyId]++
+	}
+	return result
+}
+
 type NewBattleEnemyDisplayFunc func([]*BattleDisplayArgs, frontend.Depth) *BattleEnemyDisplay
 
 func CreateNewBattleEnemyDisplay(
@@ -100,6 +134,7 @@ func CreateNewBattleEnemyDisplay(
 	}
 }
 
+// BattleEnemyGraphics is a component that displays a battle enemy.
 type BattleEnemyGraphics struct {
 	currentEmotion   BattleEmotionType
 	animation        map[BattleEmotionType]*widget.Animation
@@ -132,7 +167,7 @@ func (g *BattleEnemyGraphics) DoShake() {
 
 func (g *BattleEnemyGraphics) Update(parentCenterPosition *frontend.Vector) {
 	g.shake.Update()
-	g.displayDamage.Update(parentCenterPosition)
+	g.displayDamage.Update(parentCenterPosition.Add(g.relativePosition))
 	g.parentPosition = parentCenterPosition
 	position := parentCenterPosition.Add(g.shake.Delta())
 	g.getCurrentAnimation().Update(position)

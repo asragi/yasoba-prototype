@@ -1,19 +1,19 @@
-package game
+package core
 
 import (
-	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
 
 type EnemySetting struct {
-	EnemyId  core.EnemyId
+	EnemyId  EnemyId
 	Position *frontend.Vector
 }
 
 type BattleSettingId string
 
 const (
-	BattleSettingTest BattleSettingId = "test"
+	BattleSettingTest       BattleSettingId = "test"
+	BattleSettingTripleTest BattleSettingId = "triple_test"
 )
 
 type BattleSetting struct {
@@ -27,8 +27,24 @@ func CreateServeBattleSetting() ServeBattleSetting {
 	dict[BattleSettingTest] = &BattleSetting{
 		Enemies: []*EnemySetting{
 			{
-				EnemyId:  core.EnemyPunchingBagId,
+				EnemyId:  EnemyPunchingBagId,
 				Position: frontend.VectorZero,
+			},
+		},
+	}
+	dict[BattleSettingTripleTest] = &BattleSetting{
+		Enemies: []*EnemySetting{
+			{
+				EnemyId:  EnemyPunchingBagId,
+				Position: &frontend.Vector{X: -100},
+			},
+			{
+				EnemyId:  EnemyPunchingBagId,
+				Position: frontend.VectorZero,
+			},
+			{
+				EnemyId:  EnemyPunchingBagId,
+				Position: &frontend.Vector{X: 100},
 			},
 		},
 	}

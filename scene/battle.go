@@ -4,7 +4,6 @@ import (
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
-	"github.com/asragi/yasoba-prototype/game"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -84,7 +83,7 @@ type OnEndBattle func(BattleResult)
 
 type BattleOption struct {
 	OnEnd           OnEndBattle
-	BattleSettingId game.BattleSettingId
+	BattleSettingId core.BattleSettingId
 }
 
 type NewBattleScene func(*BattleOption) *BattleScene
@@ -99,7 +98,7 @@ func StandByNewBattleScene(
 	initializeBattle core.InitializeBattleFunc,
 	postCommand core.PostCommandFunc,
 	skillApply core.SkillApplyFunc,
-	getBattleSetting game.ServeBattleSetting,
+	getBattleSetting core.ServeBattleSetting,
 	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc,
@@ -192,32 +191,7 @@ func StandByNewBattleScene(
 		testString := "あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市"
 		messageWindow.SetText(testString, false)
 
-		displayArgs := func() []*component.BattleDisplayArgs {
-			result := make([]*component.BattleDisplayArgs, len(battleResponse.EnemyIds))
-			mappedList := make(map[core.EnemyId][]core.ActorId)
-			mappedSettingList := make(map[core.EnemyId][]*game.EnemySetting)
-			for _, pair := range battleResponse.EnemyIds {
-				mappedList[pair.EnemyId] = append(mappedList[pair.EnemyId], pair.ActorId)
-			}
-			for _, set := range battleSetting.Enemies {
-				mappedSettingList[set.EnemyId] = append(mappedSettingList[set.EnemyId], set)
-			}
-			index := 0
-			for _, pair := range battleResponse.EnemyIds {
-				enemyId := pair.EnemyId
-				actors := mappedList[enemyId]
-				setting := mappedSettingList[enemyId]
-				for j, actorId := range actors {
-					result[index] = &component.BattleDisplayArgs{
-						ActorId:  actorId,
-						EnemyId:  enemyId,
-						Position: setting[j].Position,
-					}
-					index++
-				}
-			}
-			return result
-		}()
+		displayArgs := component.ToDisplayArgs(battleResponse.EnemyIds, battleSetting.Enemies)
 		battleEnemyDisplay := newBattleEnemyDisplay(
 			displayArgs,
 			frontend.DepthEnemy,
