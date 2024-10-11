@@ -415,7 +415,7 @@ func createPlayBattleSequence(
 						},
 					)
 					addBattleSequence(beatenSequence)
-					return
+					continue
 				}
 				// TODO: Implement player beaten sequence
 			}

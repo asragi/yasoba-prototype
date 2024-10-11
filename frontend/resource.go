@@ -53,6 +53,13 @@ type ResourceManager struct {
 	shaderDict    map[ShaderId]*ebiten.Shader
 }
 
+type ResourceManagerInterface interface {
+	GetTexture(id TextureId) *ebiten.Image
+	GetFont(id FontId) *text.GoTextFace
+	GetAnimationData(id AnimationId) *AnimationData
+	GetShader(id ShaderId) *Shader
+}
+
 func (r *ResourceManager) GetTexture(id TextureId) *ebiten.Image {
 	t, ok := r.textureDict[id]
 	if !ok {
