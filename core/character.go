@@ -23,7 +23,20 @@ func (h HP) String() string {
 }
 
 type ATK int
+
+func (a ATK) toAttackValue() attackerValue {
+	return attackerValue(a)
+}
+
 type MAG int
+
+func (m MAG) toAttackValue() attackerValue {
+	return attackerValue(m)
+}
+
+// attackerValue is common value for both physical and magical attack value
+type attackerValue float64
+
 type DEF int
 type SPD int
 

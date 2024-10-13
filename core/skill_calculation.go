@@ -1,0 +1,214 @@
+package core
+
+import (
+	"fmt"
+	"github.com/asragi/yasoba-prototype/util"
+	"math"
+	"strconv"
+)
+
+func decideAttackValue(atk ATK, mag MAG, skillType SkillType) attackerValue {
+	if skillType == SkillTypePhysical {
+		return atk.toAttackValue()
+	}
+	return mag.toAttackValue()
+}
+
+type SelectedAction struct {
+	Id       SkillId
+	Actor    ActorId
+	SubActor ActorId
+	Target   []ActorId
+}
+
+type SkillApplyResultRow struct {
+	ActorId        ActorId
+	TargetId       ActorId
+	TargetSide     ActorSide
+	SkillId        SkillId
+	Damage         Damage
+	IsTargetBeaten bool
+	AfterHp        HP
+}
+
+type SkillApplyResult struct {
+	Actor    ActorId
+	SubActor ActorId
+	SkillId  SkillId
+	Rows     []*SkillApplyResultRow
+}
+
+// SkillApplyFunc is a function that calculate skill effect to the target
+// and UPDATE actors status.
+type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
+
+func CreateSkillApply(
+	skillServer ServeSkillData,
+	supplyActor ActorSupplier,
+	updateActor UpdateActorFunc,
+	random util.EmitRandomFunc,
+) SkillApplyFunc {
+	normalAttack := func(args *SelectedAction) *SkillApplyResult {
+		result := make([]*SkillApplyResultRow, 0)
+		data := skillServer(args.Id)
+		for _, row := range data.Rows {
+			actorId := args.Actor
+			actualActor := supplyActor(actorId)
+			attack := decideAttackValue(actualActor.ATK, actualActor.MAG, row.Type)
+			for _, targetId := range args.Target {
+				target := supplyActor(targetId)
+				attackPow := calculateNormalAttackPower(attack, row.Power)
+				randomDamageValue := newRandomDamage(attack, random)
+				damage := calculateNormalAttackDamage(
+					attackPow,
+					target.DEF,
+					target.MAG,
+					row.Type,
+					randomDamageValue,
+				)
+				afterHP := damage.Apply(target.HP)
+				target.HP = afterHP
+				fmt.Printf("actualActor: %s, target: %s\n", actualActor.Id, target.Id)
+				fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
+				fmt.Println("---")
+				updateActor(target)
+				result = append(
+					result, &SkillApplyResultRow{
+						ActorId:        args.Actor,
+						TargetId:       args.Target[0],
+						TargetSide:     target.Side,
+						SkillId:        args.Id,
+						Damage:         damage,
+						IsTargetBeaten: afterHP <= 0,
+						AfterHp:        afterHP,
+					},
+				)
+			}
+		}
+		return &SkillApplyResult{
+			Actor:   args.Actor,
+			SkillId: args.Id,
+			Rows:    result,
+		}
+	}
+	/*
+		combinationAttack := func(args *SelectedAction) *SkillApplyResult {
+			result := make([]*SkillApplyResultRow, 0)
+			data := skillServer(args.Id)
+			for _, row := range data.Rows {
+				mainActorId := args.Actor
+				subActorId := args.SubActor
+				mainActor := supplyActor(mainActorId)
+				subActor := supplyActor(subActorId)
+				for _, targetId := range args.Target {
+					target := supplyActor(targetId)
+					damage := calculateCombinationAttackPower(
+						mainActor.ATK,
+						mainActor.MAG,
+						subActor.ATK,
+						subActor.MAG,
+						row.Power,
+						row.SubPower,
+						row.Type,
+						row.SubType,
+					)
+					afterHP := damage.Apply(target.HP)
+					target.HP = afterHP
+					fmt.Printf("mainActor: %s, target: %s\n", mainActor.Id, target.Id)
+					fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
+					fmt.Println("---")
+					updateActor(target)
+					result = append(
+						result, &SkillApplyResultRow{
+							ActorId:        args.Actor,
+							TargetId:       args.Target[0],
+							TargetSide:     target.Side,
+							SkillId:        args.Id,
+							Damage:         damage,
+							IsTargetBeaten: afterHP <= 0,
+							AfterHp:        afterHP,
+						},
+					)
+				}
+			}
+			return &SkillApplyResult{
+				Actor:   args.Actor,
+				SkillId: args.Id,
+				Rows:    result,
+			}
+
+		}
+	*/
+	return func(args *SelectedAction) *SkillApplyResult {
+		return normalAttack(args)
+	}
+}
+
+type Damage int
+
+func (d Damage) String() string {
+	return strconv.Itoa(int(d))
+}
+
+func (d Damage) Apply(hp HP) HP {
+	return HP(math.Max(0, float64(hp)-float64(d)))
+}
+
+// randomDamage is a partial damage value that is calculated by random value.
+type randomDamage int
+
+func newRandomDamage(attack attackerValue, emitRandom util.EmitRandomFunc) randomDamage {
+	randomValue := emitRandom()
+	return randomDamage(float64(attack) * randomValue)
+}
+
+const attackPowerBase = 7.0
+
+func calculateNormalAttackPower(
+	attackValue attackerValue,
+	power SkillPower,
+) attackPower {
+	return attackPower(
+		float64(power) *
+			attackPowerBase *
+			(math.Pow(float64(attackValue), 3) /
+				(math.Pow(float64(attackValue), 2) + 1600)),
+	)
+}
+
+func calculateCombinationAttackPower(
+	attackerATK ATK,
+	attackerMAG MAG,
+	subAttackerATK ATK,
+	subAttackerMAG MAG,
+	power SkillPower,
+	subPower SkillPower,
+	attackType SkillType,
+	subAttackType SkillType,
+) attackPower {
+	mainAttackValue := decideAttackValue(attackerATK, attackerMAG, attackType)
+	subAttackValue := decideAttackValue(subAttackerATK, subAttackerMAG, subAttackType)
+	mainAttackPower := calculateNormalAttackPower(mainAttackValue, power)
+	subAttackPower := calculateNormalAttackPower(subAttackValue, power)
+	return mainAttackPower + subAttackPower
+}
+
+// attackPower is calculated based on attackerValue
+type attackPower float64
+
+func calculateNormalAttackDamage(
+	attackPower attackPower,
+	defenderDEF DEF,
+	defenderMAG MAG,
+	attackType SkillType,
+	randomDamage randomDamage,
+) Damage {
+	defenderValue := func() float64 {
+		if attackType == SkillTypePhysical {
+			return float64(defenderDEF)
+		}
+		return float64(defenderMAG)
+	}()
+	defencePower := (109 - defenderValue) / 109
+	return Damage(float64(attackPower)*defencePower + float64(randomDamage) + 1)
+}
