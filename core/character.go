@@ -34,10 +34,22 @@ func (m MAG) toAttackValue() attackerValue {
 	return attackerValue(m)
 }
 
+func (m MAG) toDefenceValue() defenceValue {
+	return defenceValue(m)
+}
+
 // attackerValue is common value for both physical and magical attack value
 type attackerValue float64
 
 type DEF int
+
+func (d DEF) toDefenceValue() defenceValue {
+	return defenceValue(d)
+}
+
+// defenderValue is common value for both physical and magical defence value
+type defenceValue float64
+
 type SPD int
 
 type ServeCharacterFunc func(CharacterId) *CharacterData

@@ -48,19 +48,21 @@ func CreateSkillApply(
 	updateActor UpdateActorFunc,
 	random util.EmitRandomFunc,
 ) SkillApplyFunc {
-	normalAttack := func(args *SelectedAction) *SkillApplyResult {
+	applyAttack := func(
+		args *SelectedAction,
+		decidePower func(*SkillDataDetail) attackPower,
+		decideAttack func(*SkillDataDetail) attackerValue,
+	) *SkillApplyResult {
 		result := make([]*SkillApplyResultRow, 0)
 		data := skillServer(args.Id)
 		for _, row := range data.Rows {
-			actorId := args.Actor
-			actualActor := supplyActor(actorId)
-			attack := decideAttackValue(actualActor.ATK, actualActor.MAG, row.Type)
 			for _, targetId := range args.Target {
 				target := supplyActor(targetId)
-				attackPow := calculateNormalAttackPower(attack, row.Power)
+				attack := decideAttack(row)
+				power := decidePower(row)
 				randomDamageValue := newRandomDamage(attack, random)
 				damage := calculateNormalAttackDamage(
-					attackPow,
+					power,
 					target.DEF,
 					target.MAG,
 					row.Type,
@@ -68,7 +70,6 @@ func CreateSkillApply(
 				)
 				afterHP := damage.Apply(target.HP)
 				target.HP = afterHP
-				fmt.Printf("actualActor: %s, target: %s\n", actualActor.Id, target.Id)
 				fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
 				fmt.Println("---")
 				updateActor(target)
@@ -91,55 +92,50 @@ func CreateSkillApply(
 			Rows:    result,
 		}
 	}
-	/*
-		combinationAttack := func(args *SelectedAction) *SkillApplyResult {
-			result := make([]*SkillApplyResultRow, 0)
-			data := skillServer(args.Id)
-			for _, row := range data.Rows {
-				mainActorId := args.Actor
-				subActorId := args.SubActor
-				mainActor := supplyActor(mainActorId)
-				subActor := supplyActor(subActorId)
-				for _, targetId := range args.Target {
-					target := supplyActor(targetId)
-					damage := calculateCombinationAttackPower(
-						mainActor.ATK,
-						mainActor.MAG,
-						subActor.ATK,
-						subActor.MAG,
-						row.Power,
-						row.SubPower,
-						row.Type,
-						row.SubType,
-					)
-					afterHP := damage.Apply(target.HP)
-					target.HP = afterHP
-					fmt.Printf("mainActor: %s, target: %s\n", mainActor.Id, target.Id)
-					fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
-					fmt.Println("---")
-					updateActor(target)
-					result = append(
-						result, &SkillApplyResultRow{
-							ActorId:        args.Actor,
-							TargetId:       args.Target[0],
-							TargetSide:     target.Side,
-							SkillId:        args.Id,
-							Damage:         damage,
-							IsTargetBeaten: afterHP <= 0,
-							AfterHp:        afterHP,
-						},
-					)
-				}
-			}
-			return &SkillApplyResult{
-				Actor:   args.Actor,
-				SkillId: args.Id,
-				Rows:    result,
-			}
+	normalAttack := func(args *SelectedAction) *SkillApplyResult {
+		actorId := args.Actor
+		actor := supplyActor(actorId)
+		return applyAttack(
+			args,
+			func(row *SkillDataDetail) attackPower {
+				attack := decideAttackValue(actor.ATK, actor.MAG, row.Type)
+				return calculateNormalAttackPower(attack, row.Power)
+			},
+			func(row *SkillDataDetail) attackerValue {
+				return decideAttackValue(actor.ATK, actor.MAG, row.Type)
+			},
+		)
+	}
+	combinationAttack := func(args *SelectedAction) *SkillApplyResult {
+		actorId := args.Actor
+		subActorId := args.SubActor
+		mainActor := supplyActor(actorId)
+		subActor := supplyActor(subActorId)
+		return applyAttack(
+			args,
+			func(row *SkillDataDetail) attackPower {
+				return calculateCombinationAttackPower(
+					mainActor.ATK,
+					mainActor.MAG,
+					subActor.ATK,
+					subActor.MAG,
+					row.Power,
+					row.SubPower,
+					row.Type,
+					row.SubType,
+				)
+			},
+			func(row *SkillDataDetail) attackerValue {
+				return decideAttackValue(mainActor.ATK, mainActor.MAG, row.Type)
+			},
+		)
+	}
 
-		}
-	*/
 	return func(args *SelectedAction) *SkillApplyResult {
+		skill := skillServer(args.Id)
+		if skill.SkillFunctionId == SkillFunctionIdCombination {
+			return combinationAttack(args)
+		}
 		return normalAttack(args)
 	}
 }
@@ -189,7 +185,7 @@ func calculateCombinationAttackPower(
 	mainAttackValue := decideAttackValue(attackerATK, attackerMAG, attackType)
 	subAttackValue := decideAttackValue(subAttackerATK, subAttackerMAG, subAttackType)
 	mainAttackPower := calculateNormalAttackPower(mainAttackValue, power)
-	subAttackPower := calculateNormalAttackPower(subAttackValue, power)
+	subAttackPower := calculateNormalAttackPower(subAttackValue, subPower)
 	return mainAttackPower + subAttackPower
 }
 

@@ -52,15 +52,16 @@ func NewSkillServer() ServeSkillData {
 		CombinationEfficiency = 1.5
 	)
 	dict := map[SkillId]*SkillData{}
-	register := func(id SkillId, targetType SkillSelectTargetType, rows []*SkillDataDetail) {
+	register := func(id SkillId, targetType SkillSelectTargetType, funcId SkillFunctionId, rows []*SkillDataDetail) {
 		dict[id] = &SkillData{
-			SkillId:    id,
-			TargetType: targetType,
-			Rows:       rows,
+			SkillId:         id,
+			SkillFunctionId: funcId,
+			TargetType:      targetType,
+			Rows:            rows,
 		}
 	}
 	register(
-		SkillIdLuneAttack, SkillTargetTypeSingleOther, []*SkillDataDetail{
+		SkillIdLuneAttack, SkillTargetTypeSingleOther, SkillFunctionIdNormal, []*SkillDataDetail{
 			{
 				Power: 1.0,
 				Type:  SkillTypePhysical,
@@ -68,7 +69,7 @@ func NewSkillServer() ServeSkillData {
 		},
 	)
 	register(
-		SkillIdLuneFireEnemy, SkillTargetTypeSingleOther, []*SkillDataDetail{
+		SkillIdLuneFireEnemy, SkillTargetTypeSingleOther, SkillFunctionIdNormal, []*SkillDataDetail{
 			{
 				Power: FirePower,
 				Type:  SkillTypeMagical,
@@ -76,7 +77,7 @@ func NewSkillServer() ServeSkillData {
 		},
 	)
 	register(
-		SkillIdNormalTackle, SkillTargetTypeSingleOther, []*SkillDataDetail{
+		SkillIdNormalTackle, SkillTargetTypeSingleOther, SkillFunctionIdNormal, []*SkillDataDetail{
 			{
 				Power: 1.0,
 				Type:  SkillTypePhysical,
@@ -84,7 +85,7 @@ func NewSkillServer() ServeSkillData {
 		},
 	)
 	register(
-		SkillIdCombinationThunder, SkillTargetTypeNone, []*SkillDataDetail{
+		SkillIdCombinationThunder, SkillTargetTypeNone, SkillFunctionIdCombination, []*SkillDataDetail{
 			{
 				Power:    ThunderPower * CombinationEfficiency,
 				Type:     SkillTypeMagical,
@@ -112,7 +113,8 @@ type SkillDataDetail struct {
 }
 
 type SkillData struct {
-	SkillId    SkillId
-	TargetType SkillSelectTargetType
-	Rows       []*SkillDataDetail
+	SkillId         SkillId
+	SkillFunctionId SkillFunctionId
+	TargetType      SkillSelectTargetType
+	Rows            []*SkillDataDetail
 }
