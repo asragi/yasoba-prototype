@@ -96,23 +96,21 @@ func StandByNewBattleScene(
 	newBattleSubActorDisplay component.NewBattleSubActorDisplayFunc,
 	serveEnemyName core.EnemyNameServer,
 	initializeBattle core.InitializeBattleFunc,
-	postCommand core.PostCommandFunc,
-	skillApply core.SkillApplyFunc,
 	getBattleSetting core.ServeBattleSetting,
 	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc,
 	effectManager *widget.EffectManager,
 	serveEnemyView component.ServeEnemyViewData,
-	newChoiceAction core.NewChoiceActionFunc,
-	serveBattleState core.ServeBattleState,
-	decideActionOrder core.DecideActionOrderFunc,
 	serveActor core.ActorSupplier,
-	checkCombination core.CheckCombinationFunc,
-	decidePartnerAction core.DecidePartnerActionFunc,
 	newVariableMessageWindow component.NewVariableMessageWindowFunc,
+	newProcessBattle core.NewProcessBattleFunc,
 ) NewBattleScene {
 	return func(option *BattleOption) *BattleScene {
+		onEnd := func(endType core.BattleEndType) {
+			// TODO: Implement end of battle
+			option.OnEnd(BattleResult{})
+		}
 		battleSetting := getBattleSetting(option.BattleSettingId)
 		enemyIds := func() []core.EnemyId {
 			ids := make([]core.EnemyId, len(battleSetting.Enemies))
@@ -129,6 +127,7 @@ func StandByNewBattleScene(
 			EnemyIds:             enemyIds,
 		}
 		battleResponse := initializeBattle(initializeRequest)
+		processBattle := newProcessBattle(battleResponse, onEnd)
 		mainActorId := battleResponse.MainActorId
 		mainActor := serveActor(mainActorId)
 		subActorId := battleResponse.SubActorId
@@ -138,15 +137,6 @@ func StandByNewBattleScene(
 			for _, pair := range battleResponse.EnemyIds {
 				result[pair.ActorId] = pair.EnemyId
 			}
-			return result
-		}()
-		choiceActionList := func() map[core.ActorId]core.DecideActionFunc {
-			result := make(map[core.ActorId]core.DecideActionFunc)
-			for key, value := range actorIdToEnemy {
-				result[key] = newChoiceAction(core.EnemyIdToChoiceActionId(value))
-			}
-			subActorId := battleResponse.SubActorId
-			result[subActorId] = newChoiceAction(core.CharacterIdToChoiceActionId(subCharacterId))
 			return result
 		}()
 		actorNames := func() map[core.ActorId]core.TextId {
@@ -328,26 +318,13 @@ func StandByNewBattleScene(
 			selectWindow.Close()
 			input.Set(frontend.InputReceiverEmptyInstance)
 		}
-		onEndBattle := func(endState core.BattleEndType) {
-			battleScene.endState = endState
-		}
 		onTargetSelect := createOnTargetSelect(
-			mainActorId,
-			subActorId,
 			closeWindowOnTargetSelect,
 			func(index int) core.ActorId { return allActorId[index] },
 			func() core.PlayerCommand { return selectedCommand },
-			postCommand,
 			battleScene.battleSequence.Reset,
-			skillApply,
-			decideActionOrder,
-			func(id core.ActorId) core.DecideActionFunc { return choiceActionList[id] },
-			serveBattleState,
-			serveActor,
 			playSequence,
-			onEndBattle,
-			checkCombination,
-			decidePartnerAction,
+			processBattle,
 		)
 		selectWindow = newSelectWindow(
 			&frontend.Vector{X: 80, Y: 0},
@@ -425,95 +402,25 @@ func createPlayBattleSequence(
 
 // TODO: View非依存のLogic部分だけ抽出してCoreに移動したい
 func createOnTargetSelect(
-	mainActorId core.ActorId,
-	subActorId core.ActorId,
 	closeWindow func(),
 	indexToActor func(int) core.ActorId,
 	serveSelectedCommand func() core.PlayerCommand,
-	postCommand func(*core.PostCommandRequest) *core.PostCommandResponse,
 	resetBattleSequence func(),
-	skillApply func(*core.SelectedAction) *core.SkillApplyResult,
-	decideActionOrder core.DecideActionOrderFunc,
-	serveDecideAction func(core.ActorId) core.DecideActionFunc,
-	serveState core.ServeBattleState,
-	serveActor core.ActorSupplier,
 	playSequence func([]*core.SkillApplyResult),
-	onBattleEnd func(core.BattleEndType),
-	checkCombination core.CheckCombinationFunc,
-	partnerForecast core.DecidePartnerActionFunc,
+	processBattle core.ProcessBattleFunc,
 ) func(int) {
 	return func(index int) {
 		closeWindow()
-		state := serveState()
 		target := indexToActor(index)
 		command := serveSelectedCommand()
-		response := postCommand(
-			&core.PostCommandRequest{
-				ActorId:  mainActorId,
+		response := processBattle(
+			&core.ProcessBattleRequest{
 				TargetId: []core.ActorId{target},
 				Command:  command,
 			},
 		)
-		forecast := partnerForecast(state)
-		combinationResult := checkCombination(
-			&core.CheckCombinationRequest{
-				MainActorSkillId: response.Actions.Id,
-				MainActorTarget:  response.Actions.Target[0],
-				SubActorSkillId:  forecast.SelectedSkill,
-				SubActorTarget:   forecast.SelectedTarget,
-			},
-		)
-		selectedAction := func() *core.SelectedAction {
-			if combinationResult.IsCombination {
-				return &core.SelectedAction{
-					Id:       combinationResult.SkillId,
-					Actor:    mainActorId,
-					SubActor: subActorId,
-					Target:   []core.ActorId{combinationResult.TargetId},
-				}
-			}
-			return response.Actions
-		}()
-		appliedResponses := func() []*core.SkillApplyResult {
-			apply := skillApply(selectedAction)
-			result := []*core.SkillApplyResult{apply}
-			endState := state.IsBattleShouldBeEnd()
-			if endState != core.BattleEndTypeNone {
-				onBattleEnd(endState)
-				return result
-			}
-
-			orderedActorIdSet := decideActionOrder()
-			for _, actorId := range orderedActorIdSet {
-				if actorId == core.ActorLuneId {
-					// This block should not be executed
-					// TODO: Return to player action if main actor's actorId is given
-					continue
-				}
-				actor := serveActor(actorId)
-				if actor.IsBeaten() {
-					continue
-				}
-				decideActionFunction := serveDecideAction(actorId)
-				decidedAction := decideActionFunction(actor, state)
-				enemyActionRequest := &core.SelectedAction{
-					Id:       decidedAction.SelectedSkill,
-					Actor:    actorId,
-					SubActor: core.ActorEmptyId,
-					Target:   decidedAction.TargetActorIds,
-				}
-				result = append(result, skillApply(enemyActionRequest))
-				state = serveState()
-				endState = state.IsBattleShouldBeEnd()
-				if endState != core.BattleEndTypeNone {
-					onBattleEnd(endState)
-					return result
-				}
-			}
-			return result
-		}()
 
 		resetBattleSequence()
-		playSequence(appliedResponses)
+		playSequence(response.SkillApplyResults)
 	}
 }

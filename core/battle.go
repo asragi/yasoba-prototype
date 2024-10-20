@@ -86,14 +86,12 @@ type AllActorServer interface {
 func CreateDecideActionOrder(actorServer AllActorServer) DecideActionOrderFunc {
 	return func() []ActorId {
 		var result []ActorId
-		mainActorId := ActorLuneId
 		actors := actorServer.GetAllActor()
 		actorSet := util.NewSet(actors)
-		subActor, err := actorSet.Find(func(a *Actor) bool { return a.Id != mainActorId && a.Side == ActorSidePlayer })
+		subActor, err := actorSet.Find(func(a *Actor) bool { return a.IsSubActor() })
 		if err == nil {
 			result = append(result, subActor.Id)
 		}
-		result = append(result, mainActorId)
 		enemies := actorSet.Filter(func(a *Actor) bool { return a.Side == ActorSideEnemy })
 		enemyIds := util.SetSelect(enemies, func(a *Actor) ActorId { return a.Id })
 		result = append(result, enemyIds.ToArray()...)
@@ -117,6 +115,7 @@ type InitializeBattleFunc func(*InitializeBattleRequest) *InitializeBattleRespon
 
 func CreateInitializeBattle(
 	prepareActorService PrepareActorService,
+	decidePartnerPlan decidePartnerPlanFunc,
 ) func(*InitializeBattleRequest) *InitializeBattleResponse {
 	return func(option *InitializeBattleRequest) *InitializeBattleResponse {
 		prepareResult := prepareActorService(
@@ -126,6 +125,7 @@ func CreateInitializeBattle(
 				EnemyIds:             option.EnemyIds,
 			},
 		)
+		decidePartnerPlan()
 		return &InitializeBattleResponse{
 			MainActorId: prepareResult.MainActorId,
 			SubActorId:  prepareResult.SubActorId,
@@ -140,19 +140,131 @@ type PostCommandRequest struct {
 	Command  PlayerCommand
 }
 
-type PostCommandResponse struct {
-	Actions *SelectedAction
+type ProcessBattleRequest struct {
+	TargetId []ActorId
+	Command  PlayerCommand
 }
 
-type PostCommandFunc func(*PostCommandRequest) *PostCommandResponse
+type ProcessBattleResponse struct {
+	SkillApplyResults []*SkillApplyResult
+}
 
-func CreatePostCommand(
+type ProcessBattleFunc func(*ProcessBattleRequest) *ProcessBattleResponse
+type NewProcessBattleFunc func(res *InitializeBattleResponse, onBattleEnd func(BattleEndType)) ProcessBattleFunc
+
+func StandByCreateProcessBattle(
+	getActor ActorSupplier,
+	getState ServeBattleState,
 	processPlayerCommand ProcessPlayerCommandFunc,
-) PostCommandFunc {
-	return func(command *PostCommandRequest) *PostCommandResponse {
-		result := processPlayerCommand(command)
-		return &PostCommandResponse{
-			Actions: result.SkillApplyArgs,
+	getPartnerPlan GetPartnerPlanFunc,
+	checkCombination CheckCombinationFunc,
+	skillApply SkillApplyFunc,
+	decideActionOrder DecideActionOrderFunc,
+	newChoiceAction NewChoiceActionFunc,
+) NewProcessBattleFunc {
+	checkBattleShouldEnd := func() (b BattleEndType, shouldEnd bool) {
+		state := getState()
+		if state.IsAllBeaten(ActorSidePlayer) {
+			return BattleEndTypeLose, true
+		}
+		if state.IsAllBeaten(ActorSideEnemy) {
+			return BattleEndTypeWin, true
+		}
+		return BattleEndTypeNone, false
+	}
+
+	return func(
+		initializeBattleResponse *InitializeBattleResponse,
+		onBattleEndArg func(BattleEndType),
+	) ProcessBattleFunc {
+		onBattleEnd := func(battleState BattleEndType, applyResult []*SkillApplyResult) *ProcessBattleResponse {
+			onBattleEndArg(battleState)
+			return &ProcessBattleResponse{
+				SkillApplyResults: applyResult,
+			}
+		}
+		mainActorId := initializeBattleResponse.MainActorId
+		subActorId := initializeBattleResponse.SubActorId
+		actorIdToEnemy := func() map[ActorId]EnemyId {
+			result := make(map[ActorId]EnemyId)
+			for _, pair := range initializeBattleResponse.EnemyIds {
+				result[pair.ActorId] = pair.EnemyId
+			}
+			return result
+		}()
+		choiceActionList := func() map[ActorId]DecideActionFunc {
+			result := make(map[ActorId]DecideActionFunc)
+			for key, value := range actorIdToEnemy {
+				result[key] = newChoiceAction(EnemyIdToChoiceActionId(value))
+			}
+			result[subActorId] = newChoiceAction(CharacterIdToChoiceActionId(CharacterSunnyId))
+			return result
+		}()
+
+		return func(request *ProcessBattleRequest) *ProcessBattleResponse {
+			actualAction := processPlayerCommand(
+				&PostCommandRequest{
+					ActorId:  mainActorId,
+					TargetId: request.TargetId,
+					Command:  request.Command,
+				},
+			)
+			selectedAction := actualAction.SkillApplyArgs
+			partnerPlan := getPartnerPlan()
+			combinationResult := checkCombination(
+				&CheckCombinationRequest{
+					MainActorSkillId: selectedAction.Id,
+					// TODO: consider multi target
+					MainActorTarget: selectedAction.Target[0],
+					SubActorSkillId: partnerPlan.SkillId,
+					SubActorTarget:  partnerPlan.SelectedTarget,
+				},
+			)
+			resultAction := func() *SelectedAction {
+				if combinationResult.IsCombination {
+					return &SelectedAction{
+						Id:       combinationResult.SkillId,
+						Actor:    selectedAction.Actor,
+						SubActor: subActorId,
+						Target:   []ActorId{combinationResult.TargetId},
+					}
+				}
+				return selectedAction
+			}()
+
+			mainActorApplyResult := skillApply(resultAction)
+			result := []*SkillApplyResult{mainActorApplyResult}
+			if battleState, battleShouldEnd := checkBattleShouldEnd(); battleShouldEnd {
+				return onBattleEnd(battleState, result)
+			}
+
+			actionOrder := decideActionOrder()
+			for _, actorId := range actionOrder {
+				actor := getActor(actorId)
+				if actor.IsBeaten() {
+					continue
+				}
+				state := getState()
+				decideActionFunction := choiceActionList[actorId]
+				decidedAction := decideActionFunction(actor, state)
+				applyResult := skillApply(
+					&SelectedAction{
+						Id:       decidedAction.SelectedSkill,
+						Actor:    actorId,
+						SubActor: ActorEmptyId,
+						Target:   decidedAction.TargetActorIds,
+					},
+				)
+				result = append(result, applyResult)
+
+				if battleState, battleShouldEnd := checkBattleShouldEnd(); battleShouldEnd {
+					return onBattleEnd(battleState, result)
+				}
+			}
+
+			return &ProcessBattleResponse{
+				SkillApplyResults: result,
+			}
 		}
 	}
 }

@@ -14,7 +14,7 @@ import (
 const (
 	GameWidth  = 384
 	GameHeight = 288
-	DrawRate   = 2
+	DrawRate   = 1
 )
 
 var (
@@ -33,9 +33,7 @@ func init() {
 	characterServer := core.CreateCharacterServer()
 	enemyServer := core.CreateEnemyServer()
 	prepareActor := core.CreatePrepareActorService(characterServer, enemyServer, actorServer)
-	initializeBattle := core.CreateInitializeBattle(prepareActor)
 	processCommand := core.CreateProcessPlayerCommand(actorServer.Get)
-	postCommand := core.CreatePostCommand(processCommand)
 	newWindow := widget.CreateNewWindow(resource)
 	newText := widget.CreateNewText(resource)
 	newMessageWindow := component.StandByNewMessageWindow(newText, newWindow)
@@ -80,7 +78,19 @@ func init() {
 	decideActionOrder := core.CreateDecideActionOrder(actorServer)
 	serveBattleState := core.CreateServeBattleState(actorServer)
 	checkCombination := core.CreateCheckCombination()
-	partnerForecast := core.CreateDecidePartnerAction(random)
+	newPartnerActionServer := core.StandByNewPartnerActionServer(random, serveBattleState)
+	partnerActionServer := newPartnerActionServer()
+	initializeBattle := core.CreateInitializeBattle(prepareActor, partnerActionServer.DecidePlan)
+	newProcessBattle := core.StandByCreateProcessBattle(
+		actorServer.Get,
+		serveBattleState,
+		processCommand,
+		partnerActionServer.GetPlan,
+		checkCombination,
+		applySkill,
+		decideActionOrder,
+		choiceAction,
+	)
 	newVariableMessageWindow := component.StandByNewVariableMessageWindow(newWindow, newText, textServer)
 	newBattleScene := scene.StandByNewBattleScene(
 		newMessageWindow,
@@ -90,26 +100,21 @@ func init() {
 		newBattleSubActorDisplay,
 		core.CreateEnemyNameServer(),
 		initializeBattle,
-		postCommand,
-		applySkill,
 		battleSettingServer,
 		prepareBattleSequence,
 		component.ToEventSequenceId,
 		newBattleEnemyDisplay,
 		effectManager,
 		serveEnemyView,
-		choiceAction,
-		serveBattleState,
-		decideActionOrder,
 		actorServer.Get,
-		checkCombination,
-		partnerForecast,
 		newVariableMessageWindow,
+		newProcessBattle,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{
 			OnEnd:           nil,
-			BattleSettingId: core.BattleSettingTripleTest,
+			BattleSettingId: core.BattleSettingTest,
+			//BattleSettingId: core.BattleSettingTripleTest,
 		},
 	)
 }

@@ -2,14 +2,14 @@ package core
 
 import "github.com/asragi/yasoba-prototype/util"
 
-type PartnerActionForecast struct {
-	SelectedSkill  SkillId
+type PartnerActionPlan struct {
+	SkillId        SkillId
 	SelectedTarget ActorId
 }
 
-type DecidePartnerActionFunc func(*BattleState) *PartnerActionForecast
+type decidePartnerPlanFunc func()
 
-func CreateDecidePartnerAction(random util.EmitRandomFunc) DecidePartnerActionFunc {
+func createDecidePartnerAction(random util.EmitRandomFunc, state *BattleState) *PartnerActionPlan {
 	skillList := []SkillId{
 		SkillIdSunnyKick,
 		SkillIdSunnyUppercut,
@@ -17,12 +17,43 @@ func CreateDecidePartnerAction(random util.EmitRandomFunc) DecidePartnerActionFu
 	target := func(enemies []*Actor) ActorId {
 		return enemies[0].Id
 	}
-	return func(s *BattleState) *PartnerActionForecast {
-		subActor := s.GetSubActor()
+	return func() *PartnerActionPlan {
+		subActor := state.GetSubActor()
 		skill := skillList[int(random()*float64(len(skillList)))]
-		return &PartnerActionForecast{
-			SelectedSkill:  skill,
-			SelectedTarget: target(s.GetOtherSideActors(subActor)),
+		return &PartnerActionPlan{
+			SkillId:        skill,
+			SelectedTarget: target(state.GetOtherSideActors(subActor)),
+		}
+	}()
+}
+
+type GetPartnerPlanFunc func() *PartnerActionPlan
+
+type PartnerActionServer struct {
+	StoredPlan *PartnerActionPlan
+	random     util.EmitRandomFunc
+	serveState ServeBattleState
+}
+
+type NewPartnerActionServer func() *PartnerActionServer
+
+func StandByNewPartnerActionServer(
+	random util.EmitRandomFunc,
+	serveState ServeBattleState,
+) NewPartnerActionServer {
+	return func() *PartnerActionServer {
+		return &PartnerActionServer{
+			random:     random,
+			serveState: serveState,
 		}
 	}
+}
+
+func (s *PartnerActionServer) DecidePlan() {
+	state := s.serveState()
+	s.StoredPlan = createDecidePartnerAction(s.random, state)
+}
+
+func (s *PartnerActionServer) GetPlan() *PartnerActionPlan {
+	return s.StoredPlan
 }
