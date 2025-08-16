@@ -20,7 +20,7 @@ type setPartnerDialogueResponse struct {
 
 type setPartnerDialogue func(core.TextString) *setPartnerDialogueResponse
 
-func provideCreatePartnerDialogueEventToUnit(
+func produceCreatePartnerDialogueEventToUnit(
 	serveTextData core.ServeTextDataFunc,
 	partnerDialogueDataPort partnerDialogueDataPort,
 	setPartnerDialogue setPartnerDialogue,

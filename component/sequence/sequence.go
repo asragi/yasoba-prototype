@@ -18,6 +18,10 @@ func (s *sequence) render() {
 }
 
 func (s *sequence) update() isEnd {
+	if s.index >= len(s.events) {
+		return true
+	}
+
 	if s.isStart {
 		s.isStart = false
 		s.events[s.index].start()
@@ -36,11 +40,7 @@ func (s *sequence) update() isEnd {
 		}
 	}
 
-	if s.index >= len(s.events) {
-		return true
-	}
-
-	return false
+	return s.index >= len(s.events)
 }
 
 type isEnd bool
@@ -50,32 +50,31 @@ type update func() isEnd
 
 type createSequence func(id sequenceId) *sequence
 
-func provideCreateSequence(
+func initializeProduceCreateSequence(
 	sequencesDataPort sequenceDataPort,
-	createPartnerDialogueEvent createPartnerDialogueEvent,
-) createSequence {
-	sequences := sequencesDataPort()
-	sequencesMap := make(map[sequenceId]*sequence)
-	for _, seq := range sequences {
-		events := []*eventUnit{}
-		for _, event := range seq.events {
-			if event.eventType == partnerDialogueEvent {
+) func(createPartnerDialogueEvent) createSequence {
+	sequenceDataArray := sequencesDataPort()
+	return func(createPartnerDialogueEvent createPartnerDialogueEvent) createSequence {
+		sequences := make(map[sequenceId]*sequence)
+		for _, seq := range sequenceDataArray {
+			events := []*eventUnit{}
+			for _, event := range seq.events {
 				events = append(events, createPartnerDialogueEvent(event.id))
 			}
-		}
-		sequencesMap[seq.id] = &sequence{
-			id:     seq.id,
-			events: events,
-		}
-	}
-
-	return func(id sequenceId) *sequence {
-		if seq, ok := sequencesMap[id]; ok {
-			return seq
+			sequences[seq.id] = &sequence{
+				id:     seq.id,
+				events: events,
+			}
 		}
 
-		fmt.Println("sequence not found")
-		return nil
+		return func(id sequenceId) *sequence {
+			if seq, ok := sequences[id]; ok {
+				return seq
+			}
+
+			fmt.Println("sequence not found")
+			return nil
+		}
 	}
 }
 
@@ -85,5 +84,3 @@ type eventUnit struct {
 	render render
 	start  start
 }
-
-type provideCreatePartnerDialogueEvent func() createPartnerDialogueEvent

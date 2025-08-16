@@ -1,0 +1,9 @@
+# シーケンスモデルのテストデータ
+sequences:
+  - id: "battle_start_sequence"
+    name: "戦闘開始シーケンス"
+    description: "戦闘開始時のイベントシーケンス"
+    
+  - id: "skill_execution_sequence"
+    name: "スキル実行シーケンス"
+    description: "スキル実行時のイベントシーケンス"

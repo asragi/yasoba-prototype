@@ -1,0 +1,21 @@
+# パートナーダイアログイベントのテストデータ
+partnerDialogues:
+  # 戦闘開始関連のダイアログ
+  - eventId: "test0000"
+    textId: "test0000"
+    
+  - eventId: "test0100"
+    textId: "test0100"
+    
+  - eventId: "test0102"
+    textId: "test0101"
+    
+  # 追加のダイアログ
+  - eventId: "test0001"
+    textId: "test0001"
+    
+  - eventId: "test0002"
+    textId: "test0002"
+    
+  - eventId: "test0101"
+    textId: "test0102"

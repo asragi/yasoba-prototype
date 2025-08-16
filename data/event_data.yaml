@@ -1,0 +1,36 @@
+# イベントデータのテストデータ
+events:
+  # 戦闘開始シーケンスのイベント
+  - id: "test0000"
+    eventType: "partnerDialogue"
+    ownerId: "battle_start_sequence"
+    order: 1
+    
+  - id: "test0001"
+    eventType: "effect"
+    ownerId: "battle_start_sequence"
+    order: 2
+    effectId: "battle_start_effect"
+    
+  - id: "test0002"
+    eventType: "emotion"
+    ownerId: "battle_start_sequence"
+    order: 3
+    emotionType: "battle_ready"
+    
+  # スキル実行シーケンスのイベント
+  - id: "test0100"
+    eventType: "partnerDialogue"
+    ownerId: "skill_execution_sequence"
+    order: 1
+    
+  - id: "test0101"
+    eventType: "effect"
+    ownerId: "skill_execution_sequence"
+    order: 2
+    effectId: "skill_execution_effect"
+    
+  - id: "test0102"
+    eventType: "partnerDialogue"
+    ownerId: "skill_execution_sequence"
+    order: 3

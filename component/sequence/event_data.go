@@ -14,7 +14,7 @@ type eventDataModel struct {
 	order     int
 }
 
-type eventDataPort func() []*eventDataModel
+type eventDataModelPort func() []*eventDataModel
 
 type sequenceModel struct {
 	id sequenceId
@@ -27,11 +27,12 @@ type sequenceData struct {
 	events []*eventDataModel
 }
 
+// sequenceModelとeventDataModelを組み合わせてsequenceDataを作成します
 type sequenceDataPort func() []*sequenceData
 
-func createSequenceDataAdapter(
+func initializeSequenceDataAdapter(
 	sequenceModelPort sequenceModelPort,
-	eventDataPort eventDataPort,
+	eventDataPort eventDataModelPort,
 ) sequenceDataPort {
 	groupEventsBySequenceId := func(events []*eventDataModel) map[sequenceId][]*eventDataModel {
 		eventMap := make(map[sequenceId][]*eventDataModel)

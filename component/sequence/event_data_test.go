@@ -31,7 +31,7 @@ func Test_createSequenceDataAdapter(t *testing.T) {
 		}},
 	}
 
-	sequenceDataPort := createSequenceDataAdapter(sequenceModelPort, eventDataPort)
+	sequenceDataPort := initializeSequenceDataAdapter(sequenceModelPort, eventDataPort)
 	sequenceData := sequenceDataPort()
 
 	if !reflect.DeepEqual(sequenceData, expected) {
