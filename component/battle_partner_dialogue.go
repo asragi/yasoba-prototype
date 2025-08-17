@@ -56,7 +56,7 @@ func (d *BattlePartnerDialogue) newWindow() PartnerDialogueMessageWindow {
 		frontend.VectorZero,
 		frontend.VectorZero,
 		frontend.DepthWindow,
-		frontend.PivotBottomRight,
+		frontend.PivotBottomCenter,
 	)
 	window.FitToMessage()
 	return window

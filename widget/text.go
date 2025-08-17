@@ -121,15 +121,28 @@ func (t *Text) Draw(drawFunc frontend.DrawFunc) {
 
 func (t *Text) Size() *frontend.Vector {
 	scale := float64(t.options.Scale)
-	lineHeight := t.getLineSpacing()
-	width, height := text.Measure(t.fullText, t.textFace, lineHeight+lineMargin)
+	characterHeight := t.getCharacterHeight()
+	maxWidth := 0.0
+	for _, line := range t.characterSet {
+		width := 0.0
+		for _, character := range line {
+			characterWidth, _ := text.Measure(character.String(), t.textFace, 1)
+			width += characterWidth + marginX
+		}
+		if width > maxWidth {
+			maxWidth = width
+		}
+	}
+	// 最後の文字のmarginXを引く
+	maxWidth -= marginX
+	height := characterHeight*float64(len(t.characterSet)) + lineMargin*float64(len(t.characterSet)-1)
 	return &frontend.Vector{
-		X: width * scale,
+		X: maxWidth * scale,
 		Y: height * scale,
 	}
 }
 
-func (t *Text) getLineSpacing() float64 {
+func (t *Text) getCharacterHeight() float64 {
 	_, height := text.Measure("あ", t.textFace, 1)
 	return height
 }
