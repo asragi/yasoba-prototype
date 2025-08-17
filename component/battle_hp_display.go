@@ -1,10 +1,11 @@
 package component
 
 import (
+	"image/color"
+
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
-	"image/color"
 )
 
 type BattleHPDisplay struct {
@@ -41,7 +42,6 @@ func CreateNewBattleHPDisplay(
 				Color:            color.White,
 				EnableOutline:    true,
 				Scale:            1,
-				XSpacing:         7,
 			},
 		)
 

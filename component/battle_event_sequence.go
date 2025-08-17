@@ -2,6 +2,7 @@ package component
 
 import (
 	"fmt"
+
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -196,7 +197,7 @@ func CreateExecBattleEventSequence(
 					switch r := row.(type) {
 					case *DisplayMessageEvent:
 						text := textServer(r.Text)
-						display.SetText(text.Text, false)
+						display.SetText(text.Text.String(), false)
 					case *ShakeActorAnimationEvent:
 						target := args.Target[0]
 						shakeActor(target.Target)

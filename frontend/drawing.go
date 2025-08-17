@@ -1,6 +1,10 @@
 package frontend
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 type Drawing struct {
 	Draw    DrawFunc
@@ -12,7 +16,7 @@ type DrawFunc func(DrawArgFunc, Depth)
 type DrawEnd func(*ebiten.Image)
 
 func NewDrawing() *Drawing {
-	const MaxDrawSize = 128
+	const MaxDrawSize = 256
 	drawIndex := make(map[Depth]int)
 	drawMap := make(map[Depth][]DrawArgFunc)
 	for i := 0; i < len(AllDepths); i++ {
@@ -21,8 +25,7 @@ func NewDrawing() *Drawing {
 	}
 	draw := func(d DrawArgFunc, depth Depth) {
 		if drawIndex[depth] >= MaxDrawSize {
-			// TODO: export error log
-			return
+			panic(fmt.Sprintf("drawIndex[depth] >= MaxDrawSize: %d >= %d", drawIndex[depth], MaxDrawSize))
 		}
 		drawMap[depth][drawIndex[depth]] = d
 		drawIndex[depth]++

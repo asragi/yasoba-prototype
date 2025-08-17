@@ -26,15 +26,21 @@ const (
 
 type ServeTextDataFunc func(id TextId) *TextData
 
+type TextString string
+
+func (t TextString) String() string {
+	return string(t)
+}
+
 type TextData struct {
 	Id   TextId
-	Text string
+	Text TextString
 }
 
 func CreateServeTextData() ServeTextDataFunc {
 	dict := map[TextId]*TextData{}
 
-	register := func(id TextId, text string) {
+	register := func(id TextId, text TextString) {
 		dict[id] = &TextData{
 			Id:   id,
 			Text: text,

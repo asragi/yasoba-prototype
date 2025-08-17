@@ -52,10 +52,11 @@ func (p *Pivot) ApplyToSize(size *Vector) *Vector {
 }
 
 var (
-	PivotTopLeft     = &Pivot{0, 0}
-	PivotTopCenter   = &Pivot{0.5, 0}
-	PivotTopRight    = &Pivot{1, 0}
-	PivotCenter      = &Pivot{0.5, 0.5}
-	PivotBottomLeft  = &Pivot{0, 1}
-	PivotBottomRight = &Pivot{1, 1}
+	PivotTopLeft      = &Pivot{0, 0}
+	PivotTopCenter    = &Pivot{0.5, 0}
+	PivotTopRight     = &Pivot{1, 0}
+	PivotCenter       = &Pivot{0.5, 0.5}
+	PivotBottomLeft   = &Pivot{0, 1}
+	PivotBottomCenter = &Pivot{0.5, 1}
+	PivotBottomRight  = &Pivot{1, 1}
 )

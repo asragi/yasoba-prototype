@@ -39,7 +39,7 @@ func (w *VariableMessageWindow) SetActive(isActive bool) {
 
 func (w *VariableMessageWindow) SetText(textId core.TextId) {
 	text := w.serveText(textId)
-	w.text.SetText(text.Text, false)
+	w.text.SetText(text.Text.String(), false)
 	padding := w.window.GetPadding().Multiply(2)
 	w.window.SetSize(w.text.Size().Add(padding))
 }

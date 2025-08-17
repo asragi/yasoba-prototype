@@ -1,11 +1,12 @@
 package component
 
 import (
+	"image/color"
+
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/asragi/yasoba-prototype/widget"
-	"image/color"
 )
 
 const DamageDisplayDuration = 40
@@ -33,7 +34,6 @@ func CreateNewDisplayDamage(newText widget.NewTextFunc) NewDisplayDamageFunc {
 				Color:            damageTextColor,
 				EnableOutline:    true,
 				Scale:            2,
-				XSpacing:         8,
 			},
 		)
 

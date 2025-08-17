@@ -144,7 +144,7 @@ func StandByNewSelectWindow(
 						Depth:            depth,
 					},
 				)
-				text.SetText(textServer(command).Text, true)
+				text.SetText(textServer(command).Text.String(), true)
 				texts = append(texts, text)
 			}
 			return texts

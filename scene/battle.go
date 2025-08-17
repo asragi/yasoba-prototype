@@ -12,7 +12,7 @@ type BattleScene struct {
 	battleSelectWindow *component.BattleSelectWindow
 	actorDisplay       *component.BattleActorDisplay
 	subActorDisplay    *component.BattleSubActorDisplay
-	subActorDialog     component.VariableMessageWindowInterface
+	subActorDialog     *component.BattlePartnerDialogue
 	enemyData          []*core.EnemyIdPair
 	actorNames         map[core.ActorId]core.TextId
 	targetSelectWindow *component.SelectWindow
@@ -219,13 +219,9 @@ func StandByNewBattleScene(
 
 		actorDisplay := newBattleActorDisplay(mainActor)
 		subActorDisplay := newBattleSubActorDisplay(subActor)
-		subActorDialog := newVariableMessageWindow(
-			&frontend.Vector{X: 0, Y: 0},
-			frontend.DepthWindow,
-			frontend.PivotBottomRight,
-		)
-		subActorDialog.SetText(core.TextIdBattleDialogText)
-		subActorDialog.SetActive(true)
+		subActorDialog := component.CreateNewBattlePartnerDialogue(newMessageWindow)()
+		subActorDialog.Open()
+		subActorDialog.SetText("こんにちは\n改行テスト\n３行くらい", false)
 
 		playEffect := func(effectId widget.EffectId, target core.ActorId) {
 			actor := serveActor(target)

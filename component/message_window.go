@@ -1,6 +1,8 @@
 package component
 
 import (
+	"fmt"
+
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -13,6 +15,20 @@ type MessageWindow struct {
 
 func (m *MessageWindow) Shake(amplitude float64, period int) {
 	m.shake.Shake(amplitude, period)
+}
+
+func (m *MessageWindow) FitToMessage() {
+	size := m.text.Size().Add(m.window.GetPadding().Multiply(2))
+	fmt.Println(size)
+	m.window.SetSize(size)
+}
+
+func (m *MessageWindow) Open() {
+	// MessageWindowのOpen実装
+}
+
+func (m *MessageWindow) Close() {
+	// MessageWindowのClose実装
 }
 
 func (m *MessageWindow) SetText(textString string, displayAll bool) {
@@ -31,10 +47,10 @@ func (m *MessageWindow) Draw(drawFunc frontend.DrawFunc) {
 }
 
 type NewMessageWindowFunc func(
-	*frontend.Vector,
-	*frontend.Vector,
-	frontend.Depth,
-	*frontend.Pivot,
+	relativePosition *frontend.Vector,
+	size *frontend.Vector,
+	depth frontend.Depth,
+	pivot *frontend.Pivot,
 ) *MessageWindow
 
 func StandByNewMessageWindow(

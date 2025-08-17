@@ -1,12 +1,18 @@
 package widget
 
 import (
+	"image/color"
+	"strings"
+
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"image/color"
-	"strings"
+)
+
+const (
+	lineMargin = 4
+	marginX    = 1
 )
 
 type TextInterface interface {
@@ -17,9 +23,47 @@ type TextInterface interface {
 	Size() *frontend.Vector
 }
 
+type Char string
+
+func (c Char) String() string {
+	return string(c)
+}
+
+func (c Char) Size(face *text.GoTextFace) *frontend.Vector {
+	width, height := text.Measure(string(c), face, 1)
+	return &frontend.Vector{
+		X: width,
+		Y: height,
+	}
+}
+
+func ToChar(s string) []Char {
+	runes := []rune(s)
+	result := make([]Char, len(runes))
+	for i, c := range runes {
+		result[i] = Char(c)
+	}
+	return result
+}
+
+// charactersSetType は文字セットを表す2次元文字列スライス
+// 1次元目: 改行で分割された各行
+// 2次元目: 各行の文字を1文字ずつに分割した配列
+//
+// 例: "Hello\nWorld" の場合
+// [
+//
+//	["H", "e", "l", "l", "o"],  // 1行目
+//	["W", "o", "r", "l", "d"]   // 2行目
+//
+// ]
+type charactersSetType [][]Char
+
+// 文字を一つずつ表示するなどの機能を持たせたテキストレンダリング
 type Text struct {
 	currentIndex   int
-	characterSet   [][]string
+	characterSet   charactersSetType
+	fullText       string
 	sizes          []int
 	textSize       int
 	frameCounter   int
@@ -33,13 +77,14 @@ func (t *Text) ForceComplete() {
 }
 
 func (t *Text) SetText(textString string, displayAll bool) {
-	charactersSet, sizes, textSize := func(textString string) ([][]string, []int, int) {
+	t.fullText = textString
+	charactersSet, sizes, textSize := func(textString string) ([][]Char, []int, int) {
 		texts := strings.Split(textString, "\n")
 		textSize := 0
-		characters := make([][]string, len(texts))
+		characters := make(charactersSetType, len(texts))
 		sizes := make([]int, len(texts))
 		for i, t := range texts {
-			characters[i] = util.SplitString(t)
+			characters[i] = ToChar(t)
 			sizes[i] = len(characters[i])
 			textSize += sizes[i]
 		}
@@ -76,21 +121,28 @@ func (t *Text) Draw(drawFunc frontend.DrawFunc) {
 
 func (t *Text) Size() *frontend.Vector {
 	scale := float64(t.options.Scale)
-	// TODO: Size should be calculated from font Size
-	tmp := &frontend.Vector{
-		X: float64(len(t.characterSet[0])*t.options.XSpacing) - 2,
-		Y: float64(len(t.characterSet))*16 - 4,
+	lineHeight := t.getLineSpacing()
+	width, height := text.Measure(t.fullText, t.textFace, lineHeight+lineMargin)
+	return &frontend.Vector{
+		X: width * scale,
+		Y: height * scale,
 	}
-	return tmp.Multiply(scale)
 }
 
+func (t *Text) getLineSpacing() float64 {
+	_, height := text.Measure("あ", t.textFace, 1)
+	return height
+}
+
+// 与えられた1行の文字列を描画する
 func (t *Text) drawText(
-	characters []string,
+	characters []Char,
 	currentIndex int,
 	parentPosition *frontend.Vector,
 	line int,
 	drawFunc frontend.DrawFunc,
 ) {
+	length := len(characters)
 	// TODO: characterSizeX should be calculated from font Size
 	const lineHeight = 16
 	scale := float64(t.options.Scale)
@@ -102,12 +154,15 @@ func (t *Text) drawText(
 	}
 	pivotDiff := t.options.Pivot.ApplyToSize(t.Size())
 	characterPosition := func() []*frontend.Vector {
-		result := make([]*frontend.Vector, t.textSize)
-		for i := 0; i < t.textSize; i++ {
+		result := make([]*frontend.Vector, length)
+		xPosition := 0.0
+		for i := 0; i < length; i++ {
+			targetCharacter := characters[i]
 			tmp := frontend.Vector{
-				X: t.options.RelativePosition.X + float64(i*t.options.XSpacing)*scale,
+				X: t.options.RelativePosition.X + xPosition*scale,
 				Y: t.options.RelativePosition.Y,
 			}
+			xPosition += targetCharacter.Size(t.textFace).X + marginX
 			result[i] = tmp.Sub(pivotDiff)
 		}
 		return result
@@ -128,12 +183,12 @@ func (t *Text) drawText(
 					for j := 0; j < len(diffSet); j++ {
 						v := diffSet[j].Multiply(scale)
 						outlineOp.GeoM.Translate(v.X, v.Y)
-						text.Draw(screen, targetCharacter, t.textFace, outlineOp)
+						text.Draw(screen, targetCharacter.String(), t.textFace, outlineOp)
 						outlineOp.GeoM.Translate(-v.X, -v.Y)
 					}
 				}
 				op.ColorScale.ScaleWithColor(t.options.Color)
-				text.Draw(screen, targetCharacter, t.textFace, op)
+				text.Draw(screen, targetCharacter.String(), t.textFace, op)
 			}, t.options.Depth,
 		)
 	}
@@ -149,7 +204,6 @@ type TextOptionsNew struct {
 	OutlineColor     color.Color
 	EnableOutline    bool
 	Scale            int
-	XSpacing         int
 }
 
 type NewTextFunc func(*TextOptionsNew) TextInterface
@@ -158,7 +212,6 @@ func CreateNewText(
 	resource *frontend.ResourceManager,
 ) NewTextFunc {
 	return func(options *TextOptionsNew) TextInterface {
-		const characterSizeX = 13
 		if options.Color == nil {
 			options.Color = color.White
 		}
@@ -167,9 +220,6 @@ func CreateNewText(
 		}
 		if options.Scale == 0 {
 			options.Scale = 1
-		}
-		if options.XSpacing == 0 {
-			options.XSpacing = characterSizeX
 		}
 		return &Text{
 			currentIndex:   0,

@@ -2,9 +2,10 @@ package widget
 
 import (
 	"errors"
+	"image"
+
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/hajimehoshi/ebiten/v2"
-	"image"
 )
 
 type windowRect struct {
@@ -42,6 +43,7 @@ type Window struct {
 	padding          *frontend.Vector
 }
 
+// Windowの枠を含めた全体のサイズを指定する
 func (w *Window) SetSize(size *frontend.Vector) {
 	w.size = size
 	w.cornerPosition = calculateCornerPosition(size, float64(w.cornerSize))
