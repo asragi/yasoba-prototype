@@ -1,14 +1,15 @@
 package main
 
 import (
+	"log"
+	"math/rand"
+
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
-	"log"
-	"math/rand"
 )
 
 const (
@@ -34,7 +35,7 @@ func init() {
 	enemyServer := core.CreateEnemyServer()
 	prepareActor := core.CreatePrepareActorService(characterServer, enemyServer, actorServer)
 	processCommand := core.CreateProcessPlayerCommand(actorServer.Get)
-	newWindow := widget.CreateNewWindow(resource)
+	newWindow := widget.CreateNewWindow(resource, GameWidth, GameHeight)
 	newText := widget.CreateNewText(resource)
 	newMessageWindow := component.StandByNewMessageWindow(newText, newWindow)
 	newSelectWindow := component.StandByNewSelectWindow(resource, newText, textServer)

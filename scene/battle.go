@@ -221,7 +221,7 @@ func StandByNewBattleScene(
 		subActorDisplay := newBattleSubActorDisplay(subActor)
 		subActorDialog := component.CreateNewBattlePartnerDialogue(newMessageWindow)()
 		subActorDialog.Open()
-		subActorDialog.SetText("こんにちは\n改行テスト\n３行くらい", false)
+		subActorDialog.SetText("こんにちは！！\nこれは改行テストだよ！\n３行くらいまでの表示を想定しているよ", false)
 
 		playEffect := func(effectId widget.EffectId, target core.ActorId) {
 			actor := serveActor(target)

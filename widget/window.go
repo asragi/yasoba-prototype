@@ -3,6 +3,7 @@ package widget
 import (
 	"errors"
 	"image"
+	"math"
 
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -28,6 +29,8 @@ type WindowInterface interface {
 }
 
 type Window struct {
+	screenWidth      int
+	screenHeight     int
 	image            *ebiten.Image
 	relativePosition *frontend.Vector
 	parentPosition   *frontend.Vector
@@ -84,12 +87,23 @@ func (w *Window) GetPositionLowerRight() *frontend.Vector {
 	}
 }
 
+// 画面からはみ出す分を計算し修正に必要なVectorを返す
+func (w *Window) calculateInWindowPosition(passedParentPosition *frontend.Vector) *frontend.Vector {
+	// TODO: 左や上に飛び出す場合を想定していない
+	// TODO: フラグではみ出しを許容するかどうかを変えたい
+	pivotDiff := w.pivot.ApplyToSize(w.size)
+	xDiff := math.Max(passedParentPosition.X+w.relativePosition.X+w.size.X-pivotDiff.X-float64(w.screenWidth), 0)
+	yDiff := math.Max(passedParentPosition.Y+w.relativePosition.Y+w.size.Y-pivotDiff.Y-float64(w.screenHeight), 0)
+	return &frontend.Vector{X: xDiff, Y: yDiff}
+}
+
 func (w *Window) GetPadding() *frontend.Vector {
 	return w.padding
 }
 
 func (w *Window) Update(passedPosition *frontend.Vector) {
-	w.parentPosition = passedPosition
+	inWindowPosition := w.calculateInWindowPosition(passedPosition)
+	w.parentPosition = passedPosition.Sub(inWindowPosition)
 }
 
 func (w *Window) Draw(drawFunc frontend.DrawFunc) {
@@ -218,7 +232,10 @@ func (o *WindowOption) Validation() error {
 	return nil
 }
 
-func CreateNewWindow(resource *frontend.ResourceManager) NewWindowFunc {
+func CreateNewWindow(
+	resource *frontend.ResourceManager,
+	screenWidth, screenHeight int,
+) NewWindowFunc {
 	return func(option *WindowOption) WindowInterface {
 		parentPosition := frontend.VectorZero
 		relativePosition := option.RelativePosition
@@ -266,6 +283,8 @@ func CreateNewWindow(resource *frontend.ResourceManager) NewWindowFunc {
 		)
 
 		return &Window{
+			screenWidth:      screenWidth,
+			screenHeight:     screenHeight,
 			image:            img,
 			relativePosition: relativePosition,
 			parentPosition:   parentPosition,
