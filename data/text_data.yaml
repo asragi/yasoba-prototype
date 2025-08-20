@@ -1,14 +1,60 @@
-# テキストデータのテストデータ
+# テキストデータ
 texts:
+  # テストテキスト
   - id: "test0000"
-    text: "戦闘開始！準備はいいかい？"
-  - id: "test0100"
-    text: "私の必殺技を見せてあげる！"
-  - id: "test0101"
-    text: "やった！うまくいったよ！"
+    text: "あっ！コイツは............"
   - id: "test0001"
-    text: "頑張ろう！私たちならできる！"
+    text: "マシュマロンだ！\n図鑑で見たことあるぜ！！！！！"
   - id: "test0002"
+    text: "たしか危険を感じると\n爆発するとか............\nそれは違うやつだったっけな"
+  - id: "test0100"
+    text: "頑張ろう！私たちならできる！"
+  - id: "test0101"
     text: "勝利だ！お疲れ様！"
   - id: "test0102"
     text: "大丈夫、次は必ず勝とう！"
+  # 戦闘コマンド
+  - id: "battle_command_attack"
+    text: "こうげき"
+  - id: "battle_command_fire"
+    text: "ファイア"
+  - id: "battle_command_thunder"
+    text: "サンダー"
+  - id: "battle_command_barrier"
+    text: "バリア"
+  - id: "battle_command_wind"
+    text: "ウィンド"
+  - id: "battle_command_focus"
+    text: "おちつく"
+  - id: "battle_command_defend"
+    text: "まもる"
+  
+  # キャラクター名
+  - id: "lune_name"
+    text: "ルーネ"
+  - id: "sunny_name"
+    text: "サニー"
+  - id: "enemy_punching_bag_name"
+    text: "マシュマロス"
+  
+  # スキル説明
+  - id: "lune_attack_desc"
+    text: "たいあたりした！"
+  - id: "lune_fire_desc"
+    text: "ファイアをとなえた！"
+  
+  # コンビネーション
+  - id: "combination_thunder"
+    text: "サニーはルーネのまほうにあわせた！\nおおきなばくはつがおこった！"
+  
+  # 戦闘結果
+  - id: "enemy_beaten_desc"
+    text: "てきをやっつけた！"
+  - id: "battle_win"
+    text: "しょうりした！"
+  - id: "battle_lose"
+    text: "やられてしまった……"
+  
+  # 戦闘ダイアログ
+  - id: "battle_dialog_text"
+    text: "かかってこい！"

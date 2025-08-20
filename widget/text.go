@@ -21,6 +21,7 @@ type TextInterface interface {
 	ForceComplete()
 	SetText(text string, displayAll bool)
 	Size() *frontend.Vector
+	CheckIsEnd() bool
 }
 
 type Char string
@@ -74,6 +75,10 @@ type Text struct {
 
 func (t *Text) ForceComplete() {
 	t.currentIndex = t.textSize
+}
+
+func (t *Text) CheckIsEnd() bool {
+	return t.currentIndex >= t.textSize
 }
 
 func (t *Text) SetText(textString string, displayAll bool) {

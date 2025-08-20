@@ -31,6 +31,10 @@ func (m *MessageWindow) Close() {
 	// MessageWindowのClose実装
 }
 
+func (m *MessageWindow) IsTextEnd() bool {
+	return m.text.CheckIsEnd()
+}
+
 func (m *MessageWindow) SetText(textString string, displayAll bool) {
 	m.text.SetText(textString, displayAll)
 }

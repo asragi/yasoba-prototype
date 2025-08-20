@@ -8,6 +8,7 @@ import (
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/scene"
+	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -29,8 +30,13 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	prepareProduceCreateSequence := sequence.InitializeProduceCreateSequence()
 	actorServer := core.NewInMemoryActorServer()
-	textServer := core.CreateServeTextData()
+	textServer, err := core.LoadTextDataFromYaml("data/text_data.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	produceCreateSequence := prepareProduceCreateSequence(textServer)
 	characterServer := core.CreateCharacterServer()
 	enemyServer := core.CreateEnemyServer()
 	prepareActor := core.CreatePrepareActorService(characterServer, enemyServer, actorServer)
@@ -93,7 +99,7 @@ func init() {
 		choiceAction,
 	)
 	newVariableMessageWindow := component.StandByNewVariableMessageWindow(newWindow, newText, textServer)
-	newBattleScene := scene.StandByNewBattleScene(
+	newBattleScene := scene.InitializeCreateBattleScene(
 		newMessageWindow,
 		newSelectWindow,
 		newBattleSelectWindow,
@@ -110,6 +116,7 @@ func init() {
 		actorServer.Get,
 		newVariableMessageWindow,
 		newProcessBattle,
+		produceCreateSequence,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{

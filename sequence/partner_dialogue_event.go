@@ -13,44 +13,33 @@ type partnerDialogueDataPort func(eventId) *partnerDialogueModel
 
 type createPartnerDialogueEvent func(eventId) *eventUnit
 
-type setPartnerDialogueResponse struct {
-	update update
-	render render
+type SetPartnerDialogueResponse struct {
+	CheckIsEnd checkIsEnd
 }
-
-type setPartnerDialogue func(core.TextString) *setPartnerDialogueResponse
 
 func produceCreatePartnerDialogueEventToUnit(
 	serveTextData core.ServeTextDataFunc,
 	partnerDialogueDataPort partnerDialogueDataPort,
-	setPartnerDialogue setPartnerDialogue,
+	setPartnerDialogue SetPartnerDialogue,
 ) createPartnerDialogueEvent {
 	return func(id eventId) *eventUnit {
 		model := partnerDialogueDataPort(id)
 		textData := serveTextData(model.textId)
-		var textUpdate update
-		var textRender render
+		var textUpdate checkIsEnd
 		start := func() {
 			res := setPartnerDialogue(textData.Text)
-			textUpdate = res.update
-			textRender = res.render
+			textUpdate = res.CheckIsEnd
 		}
-		update := func() isEnd {
+		checkIsEnd := func() IsEnd {
 			if textUpdate == nil {
 				return false
 			}
 			return textUpdate()
 		}
-		render := func() {
-			if textRender == nil {
-				return
-			}
-			textRender()
-		}
 		return &eventUnit{
-			start:  start,
-			render: render,
-			update: update,
+			start:      start,
+			checkIsEnd: checkIsEnd,
+			reset:      func() {},
 		}
 	}
 }

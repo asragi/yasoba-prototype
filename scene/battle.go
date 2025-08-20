@@ -4,6 +4,7 @@ import (
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -22,6 +23,7 @@ type BattleScene struct {
 	effectManager      *widget.EffectManager
 	shake              *frontend.EmitShake
 	endState           core.BattleEndType
+	testSeqUpdate      func() sequence.IsEnd
 }
 
 func (s *BattleScene) OnSequenceEnd() {
@@ -65,6 +67,7 @@ func (s *BattleScene) Update() {
 		}
 	}
 	s.effectManager.Update()
+	s.testSeqUpdate()
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
@@ -86,9 +89,9 @@ type BattleOption struct {
 	BattleSettingId core.BattleSettingId
 }
 
-type NewBattleScene func(*BattleOption) *BattleScene
+type CreateBattleScene func(*BattleOption) *BattleScene
 
-func StandByNewBattleScene(
+func InitializeCreateBattleScene(
 	newMessageWindow component.NewMessageWindowFunc,
 	newSelectWindow component.NewSelectWindowFunc,
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
@@ -105,7 +108,8 @@ func StandByNewBattleScene(
 	serveActor core.ActorSupplier,
 	newVariableMessageWindow component.NewVariableMessageWindowFunc,
 	newProcessBattle core.NewProcessBattleFunc,
-) NewBattleScene {
+	produceCreateSequence sequence.ProduceCreateSequence,
+) CreateBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		onEnd := func(endType core.BattleEndType) {
 			// TODO: Implement end of battle
@@ -221,7 +225,7 @@ func StandByNewBattleScene(
 		subActorDisplay := newBattleSubActorDisplay(subActor)
 		subActorDialog := component.CreateNewBattlePartnerDialogue(newMessageWindow)()
 		subActorDialog.Open()
-		subActorDialog.SetText("こんにちは！！\nこれは改行テストだよ！\n３行くらいまでの表示を想定しているよ", false)
+		// subActorDialog.SetText("こんにちは！！\nこれは改行テストだよ！\n３行くらいまでの表示を想定しているよ", false)
 
 		playEffect := func(effectId widget.EffectId, target core.ActorId) {
 			actor := serveActor(target)
@@ -287,6 +291,19 @@ func StandByNewBattleScene(
 			battleEnemyDisplay.SetDisappear,
 		)
 
+		setPartnerDialogue := func(text core.TextString) *sequence.SetPartnerDialogueResponse {
+			subActorDialog.SetText(text.String(), false)
+			return &sequence.SetPartnerDialogueResponse{
+				CheckIsEnd: func() sequence.IsEnd {
+					result := subActorDialog.IsTextEnd()
+					return sequence.IsEnd(result)
+				},
+			}
+		}
+
+		createSequence := produceCreateSequence(setPartnerDialogue)
+		seq := createSequence("test_sequence_0000")
+
 		battleScene = &BattleScene{
 			messageWindow:      messageWindow,
 			battleSelectWindow: battleSelectWindow,
@@ -300,6 +317,7 @@ func StandByNewBattleScene(
 			effectManager:      effectManager,
 			shake:              frontend.NewShake(),
 			subActorDialog:     subActorDialog,
+			testSeqUpdate:      seq.Update,
 		}
 
 		playSequence := createPlayBattleSequence(

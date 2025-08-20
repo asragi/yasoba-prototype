@@ -11,6 +11,7 @@ type PartnerDialogueMessageWindow interface {
 	FitToMessage()
 	Draw(frontend.DrawFunc)
 	Update(parentPosition *frontend.Vector)
+	IsTextEnd() bool
 }
 
 type BattlePartnerDialogue struct {
@@ -30,6 +31,13 @@ func (d *BattlePartnerDialogue) Close() {
 func (d *BattlePartnerDialogue) Open() {
 	d.window = d.newWindow()
 	d.window.Open()
+}
+
+func (d *BattlePartnerDialogue) IsTextEnd() bool {
+	if d.window == nil {
+		return true
+	}
+	return d.window.IsTextEnd()
 }
 
 func (d *BattlePartnerDialogue) SetText(textString string, displayAll bool) {

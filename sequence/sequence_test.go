@@ -19,9 +19,8 @@ func TestSequence_Update(t *testing.T) {
 			name: "1つのイベントが終了する場合",
 			events: []*eventUnit{
 				{
-					start:  func() {},
-					update: func() isEnd { return true },
-					render: func() {},
+					start:      func() {},
+					checkIsEnd: func() IsEnd { return true },
 				},
 			},
 			expected: true,
@@ -30,14 +29,12 @@ func TestSequence_Update(t *testing.T) {
 			name: "複数のイベントが順次実行される場合",
 			events: []*eventUnit{
 				{
-					start:  func() {},
-					update: func() isEnd { return true },
-					render: func() {},
+					start:      func() {},
+					checkIsEnd: func() IsEnd { return true },
 				},
 				{
-					start:  func() {},
-					update: func() isEnd { return true },
-					render: func() {},
+					start:      func() {},
+					checkIsEnd: func() IsEnd { return true },
 				},
 			},
 			expected: true,
@@ -53,31 +50,11 @@ func TestSequence_Update(t *testing.T) {
 				events:  tt.events,
 			}
 
-			result := seq.update()
-			if result != isEnd(tt.expected) {
+			result := seq.Update()
+			if result != IsEnd(tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, result)
 			}
 		})
-	}
-}
-
-func TestSequence_Render(t *testing.T) {
-	renderCalled := false
-	seq := &sequence{
-		id: "test-sequence",
-		events: []*eventUnit{
-			{
-				start:  func() {},
-				update: func() isEnd { return false },
-				render: func() { renderCalled = true },
-			},
-		},
-	}
-
-	seq.render()
-
-	if !renderCalled {
-		t.Error("render function was not called")
 	}
 }
 
@@ -104,9 +81,8 @@ func TestProvideCreateSequence(t *testing.T) {
 
 	mockCreatePartnerDialogueEvent := func(id eventId) *eventUnit {
 		return &eventUnit{
-			start:  func() {},
-			update: func() isEnd { return false },
-			render: func() {},
+			start:      func() {},
+			checkIsEnd: func() IsEnd { return false },
 		}
 	}
 
@@ -136,12 +112,10 @@ func TestProvideCreateSequence(t *testing.T) {
 func TestEventUnit(t *testing.T) {
 	startCalled := false
 	updateCalled := false
-	renderCalled := false
 
 	event := &eventUnit{
-		start:  func() { startCalled = true },
-		update: func() isEnd { updateCalled = true; return true },
-		render: func() { renderCalled = true },
+		start:      func() { startCalled = true },
+		checkIsEnd: func() IsEnd { updateCalled = true; return true },
 	}
 
 	// startのテスト
@@ -151,17 +125,11 @@ func TestEventUnit(t *testing.T) {
 	}
 
 	// updateのテスト
-	result := event.update()
+	result := event.checkIsEnd()
 	if !updateCalled {
 		t.Error("update function was not called")
 	}
 	if !result {
 		t.Error("expected update to return true")
-	}
-
-	// renderのテスト
-	event.render()
-	if !renderCalled {
-		t.Error("render function was not called")
 	}
 }

@@ -11,13 +11,15 @@ type sequence struct {
 	events  []*eventUnit
 }
 
-func (s *sequence) render() {
+func (s *sequence) Reset() {
+	s.index = 0
+	s.isStart = true
 	for _, event := range s.events {
-		event.render()
+		event.reset()
 	}
 }
 
-func (s *sequence) update() isEnd {
+func (s *sequence) Update() IsEnd {
 	if s.index >= len(s.events) {
 		return true
 	}
@@ -29,11 +31,10 @@ func (s *sequence) update() isEnd {
 
 	for i, event := range s.events {
 		if i != s.index {
-			event.update()
 			continue
 		}
 
-		isEnd := event.update()
+		isEnd := event.checkIsEnd()
 		if isEnd {
 			s.index++
 			s.isStart = true
@@ -43,10 +44,9 @@ func (s *sequence) update() isEnd {
 	return s.index >= len(s.events)
 }
 
-type isEnd bool
-type render func()
+type IsEnd bool
 type start func()
-type update func() isEnd
+type checkIsEnd func() IsEnd
 
 type createSequence func(id sequenceId) *sequence
 
@@ -59,16 +59,21 @@ func initializeProduceCreateSequence(
 		for _, seq := range sequenceDataArray {
 			events := []*eventUnit{}
 			for _, event := range seq.events {
-				events = append(events, createPartnerDialogueEvent(event.id))
+				if event.eventType == "partner_dialogue" {
+					events = append(events, createPartnerDialogueEvent(event.id))
+					continue
+				}
 			}
 			sequences[seq.id] = &sequence{
-				id:     seq.id,
-				events: events,
+				id:      seq.id,
+				events:  events,
+				isStart: true,
 			}
 		}
 
 		return func(id sequenceId) *sequence {
 			if seq, ok := sequences[id]; ok {
+				seq.Reset()
 				return seq
 			}
 
@@ -80,7 +85,7 @@ func initializeProduceCreateSequence(
 
 // sequenceはn個のeventUnitを持つ
 type eventUnit struct {
-	update update
-	render render
-	start  start
+	checkIsEnd checkIsEnd
+	start      start
+	reset      func()
 }
