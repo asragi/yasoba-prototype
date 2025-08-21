@@ -52,15 +52,22 @@ type createSequence func(id sequenceId) *sequence
 
 func initializeProduceCreateSequence(
 	sequencesDataPort sequenceDataPort,
-) func(createPartnerDialogueEvent) createSequence {
+) func(createPartnerDialogueEvent, createChangeEmotionEvent) createSequence {
 	sequenceDataArray := sequencesDataPort()
-	return func(createPartnerDialogueEvent createPartnerDialogueEvent) createSequence {
+	return func(
+		createPartnerDialogueEvent createPartnerDialogueEvent,
+		createChangeEmotionEvent createChangeEmotionEvent,
+	) createSequence {
 		sequences := make(map[sequenceId]*sequence)
 		for _, seq := range sequenceDataArray {
 			events := []*eventUnit{}
 			for _, event := range seq.events {
 				if event.eventType == "partner_dialogue" {
 					events = append(events, createPartnerDialogueEvent(event.id))
+					continue
+				}
+				if event.eventType == "change_emotion" {
+					events = append(events, createChangeEmotionEvent(event.id))
 					continue
 				}
 			}

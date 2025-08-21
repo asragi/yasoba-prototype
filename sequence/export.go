@@ -32,6 +32,11 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 					partnerDialogueDataPort,
 					setPartnerDialogue,
 				),
+				produceCreateChangeEmotionEventToUnit(
+					partnerDialogueDataPort,
+					changeEmotionDataPort,
+					setEmotion,
+				),
 			)
 		}
 	}
