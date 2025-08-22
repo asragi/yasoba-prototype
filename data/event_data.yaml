@@ -1,30 +1,33 @@
 # イベントデータのテストデータ
 events:
-  # 戦闘開始シーケンスのイベント
+  - id: "test0000open"
+    eventType: "open_partner_message_window"
+    ownerId: "test_sequence_0000"
+    order: 1
   - id: "test0000emotion"
     eventType: "change_emotion"
     ownerId: "test_sequence_0000"
-    order: 1
+    order: 2
   - id: "test0000"
     eventType: "partner_dialogue"
     ownerId: "test_sequence_0000"
-    order: 2
+    order: 3
   - id: "test0001emotion"
     eventType: "change_emotion"
     ownerId: "test_sequence_0000"
-    order: 3
+    order: 4
   - id: "test0001"
     eventType: "partner_dialogue"
     ownerId: "test_sequence_0000"
-    order: 4
+    order: 5
   - id: "test0002emotion"
     eventType: "change_emotion"
     ownerId: "test_sequence_0000"
-    order: 5
+    order: 6
   - id: "test0002"
     eventType: "partner_dialogue"
     ownerId: "test_sequence_0000"
-    order: 6
+    order: 7
   # スキル実行シーケンスのイベント
   - id: "test0100"
     eventType: "partner_dialogue"

@@ -52,11 +52,12 @@ type createSequence func(id sequenceId) *sequence
 
 func initializeProduceCreateSequence(
 	sequencesDataPort sequenceDataPort,
-) func(createPartnerDialogueEvent, createChangeEmotionEvent) createSequence {
+) func(createPartnerDialogueEvent, createChangeEmotionEvent, createOpenPartnerMessageWindowEvent) createSequence {
 	sequenceDataArray := sequencesDataPort()
 	return func(
 		createPartnerDialogueEvent createPartnerDialogueEvent,
 		createChangeEmotionEvent createChangeEmotionEvent,
+		createOpenPartnerMessageWindowEvent createOpenPartnerMessageWindowEvent,
 	) createSequence {
 		sequences := make(map[sequenceId]*sequence)
 		for _, seq := range sequenceDataArray {
@@ -68,6 +69,10 @@ func initializeProduceCreateSequence(
 				}
 				if event.eventType == "change_emotion" {
 					events = append(events, createChangeEmotionEvent(event.id))
+					continue
+				}
+				if event.eventType == "open_partner_message_window" {
+					events = append(events, createOpenPartnerMessageWindowEvent(event.id))
 					continue
 				}
 			}

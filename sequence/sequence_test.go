@@ -71,6 +71,12 @@ func TestProvideCreateSequence(t *testing.T) {
 					ownerId:   mockId,
 					order:     1,
 				},
+				{
+					id:        "event-2",
+					eventType: openPartnerMessageWindowEvent,
+					ownerId:   mockId,
+					order:     2,
+				},
 			},
 		},
 	}
@@ -95,9 +101,17 @@ func TestProvideCreateSequence(t *testing.T) {
 		}
 	}
 
+	mockCreateOpenPartnerMessageWindowEvent := func(id eventId) *eventUnit {
+		return &eventUnit{
+			start:      func() {},
+			checkIsEnd: func() IsEnd { return false },
+			reset:      func() {},
+		}
+	}
+
 	// initializeProduceCreateSequenceの正しい呼び出し方法に修正
 	produceCreateSequence := initializeProduceCreateSequence(mockSequenceDataPort)
-	createSeq := produceCreateSequence(mockCreatePartnerDialogueEvent, mockCreateChangeEmotionEvent)
+	createSeq := produceCreateSequence(mockCreatePartnerDialogueEvent, mockCreateChangeEmotionEvent, mockCreateOpenPartnerMessageWindowEvent)
 
 	// 存在するシーケンスIDでテスト
 	seq := createSeq("test-sequence-1")
@@ -107,14 +121,37 @@ func TestProvideCreateSequence(t *testing.T) {
 	if seq.id != mockId {
 		t.Errorf("expected sequence id '%s', got '%s'", mockId, seq.id)
 	}
-	if len(seq.events) != 1 {
-		t.Errorf("expected 1 event, got %d", len(seq.events))
+	if len(seq.events) != 2 {
+		t.Errorf("expected 2 events, got %d", len(seq.events))
 	}
 
 	// 存在しないシーケンスIDでテスト
 	nonExistentSeq := createSeq("non-existent")
 	if nonExistentSeq != nil {
 		t.Error("expected nil for non-existent sequence, got sequence")
+	}
+}
+
+func TestOpenPartnerMessageWindowEvent(t *testing.T) {
+	openCalled := false
+
+	setOpenPartnerMessageWindow := func() {
+		openCalled = true
+	}
+
+	createEvent := produceCreateOpenPartnerMessageWindowEventToUnit(setOpenPartnerMessageWindow)
+	event := createEvent("test-event")
+
+	// startのテスト
+	event.start()
+	if !openCalled {
+		t.Error("setOpenPartnerMessageWindow function was not called")
+	}
+
+	// checkIsEndのテスト
+	result := event.checkIsEnd()
+	if !result {
+		t.Error("expected checkIsEnd to return true")
 	}
 }
 

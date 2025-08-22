@@ -224,8 +224,6 @@ func InitializeCreateBattleScene(
 		actorDisplay := newBattleActorDisplay(mainActor)
 		subActorDisplay := newBattleSubActorDisplay(subActor)
 		subActorDialog := component.CreateNewBattlePartnerDialogue(newMessageWindow)()
-		subActorDialog.Open()
-		// subActorDialog.SetText("こんにちは！！\nこれは改行テストだよ！\n３行くらいまでの表示を想定しているよ", false)
 
 		playEffect := func(effectId widget.EffectId, target core.ActorId) {
 			actor := serveActor(target)
@@ -304,6 +302,7 @@ func InitializeCreateBattleScene(
 		createSequence := produceCreateSequence(
 			setPartnerDialogue,
 			setEmotion,
+			subActorDialog.Open,
 		)
 		seq := createSequence("test_sequence_0000")
 
