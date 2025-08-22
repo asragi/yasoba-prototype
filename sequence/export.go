@@ -4,7 +4,7 @@ import "github.com/asragi/yasoba-prototype/core"
 
 type SetPartnerDialogue func(core.TextString) *SetPartnerDialogueResponse
 
-type ProduceCreateSequence func(SetPartnerDialogue, SetEmotion, OpenPartnerMessageWindow) createSequence
+type ProduceCreateSequence func(SetPartnerDialogue, SetEmotion, OpenPartnerMessageWindow, ClosePartnerMessageWindow) createSequence
 
 type PrepareProduceCreateSequence func(core.ServeTextDataFunc) ProduceCreateSequence
 
@@ -30,6 +30,7 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 			setPartnerDialogue SetPartnerDialogue,
 			setEmotion SetEmotion,
 			setOpenPartnerMessageWindow OpenPartnerMessageWindow,
+			setClosePartnerMessageWindow ClosePartnerMessageWindow,
 		) createSequence {
 			return produceCreateSequence(
 				produceCreatePartnerDialogueEventToUnit(
@@ -43,6 +44,9 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 				),
 				produceCreateOpenPartnerMessageWindowEventToUnit(
 					setOpenPartnerMessageWindow,
+				),
+				produceCreateClosePartnerMessageWindowEventToUnit(
+					setClosePartnerMessageWindow,
 				),
 			)
 		}

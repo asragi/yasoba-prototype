@@ -184,6 +184,7 @@ func InitializeCreateBattleScene(
 		)
 		testString := "あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市"
 		messageWindow.SetText(testString, false)
+		messageWindow.Open()
 
 		displayArgs := component.ToDisplayArgs(battleResponse.EnemyIds, battleSetting.Enemies)
 		battleEnemyDisplay := newBattleEnemyDisplay(
@@ -303,6 +304,7 @@ func InitializeCreateBattleScene(
 			setPartnerDialogue,
 			setEmotion,
 			subActorDialog.Open,
+			subActorDialog.Close,
 		)
 		seq := createSequence("test_sequence_0000")
 

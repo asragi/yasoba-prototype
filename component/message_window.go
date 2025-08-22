@@ -9,6 +9,7 @@ type MessageWindow struct {
 	text   widget.TextInterface
 	window widget.WindowInterface
 	shake  *frontend.EmitShake
+	isOpen bool
 }
 
 func (m *MessageWindow) Shake(amplitude float64, period int) {
@@ -21,14 +22,17 @@ func (m *MessageWindow) FitToMessage() {
 }
 
 func (m *MessageWindow) Open() {
-	// MessageWindowのOpen実装
+	m.isOpen = true
 }
 
 func (m *MessageWindow) Close() {
-	// MessageWindowのClose実装
+	m.isOpen = false
 }
 
 func (m *MessageWindow) IsTextEnd() bool {
+	if !m.isOpen {
+		return true
+	}
 	return m.text.CheckIsEnd()
 }
 
@@ -43,6 +47,9 @@ func (m *MessageWindow) Update(parentPosition *frontend.Vector) {
 }
 
 func (m *MessageWindow) Draw(drawFunc frontend.DrawFunc) {
+	if !m.isOpen {
+		return
+	}
 	m.window.Draw(drawFunc)
 	m.text.Draw(drawFunc)
 }

@@ -28,6 +28,10 @@ events:
     eventType: "partner_dialogue"
     ownerId: "test_sequence_0000"
     order: 7
+  - id: "test0000close"
+    eventType: "close_partner_message_window"
+    ownerId: "test_sequence_0000"
+    order: 8
   # スキル実行シーケンスのイベント
   - id: "test0100"
     eventType: "partner_dialogue"

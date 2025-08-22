@@ -77,6 +77,12 @@ func TestProvideCreateSequence(t *testing.T) {
 					ownerId:   mockId,
 					order:     2,
 				},
+				{
+					id:        "event-3",
+					eventType: closePartnerMessageWindowEvent,
+					ownerId:   mockId,
+					order:     3,
+				},
 			},
 		},
 	}
@@ -109,9 +115,17 @@ func TestProvideCreateSequence(t *testing.T) {
 		}
 	}
 
+	mockCreateClosePartnerMessageWindowEvent := func(id eventId) *eventUnit {
+		return &eventUnit{
+			start:      func() {},
+			checkIsEnd: func() IsEnd { return false },
+			reset:      func() {},
+		}
+	}
+
 	// initializeProduceCreateSequenceの正しい呼び出し方法に修正
 	produceCreateSequence := initializeProduceCreateSequence(mockSequenceDataPort)
-	createSeq := produceCreateSequence(mockCreatePartnerDialogueEvent, mockCreateChangeEmotionEvent, mockCreateOpenPartnerMessageWindowEvent)
+	createSeq := produceCreateSequence(mockCreatePartnerDialogueEvent, mockCreateChangeEmotionEvent, mockCreateOpenPartnerMessageWindowEvent, mockCreateClosePartnerMessageWindowEvent)
 
 	// 存在するシーケンスIDでテスト
 	seq := createSeq("test-sequence-1")
@@ -121,8 +135,8 @@ func TestProvideCreateSequence(t *testing.T) {
 	if seq.id != mockId {
 		t.Errorf("expected sequence id '%s', got '%s'", mockId, seq.id)
 	}
-	if len(seq.events) != 2 {
-		t.Errorf("expected 2 events, got %d", len(seq.events))
+	if len(seq.events) != 3 {
+		t.Errorf("expected 3 events, got %d", len(seq.events))
 	}
 
 	// 存在しないシーケンスIDでテスト
@@ -146,6 +160,29 @@ func TestOpenPartnerMessageWindowEvent(t *testing.T) {
 	event.start()
 	if !openCalled {
 		t.Error("setOpenPartnerMessageWindow function was not called")
+	}
+
+	// checkIsEndのテスト
+	result := event.checkIsEnd()
+	if !result {
+		t.Error("expected checkIsEnd to return true")
+	}
+}
+
+func TestClosePartnerMessageWindowEvent(t *testing.T) {
+	closeCalled := false
+
+	setClosePartnerMessageWindow := func() {
+		closeCalled = true
+	}
+
+	createEvent := produceCreateClosePartnerMessageWindowEventToUnit(setClosePartnerMessageWindow)
+	event := createEvent("test-event")
+
+	// startのテスト
+	event.start()
+	if !closeCalled {
+		t.Error("setClosePartnerMessageWindow function was not called")
 	}
 
 	// checkIsEndのテスト

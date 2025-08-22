@@ -4,8 +4,9 @@ type eventId string
 type eventType string
 
 const (
-	partnerDialogueEvent          eventType = "partner_dialogue"
-	openPartnerMessageWindowEvent eventType = "open_partner_message_window"
+	partnerDialogueEvent           eventType = "partner_dialogue"
+	openPartnerMessageWindowEvent  eventType = "open_partner_message_window"
+	closePartnerMessageWindowEvent eventType = "close_partner_message_window"
 )
 
 type eventDataModel struct {
