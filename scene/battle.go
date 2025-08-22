@@ -26,7 +26,7 @@ type BattleScene struct {
 	testSeqUpdate      func() sequence.IsEnd
 }
 
-func (s *BattleScene) OnSequenceEnd() {
+func (s *BattleScene) onTurnEnd() {
 	if s.endState == core.BattleEndTypeWin {
 		s.messageWindow.SetText("しょうりした！", false)
 		return
@@ -37,6 +37,10 @@ func (s *BattleScene) OnSequenceEnd() {
 	}
 	s.input.Set(s.battleSelectWindow)
 	s.battleSelectWindow.Open()
+}
+
+func (s *BattleScene) onBattleEnd(endType core.BattleEndType) {
+	s.endState = endType
 }
 
 func (s *BattleScene) Update() {
@@ -63,7 +67,7 @@ func (s *BattleScene) Update() {
 	if s.battleSequence.IsRun() {
 		s.battleSequence.Update()
 		if s.battleSequence.IsEnd() {
-			s.OnSequenceEnd()
+			s.onTurnEnd()
 		}
 	}
 	s.effectManager.Update()
@@ -111,10 +115,6 @@ func InitializeCreateBattleScene(
 	produceCreateSequence sequence.ProduceCreateSequence,
 ) CreateBattleScene {
 	return func(option *BattleOption) *BattleScene {
-		onEnd := func(endType core.BattleEndType) {
-			// TODO: Implement end of battle
-			option.OnEnd(BattleResult{})
-		}
 		battleSetting := getBattleSetting(option.BattleSettingId)
 		enemyIds := func() []core.EnemyId {
 			ids := make([]core.EnemyId, len(battleSetting.Enemies))
@@ -131,7 +131,6 @@ func InitializeCreateBattleScene(
 			EnemyIds:             enemyIds,
 		}
 		battleResponse := initializeBattle(initializeRequest)
-		processBattle := newProcessBattle(battleResponse, onEnd)
 		mainActorId := battleResponse.MainActorId
 		mainActor := serveActor(mainActorId)
 		subActorId := battleResponse.SubActorId
@@ -323,6 +322,7 @@ func InitializeCreateBattleScene(
 			subActorDialog:     subActorDialog,
 			testSeqUpdate:      seq.Update,
 		}
+		processBattle := newProcessBattle(battleResponse, battleScene.onBattleEnd)
 
 		playSequence := createPlayBattleSequence(
 			skillToSequence,
@@ -356,13 +356,16 @@ func InitializeCreateBattleScene(
 	}
 }
 
+type playBattleSequenceFunc func([]*core.SkillApplyResult)
+
+// SkillApplyResultに基づいて戦闘の演出を行う
 func createPlayBattleSequence(
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleSequence component.NewBattleSequenceFunc,
 	addBattleSequence func(component.BattleSequenceFunc),
 	actorIdToEnemy map[core.ActorId]core.EnemyId,
 	serveEnemyView component.ServeEnemyViewData,
-) func([]*core.SkillApplyResult) {
+) playBattleSequenceFunc {
 	return func(skillApplyResultSet []*core.SkillApplyResult) {
 		for _, skillApplyResult := range skillApplyResultSet {
 			skillId := skillApplyResult.SkillId
