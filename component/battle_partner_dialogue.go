@@ -17,7 +17,10 @@ type PartnerDialogueMessageWindow interface {
 type BattlePartnerDialogue struct {
 	window        PartnerDialogueMessageWindow
 	newWindowFunc NewMessageWindowFunc
+	textWait      int
 }
+
+const defaultTextWait = 60
 
 type NewBattlePartnerDialogueFunc func() *BattlePartnerDialogue
 
@@ -37,7 +40,12 @@ func (d *BattlePartnerDialogue) IsTextEnd() bool {
 	if d.window == nil {
 		return true
 	}
-	return d.window.IsTextEnd()
+	isEnd := d.window.IsTextEnd()
+	if !isEnd {
+		d.textWait = defaultTextWait
+	}
+	d.textWait--
+	return d.textWait <= 0
 }
 
 func (d *BattlePartnerDialogue) SetText(textString string, displayAll bool) {
