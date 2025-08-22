@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -34,8 +33,6 @@ func LoadTextDataFromYaml(filePath string) (ServeTextDataFunc, error) {
 			Text: TextString(entry.Text),
 		}
 	}
-
-	fmt.Printf("dict: %+v\n", dict)
 
 	return func(id TextId) *TextData {
 		if textData, ok := dict[id]; ok {

@@ -24,12 +24,12 @@ func (s *sequence) Update() IsEnd {
 		return true
 	}
 
-	if s.isStart {
-		s.isStart = false
-		s.events[s.index].start()
-	}
-
 	for i, event := range s.events {
+		if s.isStart {
+			s.isStart = false
+			event.start()
+		}
+
 		if i != s.index {
 			continue
 		}

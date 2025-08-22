@@ -1,6 +1,8 @@
 package sequence
 
 import (
+	"fmt"
+
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 )
@@ -23,7 +25,11 @@ func produceCreateChangeEmotionEventToUnit(
 	return func(eventId eventId) *eventUnit {
 		model := changeEmotionDataPort(eventId)
 		return &eventUnit{
-			start:      func() { setEmotion(model.actorId, model.emotion) },
+			start: func() {
+				fmt.Println("change emotion", model.actorId, model.emotion)
+				fmt.Println("setEmotion", setEmotion)
+				setEmotion(model.actorId, model.emotion)
+			},
 			checkIsEnd: func() IsEnd { return true },
 			reset:      func() {},
 		}

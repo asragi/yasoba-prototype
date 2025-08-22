@@ -1,10 +1,10 @@
 package core
 
 import (
-	"fmt"
-	"github.com/asragi/yasoba-prototype/util"
 	"math"
 	"strconv"
+
+	"github.com/asragi/yasoba-prototype/util"
 )
 
 func decideAttackValue(atk ATK, mag MAG, skillType SkillType) attackerValue {
@@ -70,8 +70,6 @@ func CreateSkillApply(
 				)
 				afterHP := damage.Apply(target.HP)
 				target.HP = afterHP
-				fmt.Printf("damage: %d, afterHP: %d\n", damage, afterHP)
-				fmt.Println("---")
 				updateActor(target)
 				result = append(
 					result, &SkillApplyResultRow{

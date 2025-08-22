@@ -1,6 +1,7 @@
 package sequence
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -12,10 +13,10 @@ import (
 // YAMLデータ構造体
 type changeEmotionModelYAML struct {
 	ChangeEmotions []struct {
-		EventID string `yaml:"eventId"`
+		EventID string `yaml:"id"`
 		ActorID string `yaml:"actorId"`
 		Emotion string `yaml:"emotion"`
-	} `yaml:"changeEmotions"`
+	} `yaml:"events"`
 }
 
 // createChangeEmotionDataPortFromYAML はYAMLファイルからchangeEmotionDataPortを作成します
@@ -42,6 +43,12 @@ func createChangeEmotionDataPortFromYAML(filePath string) changeEmotionDataPort 
 			emotionType = component.BattleEmotionNormal
 		case "damage":
 			emotionType = component.BattleEmotionDamage
+		case "smile":
+			emotionType = component.BattleEmotionSmile
+		case "angry":
+			emotionType = component.BattleEmotionAngry
+		case "annoyed":
+			emotionType = component.BattleEmotionAnnoyed
 		default:
 			emotionType = component.BattleEmotionNormal // デフォルト値
 		}
@@ -53,6 +60,10 @@ func createChangeEmotionDataPortFromYAML(filePath string) changeEmotionDataPort 
 	}
 
 	return func(id eventId) *ChangeEmotion {
-		return emotionMap[id]
+		event := emotionMap[id]
+		if event == nil {
+			panic(fmt.Sprintf("event not found: %v", id))
+		}
+		return event
 	}
 }

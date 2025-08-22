@@ -1,8 +1,6 @@
 package component
 
 import (
-	"fmt"
-
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -19,7 +17,6 @@ func (m *MessageWindow) Shake(amplitude float64, period int) {
 
 func (m *MessageWindow) FitToMessage() {
 	size := m.text.Size().Add(m.window.GetPadding().Multiply(2))
-	fmt.Println(size)
 	m.window.SetSize(size)
 }
 
