@@ -83,12 +83,21 @@ func TestProvideCreateSequence(t *testing.T) {
 		return &eventUnit{
 			start:      func() {},
 			checkIsEnd: func() IsEnd { return false },
+			reset:      func() {},
+		}
+	}
+
+	mockCreateChangeEmotionEvent := func(id eventId) *eventUnit {
+		return &eventUnit{
+			start:      func() {},
+			checkIsEnd: func() IsEnd { return false },
+			reset:      func() {},
 		}
 	}
 
 	// initializeProduceCreateSequenceの正しい呼び出し方法に修正
 	produceCreateSequence := initializeProduceCreateSequence(mockSequenceDataPort)
-	createSeq := produceCreateSequence(mockCreatePartnerDialogueEvent)
+	createSeq := produceCreateSequence(mockCreatePartnerDialogueEvent, mockCreateChangeEmotionEvent)
 
 	// 存在するシーケンスIDでテスト
 	seq := createSeq("test-sequence-1")
@@ -112,10 +121,12 @@ func TestProvideCreateSequence(t *testing.T) {
 func TestEventUnit(t *testing.T) {
 	startCalled := false
 	updateCalled := false
+	resetCalled := false
 
 	event := &eventUnit{
 		start:      func() { startCalled = true },
 		checkIsEnd: func() IsEnd { updateCalled = true; return true },
+		reset:      func() { resetCalled = true },
 	}
 
 	// startのテスト
@@ -131,5 +142,11 @@ func TestEventUnit(t *testing.T) {
 	}
 	if !result {
 		t.Error("expected update to return true")
+	}
+
+	// resetのテスト
+	event.reset()
+	if !resetCalled {
+		t.Error("reset function was not called")
 	}
 }

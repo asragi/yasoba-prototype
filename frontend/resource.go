@@ -3,11 +3,12 @@ package frontend
 import (
 	"bytes"
 	"fmt"
+	"image"
+
 	"github.com/asragi/yasoba-prototype/font"
 	load "github.com/asragi/yasoba-prototype/image"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"image"
 )
 
 type TextureId int
@@ -19,6 +20,9 @@ const (
 	TextureFaceLuneDamage
 	TextureFaceSunnyNormal
 	TextureFaceSunnyDamage
+	TextureFaceSunnySmile
+	TextureFaceSunnyAngry
+	TextureFaceSunnyAnnoyed
 	TextureMarshmallowNormal
 	TextureMarshmallowDamage
 	TextureBattleEffectImpact
@@ -44,6 +48,9 @@ const (
 	AnimationIdLuneDamage
 	AnimationIdSunnyNormal
 	AnimationIdSunnyDamage
+	AnimationIdSunnySmile
+	AnimationIdSunnyAngry
+	AnimationIdSunnyAnnoyed
 )
 
 type ResourceManager struct {
@@ -118,6 +125,9 @@ func CreateResourceManager() (*ResourceManager, error) {
 		TextureFaceLuneDamage:      load.FaceLuneDamage,
 		TextureFaceSunnyNormal:     load.FaceSunnyNormal,
 		TextureFaceSunnyDamage:     load.FaceSunnyDamage,
+		TextureFaceSunnySmile:      load.FaceSunnySmile,
+		TextureFaceSunnyAngry:      load.FaceSunnyAngry,
+		TextureFaceSunnyAnnoyed:    load.FaceSunnyAnnoyed,
 		TextureMarshmallowNormal:   load.MarshmallowNormal,
 		TextureMarshmallowDamage:   load.MarshmallowDamage,
 		TextureBattleEffectImpact:  load.BattleEffectImpact,
@@ -138,6 +148,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 	}
 	fontDict[MaruMinya] = &text.GoTextFace{Source: s, Size: 12}
 
+	// TODO: 外部ファイルとかから動的に読み込みたい
 	animationDict := map[AnimationId]*AnimationData{
 		AnimationIdLuneNormal: {
 			TextureId:      TextureFaceLuneNormal,
@@ -165,6 +176,30 @@ func CreateResourceManager() (*ResourceManager, error) {
 		},
 		AnimationIdSunnyDamage: {
 			TextureId:      TextureFaceSunnyDamage,
+			RowCount:       1,
+			ColumnCount:    1,
+			AnimationCount: 1,
+			Duration:       20,
+			IsLoop:         true,
+		},
+		AnimationIdSunnySmile: {
+			TextureId:      TextureFaceSunnySmile,
+			RowCount:       1,
+			ColumnCount:    1,
+			AnimationCount: 1,
+			Duration:       20,
+			IsLoop:         true,
+		},
+		AnimationIdSunnyAngry: {
+			TextureId:      TextureFaceSunnyAngry,
+			RowCount:       1,
+			ColumnCount:    1,
+			AnimationCount: 1,
+			Duration:       20,
+			IsLoop:         true,
+		},
+		AnimationIdSunnyAnnoyed: {
+			TextureId:      TextureFaceSunnyAnnoyed,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,

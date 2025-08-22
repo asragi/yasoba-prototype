@@ -15,6 +15,12 @@ var (
 	FaceSunnyNormal []byte
 	//go:embed face_sunny_damage.png
 	FaceSunnyDamage []byte
+	//go:embed face_sunny_smile.png
+	FaceSunnySmile []byte
+	//go:embed face_sunny_angry.png
+	FaceSunnyAngry []byte
+	//go:embed face_sunny_annoyed.png
+	FaceSunnyAnnoyed []byte
 	//go:embed marshmallow_normal.png
 	MarshmallowNormal []byte
 	//go:embed marshmallow_damage.png

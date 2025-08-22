@@ -57,7 +57,8 @@ func StandByNewFaceWindow(
 	resource *frontend.ResourceManager,
 	newWindow widget.NewWindowFunc,
 ) NewFaceWindowFunc {
-	getEmotion := createEmotionProvider()
+	getAllEmotion := createGetAllEmotionFunc()
+	allEmotion := getAllEmotion()
 	return func(
 		relativePosition *frontend.Vector,
 		depth frontend.Depth,
@@ -68,8 +69,7 @@ func StandByNewFaceWindow(
 		const faceSize = 74
 		animationMap := func() map[BattleEmotionType]*widget.Animation {
 			result := map[BattleEmotionType]*widget.Animation{}
-			for _, emotion := range AllEmotionType {
-				animationId := getEmotion(characterId, emotion)
+			for emotion, animationId := range allEmotion[characterId] {
 				animationData := resource.GetAnimationData(animationId)
 				texture := resource.GetTexture(animationData.TextureId)
 				animation := widget.NewAnimation(
@@ -106,35 +106,28 @@ type BattleEmotionType int
 const (
 	BattleEmotionNormal BattleEmotionType = iota
 	BattleEmotionDamage
+	BattleEmotionSmile
+	BattleEmotionAngry
+	BattleEmotionAnnoyed
 )
 
-var AllEmotionType = []BattleEmotionType{
-	BattleEmotionNormal,
-	BattleEmotionDamage,
-}
+type getAllEmotionFunc func() map[core.CharacterId]map[BattleEmotionType]frontend.AnimationId
 
-type emotionFunc func(core.CharacterId, BattleEmotionType) frontend.AnimationId
-
-func createEmotionProvider() emotionFunc {
+func createGetAllEmotionFunc() getAllEmotionFunc {
 	dict := map[core.CharacterId]map[BattleEmotionType]frontend.AnimationId{
 		core.CharacterLuneId: {
 			BattleEmotionNormal: frontend.AnimationIdLuneNormal,
 			BattleEmotionDamage: frontend.AnimationIdLuneDamage,
 		},
 		core.CharacterSunnyId: {
-			BattleEmotionNormal: frontend.AnimationIdSunnyNormal,
-			BattleEmotionDamage: frontend.AnimationIdSunnyDamage,
+			BattleEmotionNormal:  frontend.AnimationIdSunnyNormal,
+			BattleEmotionDamage:  frontend.AnimationIdSunnyDamage,
+			BattleEmotionSmile:   frontend.AnimationIdSunnySmile,
+			BattleEmotionAngry:   frontend.AnimationIdSunnyAngry,
+			BattleEmotionAnnoyed: frontend.AnimationIdSunnyAnnoyed,
 		},
 	}
-	return func(characterId core.CharacterId, emotion BattleEmotionType) frontend.AnimationId {
-		emotionMap, ok := dict[characterId]
-		if !ok {
-			panic("character not found")
-		}
-		animationId, ok := emotionMap[emotion]
-		if !ok {
-			panic("emotion not found")
-		}
-		return animationId
+	return func() map[core.CharacterId]map[BattleEmotionType]frontend.AnimationId {
+		return dict
 	}
 }

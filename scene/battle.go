@@ -301,7 +301,10 @@ func InitializeCreateBattleScene(
 			}
 		}
 
-		createSequence := produceCreateSequence(setPartnerDialogue)
+		createSequence := produceCreateSequence(
+			setPartnerDialogue,
+			setEmotion,
+		)
 		seq := createSequence("test_sequence_0000")
 
 		battleScene = &BattleScene{

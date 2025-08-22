@@ -4,7 +4,7 @@ import "github.com/asragi/yasoba-prototype/core"
 
 type SetPartnerDialogue func(core.TextString) *SetPartnerDialogueResponse
 
-type ProduceCreateSequence func(SetPartnerDialogue) createSequence
+type ProduceCreateSequence func(SetPartnerDialogue, SetEmotion) createSequence
 
 type PrepareProduceCreateSequence func(core.ServeTextDataFunc) ProduceCreateSequence
 
@@ -18,6 +18,7 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 		eventDataModelPort,
 	)
 	partnerDialogueDataPort := createPartnerDialogueDataPortFromYAML("data/partner_dialogue.yaml")
+	changeEmotionDataPort := createChangeEmotionDataPortFromYAML("data/change_emotion.yaml")
 
 	produceCreateSequence := initializeProduceCreateSequence(
 		sequencesDataAdapter,
@@ -25,7 +26,10 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 	return func(
 		serveTextData core.ServeTextDataFunc,
 	) ProduceCreateSequence {
-		return func(setPartnerDialogue SetPartnerDialogue) createSequence {
+		return func(
+			setPartnerDialogue SetPartnerDialogue,
+			setEmotion SetEmotion,
+		) createSequence {
 			return produceCreateSequence(
 				produceCreatePartnerDialogueEventToUnit(
 					serveTextData,
@@ -33,7 +37,6 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 					setPartnerDialogue,
 				),
 				produceCreateChangeEmotionEventToUnit(
-					partnerDialogueDataPort,
 					changeEmotionDataPort,
 					setEmotion,
 				),

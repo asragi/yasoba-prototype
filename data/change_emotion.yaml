@@ -1,0 +1,10 @@
+events:
+  - id: "test0000"
+    actorId: "sunny"
+    emotion: "normal"
+  - id: "test0001"
+    actorId: "sunny"
+    emotion: "damage"
+  - id: "test0002"
+    actorId: "lune"
+    emotion: "normal"
