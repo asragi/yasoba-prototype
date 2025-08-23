@@ -48,18 +48,18 @@ type IsEnd bool
 type start func()
 type checkIsEnd func() IsEnd
 
-type createSequence func(id sequenceId) *sequence
+type CreateSequence func(id sequenceId) *sequence
 
 func initializeProduceCreateSequence(
 	sequencesDataPort sequenceDataPort,
-) func(createPartnerDialogueEvent, createChangeEmotionEvent, createOpenPartnerMessageWindowEvent, createClosePartnerMessageWindowEvent) createSequence {
+) func(createPartnerDialogueEvent, createChangeEmotionEvent, createOpenPartnerMessageWindowEvent, createClosePartnerMessageWindowEvent) CreateSequence {
 	sequenceDataArray := sequencesDataPort()
 	return func(
 		createPartnerDialogueEvent createPartnerDialogueEvent,
 		createChangeEmotionEvent createChangeEmotionEvent,
 		createOpenPartnerMessageWindowEvent createOpenPartnerMessageWindowEvent,
 		createClosePartnerMessageWindowEvent createClosePartnerMessageWindowEvent,
-	) createSequence {
+	) CreateSequence {
 		sequences := make(map[sequenceId]*sequence)
 		for _, seq := range sequenceDataArray {
 			events := []*eventUnit{}

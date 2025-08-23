@@ -2,3 +2,4 @@
 sequences:
   - id: "test_sequence_0000"
   - id: "test_sequence_0001"
+  - id: "test_sequence_0100"

@@ -239,6 +239,9 @@ func CreateNewText(
 		if options.Scale == 0 {
 			options.Scale = 1
 		}
+		if options.Speed == 0 {
+			options.Speed = 1
+		}
 		return &Text{
 			currentIndex:   0,
 			characterSet:   nil,

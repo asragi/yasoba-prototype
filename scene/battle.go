@@ -23,12 +23,13 @@ type BattleScene struct {
 	effectManager      *widget.EffectManager
 	shake              *frontend.EmitShake
 	endState           core.BattleEndType
-	testSeqUpdate      func() sequence.IsEnd
+	createSequence     sequence.CreateSequence
+	sequences          *sequence.SequenceManager
 }
 
 func (s *BattleScene) onTurnEnd() {
 	if s.endState == core.BattleEndTypeWin {
-		s.messageWindow.SetText("しょうりした！", false)
+		s.sequences.AddSequence(s.createSequence("test_sequence_0100"))
 		return
 	}
 	if s.endState == core.BattleEndTypeLose {
@@ -71,7 +72,7 @@ func (s *BattleScene) Update() {
 		}
 	}
 	s.effectManager.Update()
-	s.testSeqUpdate()
+	s.sequences.Update()
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
@@ -320,8 +321,10 @@ func InitializeCreateBattleScene(
 			effectManager:      effectManager,
 			shake:              frontend.NewShake(),
 			subActorDialog:     subActorDialog,
-			testSeqUpdate:      seq.Update,
+			createSequence:     createSequence,
+			sequences:          sequence.CreateSequenceManager(),
 		}
+		battleScene.sequences.AddSequence(seq)
 		processBattle := newProcessBattle(battleResponse, battleScene.onBattleEnd)
 
 		playSequence := createPlayBattleSequence(

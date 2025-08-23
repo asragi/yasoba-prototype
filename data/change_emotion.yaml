@@ -8,3 +8,6 @@ events:
   - id: "test0002emotion"
     actorId: "sunny"
     emotion: "normal"
+  - id: "test0100emotion"
+    actorId: "sunny"
+    emotion: "smile"

@@ -6,6 +6,7 @@ import (
 
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
@@ -22,6 +23,7 @@ const (
 var (
 	drawing     *frontend.Drawing
 	battleScene *scene.BattleScene
+	debugParams *debug.Debug
 )
 
 func init() {
@@ -125,16 +127,19 @@ func init() {
 			//BattleSettingId: core.BattleSettingTripleTest,
 		},
 	)
+	debugParams = debug.CreateDrawParameters(newText)
 }
 
 type Game struct{}
 
 func (g *Game) Update() error {
 	battleScene.Update()
+	debugParams.Update()
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	debugParams.Draw(drawing.Draw)
 	battleScene.Draw(drawing.Draw)
 	drawing.DrawEnd(screen)
 }

@@ -1,5 +1,6 @@
 # イベントデータのテストデータ
 events:
+  # パートナーのメッセージウィンドウを開くテスト
   - id: "test0000open"
     eventType: "open_partner_message_window"
     ownerId: "test_sequence_0000"
@@ -32,18 +33,16 @@ events:
     eventType: "close_partner_message_window"
     ownerId: "test_sequence_0000"
     order: 8
-  # スキル実行シーケンスのイベント
+  # 勝利時のイベントシーケンステスト
+  - id: "test0100open"
+    eventType: "open_partner_message_window"
+    ownerId: "test_sequence_0100"
+    order: 1
+  - id: "test0100emotion"
+    eventType: "change_emotion"
+    ownerId: "test_sequence_0100"
+    order: 2
   - id: "test0100"
     eventType: "partner_dialogue"
-    ownerId: "test_sequence_0001"
-    order: 1
-    
-  - id: "test0101"
-    eventType: "partner_dialogue"
-    ownerId: "test_sequence_0001"
-    order: 2
-    
-  - id: "test0102"
-    eventType: "partner_dialogue"
-    ownerId: "test_sequence_0001"
+    ownerId: "test_sequence_0100"
     order: 3

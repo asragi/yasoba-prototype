@@ -9,7 +9,3 @@ partnerDialogues:
     textId: "test0002"
   - eventId: "test0100"
     textId: "test0100"
-  - eventId: "test0101"
-    textId: "test0101"
-  - eventId: "test0102"
-    textId: "test0102"
