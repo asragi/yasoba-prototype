@@ -22,6 +22,7 @@ type TextInterface interface {
 	SetText(text string, displayAll bool)
 	Size() *frontend.Vector
 	CheckIsEnd() bool
+	SetTextColor(color color.Color)
 }
 
 type Char string
@@ -145,6 +146,10 @@ func (t *Text) Size() *frontend.Vector {
 		X: maxWidth * scale,
 		Y: height * scale,
 	}
+}
+
+func (t *Text) SetTextColor(color color.Color) {
+	t.options.Color = color
 }
 
 func (t *Text) getCharacterHeight() float64 {

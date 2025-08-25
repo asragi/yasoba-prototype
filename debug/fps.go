@@ -2,7 +2,9 @@ package debug
 
 import (
 	"fmt"
+	"image/color"
 	"runtime"
+	"time"
 
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -22,6 +24,10 @@ type Debug struct {
 	Draw   func(frontend.DrawFunc)
 }
 
+var (
+	textColor = color.RGBA{R: 0, G: 255, B: 0, A: 255}
+)
+
 func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 	textFPS := newText(&widget.TextOptionsNew{
 		RelativePosition: &frontend.Vector{X: 0, Y: 0},
@@ -29,6 +35,7 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 		Scale:            1,
 		Depth:            frontend.DepthDebug,
 		Pivot:            frontend.PivotTopLeft,
+		Color:            textColor,
 	})
 	textTPS := newText(&widget.TextOptionsNew{
 		RelativePosition: &frontend.Vector{X: 0, Y: 16},
@@ -36,6 +43,7 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 		Scale:            1,
 		Depth:            frontend.DepthDebug,
 		Pivot:            frontend.PivotTopLeft,
+		Color:            textColor,
 	})
 	textMemory := newText(&widget.TextOptionsNew{
 		RelativePosition: &frontend.Vector{X: 0, Y: 32},
@@ -43,6 +51,7 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 		Scale:            1,
 		Depth:            frontend.DepthDebug,
 		Pivot:            frontend.PivotTopLeft,
+		Color:            textColor,
 	})
 	textSys := newText(&widget.TextOptionsNew{
 		RelativePosition: &frontend.Vector{X: 0, Y: 48},
@@ -50,10 +59,10 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 		Scale:            1,
 		Depth:            frontend.DepthDebug,
 		Pivot:            frontend.PivotTopLeft,
+		Color:            textColor,
 	})
 
 	position := frontend.VectorZero
-
 	update := func() {
 		var memory runtime.MemStats
 		runtime.ReadMemStats(&memory)
@@ -66,6 +75,12 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 		textMemory.SetText(fmt.Sprintf("Alloc: %d MB", memory.Alloc/1024/1024), true)
 		textSys.Update(position)
 		textSys.SetText(fmt.Sprintf("Sys: %d MB", memory.Sys/1024/1024), true)
+		t := time.Now().UnixMilli()
+		textColor = frontend.ColorRainbow(float64(t) / 300.0)
+		textFPS.SetTextColor(textColor)
+		textTPS.SetTextColor(textColor)
+		textMemory.SetTextColor(textColor)
+		textSys.SetTextColor(textColor)
 	}
 	draw := func(draw frontend.DrawFunc) {
 		textFPS.Draw(draw)
