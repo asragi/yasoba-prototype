@@ -60,7 +60,7 @@ func TestSequence_Update(t *testing.T) {
 
 func TestProvideCreateSequence(t *testing.T) {
 	// テスト用のモックデータ
-	mockId := sequenceId("test-sequence-1")
+	mockId := SequenceId("test-sequence-1")
 	mockSequencesData := []*sequenceData{
 		{
 			id: mockId,

@@ -46,3 +46,20 @@ events:
     eventType: "partner_dialogue"
     ownerId: "test_sequence_0100"
     order: 3
+  # 主人公の体力低下時のイベント
+  - id: "lune_hp_low_open"
+    eventType: "open_partner_message_window"
+    ownerId: "lune_hp_low_sequence"
+    order: 1
+  - id: "lune_hp_low_emotion"
+    eventType: "change_emotion"
+    ownerId: "lune_hp_low_sequence"
+    order: 2
+  - id: "lune_hp_low_dialogue"
+    eventType: "partner_dialogue"
+    ownerId: "lune_hp_low_sequence"
+    order: 3
+  - id: "lune_hp_low_close"
+    eventType: "close_partner_message_window"
+    ownerId: "lune_hp_low_sequence"
+    order: 4

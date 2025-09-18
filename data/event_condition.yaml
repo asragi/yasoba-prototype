@@ -1,0 +1,6 @@
+# イベント条件データ
+event_conditions:
+  # 主人公の体力低下条件（HPが50%以下）
+  - id: "lune_hp_low_condition"
+    ownerId: "lune_hp_low_sequence"
+    conditionType: "actor_hp"

@@ -8,6 +8,7 @@ import (
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -101,6 +102,7 @@ func init() {
 		choiceAction,
 	)
 	newVariableMessageWindow := component.StandByNewVariableMessageWindow(newWindow, newText, textServer)
+	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
 	newBattleScene := scene.InitializeCreateBattleScene(
 		newMessageWindow,
 		newSelectWindow,
@@ -119,6 +121,7 @@ func init() {
 		newVariableMessageWindow,
 		newProcessBattle,
 		produceCreateSequence,
+		produceCheckInvokeSequence,
 	)
 	battleScene = newBattleScene(
 		&scene.BattleOption{

@@ -39,7 +39,7 @@ func createSequenceModelPortFromYAML(filePath string) sequenceModelPort {
 		var result []*sequenceModel
 		for _, seq := range yamlData.Sequences {
 			result = append(result, &sequenceModel{
-				id: sequenceId(seq.ID),
+				id: SequenceId(seq.ID),
 			})
 		}
 
@@ -66,7 +66,7 @@ func createEventDataModelPortFromYAML(filePath string) eventDataModelPort {
 			result = append(result, &eventDataModel{
 				id:        eventId(event.ID),
 				eventType: eventType(event.EventType),
-				ownerId:   sequenceId(event.OwnerID),
+				ownerId:   SequenceId(event.OwnerID),
 				order:     event.Order,
 			})
 		}

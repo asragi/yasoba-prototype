@@ -12,20 +12,20 @@ const (
 type eventDataModel struct {
 	id        eventId
 	eventType eventType
-	ownerId   sequenceId
+	ownerId   SequenceId
 	order     int
 }
 
 type eventDataModelPort func() []*eventDataModel
 
 type sequenceModel struct {
-	id sequenceId
+	id SequenceId
 }
 
 type sequenceModelPort func() []*sequenceModel
 
 type sequenceData struct {
-	id     sequenceId
+	id     SequenceId
 	events []*eventDataModel
 }
 
@@ -36,8 +36,8 @@ func initializeSequenceDataAdapter(
 	sequenceModelPort sequenceModelPort,
 	eventDataPort eventDataModelPort,
 ) sequenceDataPort {
-	groupEventsBySequenceId := func(events []*eventDataModel) map[sequenceId][]*eventDataModel {
-		eventMap := make(map[sequenceId][]*eventDataModel)
+	groupEventsBySequenceId := func(events []*eventDataModel) map[SequenceId][]*eventDataModel {
+		eventMap := make(map[SequenceId][]*eventDataModel)
 		for _, event := range events {
 			eventMap[event.ownerId] = append(eventMap[event.ownerId], event)
 		}
