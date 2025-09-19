@@ -11,3 +11,6 @@ events:
   - id: "test0100emotion"
     actorId: "sunny"
     emotion: "smile"
+  - id: "lune_hp_low_emotion"
+    actorId: "sunny"
+    emotion: "angry"

@@ -4,6 +4,11 @@ import (
 	"github.com/asragi/yasoba-prototype/util"
 )
 
+type BattleId string
+
+// 0 on battle start and 1 on first actions
+type TurnCount int
+
 // PlayerCommand is a command that the player can select in the battle.
 type PlayerCommand int
 

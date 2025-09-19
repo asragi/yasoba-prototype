@@ -1,0 +1,5 @@
+# バトルとシーケンスの関係データ
+battle_sequence_relations:
+  # テストバトル用
+  - battleId: "test_battle_001"
+    sequenceId: "lune_hp_low_sequence"
