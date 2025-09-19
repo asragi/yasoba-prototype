@@ -1,6 +1,0 @@
-# アクターHP条件データ
-condition_actor_hps:
-  # 主人公の体力低下条件（HPが50%以下）
-  - ownerId: "lune_hp_low_condition"
-    actorId: "lune"
-    thresholdRatio: 0.5

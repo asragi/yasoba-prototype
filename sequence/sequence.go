@@ -2,10 +2,10 @@ package sequence
 
 import "fmt"
 
-type SequenceId string
+type sequenceId string
 
 type sequence struct {
-	id      SequenceId
+	id      sequenceId
 	index   int
 	isStart bool
 	events  []*eventUnit
@@ -48,7 +48,7 @@ type IsEnd bool
 type start func()
 type checkIsEnd func() IsEnd
 
-type CreateSequence func(id SequenceId) *sequence
+type CreateSequence func(id sequenceId) *sequence
 
 func initializeProduceCreateSequence(
 	sequencesDataPort sequenceDataPort,
@@ -60,7 +60,7 @@ func initializeProduceCreateSequence(
 		createOpenPartnerMessageWindowEvent createOpenPartnerMessageWindowEvent,
 		createClosePartnerMessageWindowEvent createClosePartnerMessageWindowEvent,
 	) CreateSequence {
-		sequences := make(map[SequenceId]*sequence)
+		sequences := make(map[sequenceId]*sequence)
 		for _, seq := range sequenceDataArray {
 			events := []*eventUnit{}
 			for _, event := range seq.events {
@@ -88,7 +88,7 @@ func initializeProduceCreateSequence(
 			}
 		}
 
-		return func(id SequenceId) *sequence {
+		return func(id sequenceId) *sequence {
 			if seq, ok := sequences[id]; ok {
 				seq.Reset()
 				return seq

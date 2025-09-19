@@ -9,5 +9,3 @@ partnerDialogues:
     textId: "test0002"
   - eventId: "test0100"
     textId: "test0100"
-  - eventId: "lune_hp_low_dialogue"
-    textId: "lune_hp_low_dialogue"
