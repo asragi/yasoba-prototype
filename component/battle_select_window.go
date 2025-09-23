@@ -86,6 +86,7 @@ func StandByNewBattleSelectWindow(
 			depth,
 			commandTexts,
 			onSubmitIndex,
+			false,
 		)
 
 		return &BattleSelectWindow{

@@ -14,6 +14,7 @@ type SelectWindow struct {
 	isActive        bool
 	isOpen          bool
 	onSubmit        func(int)
+	closeOnSubmit   bool
 	smoother        *frontend.InputSmoother
 }
 
@@ -73,6 +74,10 @@ func (w *SelectWindow) OnInputDown() {
 
 func (w *SelectWindow) OnInputSubmit() {
 	w.onSubmit(w.index)
+	if !w.closeOnSubmit {
+		return
+	}
+	w.Close()
 }
 
 type NewSelectWindowFunc func(
@@ -81,6 +86,7 @@ type NewSelectWindowFunc func(
 	frontend.Depth,
 	[]core.TextId,
 	func(int),
+	bool,
 ) *SelectWindow
 
 func StandByNewSelectWindow(
@@ -94,6 +100,7 @@ func StandByNewSelectWindow(
 		depth frontend.Depth,
 		commands []core.TextId,
 		onSubmit func(int),
+		closeOnSubmit bool,
 	) *SelectWindow {
 		// TODO: Use actual values
 		const lineHeight = 16
@@ -159,6 +166,7 @@ func StandByNewSelectWindow(
 			isOpen:          false,
 			onSubmit:        onSubmit,
 			smoother:        frontend.NewInputSmoother(),
+			closeOnSubmit:   closeOnSubmit,
 		}
 	}
 }

@@ -60,9 +60,13 @@ func InitializeCreateBattleScene(
 		// バトル選択ウィンドウの設定
 		input := &frontend.KeyBoardInput{}
 		var selectedCommand core.PlayerCommand
-		battleSelectWindow := createBattleSelectWindow(newBattleSelectWindow, input, &selectedCommand)
+		var targetSelectWindow *component.SelectWindow
+		onSubmit := func(command core.PlayerCommand) {
+			selectedCommand = command
+			targetSelectWindow.Open()
+			input.Set(targetSelectWindow)
+		}
 
-		// アクター表示の初期化
 		actorDisplay := newBattleActorDisplay(mainActor)
 		subActorDisplay := newBattleSubActorDisplay(subActor)
 		subActorDialog := component.CreateNewBattlePartnerDialogue(newMessageWindow)()
@@ -83,6 +87,8 @@ func InitializeCreateBattleScene(
 			playEffect,
 			battleEnemyDisplay.SetDisappear,
 		)
+
+		battleSelectWindow := createBattleSelectWindow(newBattleSelectWindow, input, onSubmit)
 
 		// パートナーダイアログの設定
 		setPartnerDialogue := createSetPartnerDialogueFunction(subActorDialog)
@@ -124,7 +130,7 @@ func InitializeCreateBattleScene(
 		)
 
 		// ターゲット選択の設定
-		closeWindowOnTargetSelect := createCloseWindowFunction(battleSelectWindow, input)
+		closeWindowOnTargetSelect := createOnSubmitTargetSelect(battleSelectWindow, input)
 		onTargetSelect := createOnTargetSelect(
 			closeWindowOnTargetSelect,
 			func(index int) core.ActorId { return allActorId[index] },
@@ -133,14 +139,15 @@ func InitializeCreateBattleScene(
 			playSequence,
 			processBattle,
 		)
-		selectWindow := newSelectWindow(
+		targetSelectWindow = newSelectWindow(
 			&frontend.Vector{X: 80, Y: 0},
 			frontend.PivotBottomLeft,
 			frontend.DepthWindow,
 			allTextId,
 			onTargetSelect,
+			true,
 		)
-		battleScene.targetSelectWindow = selectWindow
+		battleScene.targetSelectWindow = targetSelectWindow
 
 		return battleScene
 	}
@@ -213,11 +220,11 @@ func createBattleEnemyDisplay(newBattleEnemyDisplay component.NewBattleEnemyDisp
 	)
 }
 
-func createBattleSelectWindow(newBattleSelectWindow component.NewBattleSelectWindowFunc, input frontend.InputManager, selectedCommand *core.PlayerCommand) *component.BattleSelectWindow {
-	onSubmit := func(command core.PlayerCommand) {
-		*selectedCommand = command
-	}
-
+func createBattleSelectWindow(
+	newBattleSelectWindow component.NewBattleSelectWindowFunc,
+	input frontend.InputManager,
+	onSubmit func(core.PlayerCommand),
+) *component.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
 		&frontend.Vector{X: 0, Y: 0},
 		frontend.PivotBottomLeft,
@@ -312,10 +319,12 @@ func createSetPartnerDialogueFunction(subActorDialog *component.BattlePartnerDia
 	}
 }
 
-func createCloseWindowFunction(battleSelectWindow *component.BattleSelectWindow, input frontend.InputManager) func() {
+func createOnSubmitTargetSelect(
+	battleSelectWindow *component.BattleSelectWindow,
+	input frontend.InputManager,
+) func() {
 	return func() {
 		battleSelectWindow.Close()
-		// selectWindow.Close() は後で設定される
 		input.Set(frontend.InputReceiverEmptyInstance)
 	}
 }
