@@ -5,26 +5,15 @@ import (
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/sequence"
-	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type BattleScene struct {
-	messageWindow      *component.MessageWindow
-	battleSelectWindow *component.BattleSelectWindow
-	actorDisplay       *component.BattleActorDisplay
-	subActorDisplay    *component.BattleSubActorDisplay
-	subActorDialog     *component.BattlePartnerDialogue
-	enemyData          []*core.EnemyIdPair
-	actorNames         map[core.ActorId]core.TextId
-	targetSelectWindow *component.SelectWindow
-	input              frontend.InputManager
-	battleSequence     *component.BattleEventSequencer
-	battleEnemyDisplay *component.BattleEnemyDisplay
-	effectManager      *widget.EffectManager
-	shake              *frontend.EmitShake
-	endState           core.BattleEndType
-	createSequence     sequence.CreateSequence
-	sequences          *sequence.SequenceManager
+	ui             battleUI
+	enemyData      []*core.EnemyIdPair
+	actorNames     map[core.ActorId]core.TextId
+	endState       core.BattleEndType
+	createSequence sequence.CreateSequence
+	sequences      *sequence.SequenceManager
 }
 
 func (s *BattleScene) onTurnEnd() {
@@ -33,11 +22,11 @@ func (s *BattleScene) onTurnEnd() {
 		return
 	}
 	if s.endState == core.BattleEndTypeLose {
-		s.messageWindow.SetText("やられてしまった……", false)
+		s.ui.messageWindow.SetText("やられてしまった……", false)
 		return
 	}
-	s.input.Set(s.battleSelectWindow)
-	s.battleSelectWindow.Open()
+	s.ui.input.Set(s.ui.battleSelectWindow)
+	s.ui.battleSelectWindow.Open()
 }
 
 func (s *BattleScene) onBattleEnd(endType core.BattleEndType) {
@@ -45,45 +34,11 @@ func (s *BattleScene) onBattleEnd(endType core.BattleEndType) {
 }
 
 func (s *BattleScene) Update() {
-	s.shake.Update()
-	delta := s.shake.Delta()
-	zeroVector := frontend.VectorZero
-	zeroVector = zeroVector.Add(delta)
-	bottomLeft := &frontend.Vector{X: 0, Y: 288}
-	bottomLeft = bottomLeft.Add(delta)
-	bottomRight := &frontend.Vector{X: 384, Y: 288}
-	bottomRight = bottomRight.Add(delta)
-	center := &frontend.Vector{X: 192, Y: 144}
-	center = center.Add(delta)
-	mainCharacterTopLeftPosition := s.actorDisplay.GetMainCharacterTopLeftPosition()
-	mainCharacterTopLeftPosition = mainCharacterTopLeftPosition.Add(delta)
-	s.messageWindow.Update(zeroVector)
-	s.actorDisplay.Update(bottomLeft)
-	s.subActorDisplay.Update(bottomRight)
-	s.subActorDialog.Update(s.subActorDisplay.GetTopCenterPosition())
-	s.battleEnemyDisplay.Update(center)
-	s.battleSelectWindow.Update(mainCharacterTopLeftPosition)
-	s.targetSelectWindow.Update(mainCharacterTopLeftPosition)
-	s.input.Update()
-	if s.battleSequence.IsRun() {
-		s.battleSequence.Update()
-		if s.battleSequence.IsEnd() {
-			s.onTurnEnd()
-		}
-	}
-	s.effectManager.Update()
-	s.sequences.Update()
+	s.ui.Update(s.onTurnEnd, s.sequences)
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
-	s.messageWindow.Draw(drawFunc)
-	s.battleSelectWindow.Draw(drawFunc)
-	s.targetSelectWindow.Draw(drawFunc)
-	s.battleEnemyDisplay.Draw(drawFunc)
-	s.subActorDisplay.Draw(drawFunc)
-	s.subActorDialog.Draw(drawFunc)
-	s.actorDisplay.Draw(drawFunc)
-	s.effectManager.Draw(drawFunc)
+	s.ui.Draw(drawFunc)
 }
 
 type BattleResult struct{}

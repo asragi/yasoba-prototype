@@ -102,20 +102,22 @@ func InitializeCreateBattleScene(
 
 		// バトルシーンの作成
 		battleScene := &BattleScene{
-			messageWindow:      messageWindow,
-			battleSelectWindow: battleSelectWindow,
-			actorDisplay:       actorDisplay,
-			enemyData:          battleResponse.EnemyIds,
-			actorNames:         actorNames,
-			input:              input,
-			battleSequence:     component.NewBattleEventSequencer(),
-			battleEnemyDisplay: battleEnemyDisplay,
-			subActorDisplay:    subActorDisplay,
-			effectManager:      effectManager,
-			shake:              shake,
-			subActorDialog:     subActorDialog,
-			createSequence:     createSequence,
-			sequences:          sequence.CreateSequenceManager(),
+			ui: battleUI{
+				messageWindow:      messageWindow,
+				battleSelectWindow: battleSelectWindow,
+				actorDisplay:       actorDisplay,
+				subActorDisplay:    subActorDisplay,
+				subActorDialog:     subActorDialog,
+				input:              input,
+				battleSequence:     component.NewBattleEventSequencer(),
+				battleEnemyDisplay: battleEnemyDisplay,
+				effectManager:      effectManager,
+				shake:              shake,
+			},
+			enemyData:      battleResponse.EnemyIds,
+			actorNames:     actorNames,
+			createSequence: createSequence,
+			sequences:      sequence.CreateSequenceManager(),
 		}
 		battleScene.sequences.AddSequence(seq)
 
@@ -124,7 +126,7 @@ func InitializeCreateBattleScene(
 		playSequence := createPlayBattleSequence(
 			skillToSequence,
 			newBattleSequence,
-			battleScene.battleSequence.Add,
+			battleScene.ui.battleSequence.Add,
 			actorIdToEnemy,
 			serveEnemyView,
 		)
@@ -135,7 +137,7 @@ func InitializeCreateBattleScene(
 			closeWindowOnTargetSelect,
 			func(index int) core.ActorId { return allActorId[index] },
 			func() core.PlayerCommand { return selectedCommand },
-			battleScene.battleSequence.Reset,
+			battleScene.ui.battleSequence.Reset,
 			playSequence,
 			processBattle,
 		)
@@ -147,7 +149,7 @@ func InitializeCreateBattleScene(
 			onTargetSelect,
 			true,
 		)
-		battleScene.targetSelectWindow = targetSelectWindow
+		battleScene.ui.targetSelectWindow = targetSelectWindow
 
 		return battleScene
 	}
