@@ -3,7 +3,6 @@ package scene
 import (
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/frontend"
-	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -15,7 +14,6 @@ type battleUI struct {
 	subActorDialog     *component.BattlePartnerDialogue
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager
-	battleSequence     *component.BattleEventSequencer
 	battleEnemyDisplay *component.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
 	shake              *frontend.EmitShake
@@ -31,7 +29,7 @@ type battleUILayout struct {
 	selectAnchor          frontend.Vector
 }
 
-func (ui *battleUI) Update(onTurnEnd func(), sequences *sequence.SequenceManager) {
+func (ui *battleUI) Update() {
 	delta := updateBattleShake(ui.shake)
 	ui.layout = computeBattleUILayout(ui, delta)
 
@@ -44,24 +42,12 @@ func (ui *battleUI) Update(onTurnEnd func(), sequences *sequence.SequenceManager
 	ui.targetSelectWindow.Update(&ui.layout.selectAnchor)
 
 	ui.input.Update()
-	if advanceBattleSequence(ui.battleSequence) {
-		onTurnEnd()
-	}
 	ui.effectManager.Update()
-	sequences.Update()
 }
 
 func updateBattleShake(shake *frontend.EmitShake) *frontend.Vector {
 	shake.Update()
 	return shake.Delta()
-}
-
-func advanceBattleSequence(sequence *component.BattleEventSequencer) bool {
-	if !sequence.IsRun() {
-		return false
-	}
-	sequence.Update()
-	return sequence.IsEnd()
 }
 
 func (ui *battleUI) Draw(drawFunc frontend.DrawFunc) {

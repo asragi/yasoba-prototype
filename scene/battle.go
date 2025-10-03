@@ -9,6 +9,7 @@ import (
 
 type BattleScene struct {
 	ui             battleUI
+	battleSequence *component.BattleEventSequencer
 	enemyData      []*core.EnemyIdPair
 	actorNames     map[core.ActorId]core.TextId
 	endState       core.BattleEndType
@@ -34,11 +35,23 @@ func (s *BattleScene) onBattleEnd(endType core.BattleEndType) {
 }
 
 func (s *BattleScene) Update() {
-	s.ui.Update(s.onTurnEnd, s.sequences)
+	s.ui.Update()
+	if advanceBattleSequence(s.battleSequence) {
+		s.onTurnEnd()
+	}
+	s.sequences.Update()
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.ui.Draw(drawFunc)
+}
+
+func advanceBattleSequence(sequence *component.BattleEventSequencer) bool {
+	if !sequence.IsRun() {
+		return false
+	}
+	sequence.Update()
+	return sequence.IsEnd()
 }
 
 type BattleResult struct{}

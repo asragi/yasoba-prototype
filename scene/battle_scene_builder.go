@@ -109,11 +109,11 @@ func InitializeCreateBattleScene(
 				subActorDisplay:    subActorDisplay,
 				subActorDialog:     subActorDialog,
 				input:              input,
-				battleSequence:     component.NewBattleEventSequencer(),
 				battleEnemyDisplay: battleEnemyDisplay,
 				effectManager:      effectManager,
 				shake:              shake,
 			},
+			battleSequence: component.NewBattleEventSequencer(),
 			enemyData:      battleResponse.EnemyIds,
 			actorNames:     actorNames,
 			createSequence: createSequence,
@@ -126,7 +126,7 @@ func InitializeCreateBattleScene(
 		playSequence := createPlayBattleSequence(
 			skillToSequence,
 			newBattleSequence,
-			battleScene.ui.battleSequence.Add,
+			battleScene.battleSequence.Add,
 			actorIdToEnemy,
 			serveEnemyView,
 		)
@@ -137,7 +137,7 @@ func InitializeCreateBattleScene(
 			closeWindowOnTargetSelect,
 			func(index int) core.ActorId { return allActorId[index] },
 			func() core.PlayerCommand { return selectedCommand },
-			battleScene.ui.battleSequence.Reset,
+			battleScene.battleSequence.Reset,
 			playSequence,
 			processBattle,
 		)

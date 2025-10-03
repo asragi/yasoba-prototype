@@ -22,7 +22,7 @@ Go の慣習に従い、コミット前に `go fmt ./...` を必ず実行しま�
 `data/` の YAML は起動時に読み込まれるため、スキーマを変えるときは `invoke/export.go` のヘルパーで整合性を確認してください（run the export helper when schemas move）。
 
 ## バトルシーンUI方針
-`scene/battle.go` は非UIロジックを保持し、UI処理は `scene/battle_ui.go` の純粋関数群と `battleUI` 構造体で扱います（keep battle UI inside the functional helpers introduced here）。レイアウト計算は `computeBattleUILayout` のような純粋関数で行い、状態を変更する副作用は呼び出し側で明示的に処理してください（計算と副作用の分離を徹底）。`BattleScene.Update/Draw` は `battleUI.Update/Draw` を呼び出すだけに留め、UI オブジェクトは欠損しない前提で扱い、nil ガードを追加せずに異常はクラッシュで顕在化させます。新しいUIを追加する場合も同じ抽象を拡張し、関数型の流れ（計算→適用）、フレームごとの追加割り当てゼロ、そして副作用を持つ関数を極力許容しない方針を維持してください（avoid stateful helpers, keep hot paths allocation-free）。
+`scene/battle.go` は非UIロジックを保持し、UI処理は `scene/battle_ui.go` の純粋関数群と `battleUI` 構造体で扱います（keep battle UI inside the functional helpers introduced here）。レイアウト計算は `computeBattleUILayout` のような純粋関数で行い、状態を変更する副作用は呼び出し側で明示的に処理してください（計算と副作用の分離を徹底）。`BattleScene.Update/Draw` は `battleUI.Update/Draw` を呼び出すだけに留め、UI オブジェクトは欠損しない前提で扱い、nil ガードを追加せずに異常はクラッシュで顕在化させます。UI 以外の責務（例: `BattleEventSequencer` 等）は `BattleScene` 側に保持し、UI 構造体へ押し込まないでください。新しいUIを追加する場合も同じ抽象を拡張し、関数型の流れ（計算→適用）、フレームごとの追加割り当てゼロ、そして副作用を持つ関数を極力許容しない方針を維持してください（avoid stateful helpers, keep hot paths allocation-free）。
 
 ## 実装方針
 
