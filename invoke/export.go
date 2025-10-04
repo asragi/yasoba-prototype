@@ -2,34 +2,37 @@ package invoke
 
 import "github.com/asragi/yasoba-prototype/core"
 
+type GetActorHpRatio = getActorHpRatio
 type CheckInvokeSequence = checkEventInvoke
 
 type ProduceCheckInvokeSequence func(
 	core.BattleId,
-	checkActorCondition,
+	GetActorHpRatio,
 ) CheckInvokeSequence
 
 func InitializeProduceCheckInvokeSequence() ProduceCheckInvokeSequence {
-	tmpConditionDataPort := func() []*eventConditionData { return nil }
-	tmpBattleSequenceRelationDataPort := func() []*battleSequenceRelation { return nil }
+	conditionDataPort := createEventConditionDataPortFromYAML("data/event_condition.yaml")
+	battleSequenceRelationDataPort := createBattleSequenceRelationDataPortFromYAML("data/battle_sequence_relation.yaml")
+	conditionActorHpDataPort := createConditionActorHpDataPortFromYAML("data/condition_actor_hp.yaml")
 	battleSequenceRelationAdapter := initializeBattleSequenceCondition(
-		tmpBattleSequenceRelationDataPort,
+		battleSequenceRelationDataPort,
 	)
 	getConditionAdapter := initializeGetConditionsPort(
-		tmpConditionDataPort,
+		conditionDataPort,
 		battleSequenceRelationAdapter,
 	)
 	produceCheckEventInvokeAdapter := initializeProduceCheckEventInvoke(
 		getConditionAdapter,
 	)
+	produceCheckActorCondition := initializeCheckActorCondition(conditionActorHpDataPort)
 	return func(
 		battleId core.BattleId,
-		checkActorCondition checkActorCondition,
+		getActorHpRatio GetActorHpRatio,
 	) CheckInvokeSequence {
-		checkEventInvoke := produceCheckEventInvokeAdapter(
+		checkActorCondition := produceCheckActorCondition(getActorHpRatio)
+		return produceCheckEventInvokeAdapter(
 			battleId,
 			checkActorCondition,
 		)
-		return checkEventInvoke
 	}
 }

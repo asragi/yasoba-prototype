@@ -6,6 +6,10 @@ import (
 
 type BattleId string
 
+const (
+	BattleIdTest001 BattleId = "test_battle_001"
+)
+
 // 0 on battle start and 1 on first actions
 type TurnCount int
 

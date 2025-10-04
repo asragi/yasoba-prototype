@@ -53,6 +53,18 @@ func InitializeCreateBattleScene(
 		allActorId := createAllActorIdList(battleResponse)
 		allTextId := createAllTextIdList(allActorId, actorNames)
 
+		displayedHp := func() map[core.ActorId]core.HP {
+			hp := make(map[core.ActorId]core.HP, len(allActorId))
+			for _, id := range allActorId {
+				actor := serveActor(id)
+				if actor == nil {
+					continue
+				}
+				hp[id] = actor.HP
+			}
+			return hp
+		}()
+
 		// UIコンポーネントの初期化
 		messageWindow := createMessageWindow(newMessageWindow)
 		battleEnemyDisplay := createBattleEnemyDisplay(newBattleEnemyDisplay, battleResponse.EnemyIds, battleSetting.Enemies)
@@ -75,7 +87,7 @@ func InitializeCreateBattleScene(
 		playEffect := createPlayEffectFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, effectManager)
 		shake := frontend.NewShake()
 		doShake := createDoShakeFunction(serveActor, battleEnemyDisplay, subActorDisplay, shake)
-		setDamage := createSetDamageFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay)
+		setDamage := createSetDamageFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, displayedHp)
 		setEmotion := createSetEmotionFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay)
 
 		// バトルシーケンスの設定
@@ -150,6 +162,21 @@ func InitializeCreateBattleScene(
 			true,
 		)
 		battleScene.ui.targetSelectWindow = targetSelectWindow
+
+		getActorHpRatio := func(actorId core.ActorId) core.HPRatio {
+			actor := serveActor(actorId)
+			if actor == nil {
+				panic("actor not found: " + string(actorId))
+			}
+			displayHp, ok := displayedHp[actorId]
+			if !ok {
+				displayHp = actor.HP
+			}
+			return displayHp.Ratio(actor.MaxHP)
+		}
+		battleScene.invokedSequences = make(map[sequence.SequenceId]bool)
+		battleScene.checkInvokeSequence = produceCheckInvokeSequence(option.BattleId, getActorHpRatio)
+		battleScene.checkAndStartSequences(invoke.InvokeTimingStartBattle)
 
 		return battleScene
 	}
@@ -279,8 +306,15 @@ func createDoShakeFunction(serveActor core.ActorSupplier, battleEnemyDisplay *co
 	}
 }
 
-func createSetDamageFunction(serveActor core.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, actorDisplay *component.BattleActorDisplay) func(core.ActorId, core.Damage, core.HP) {
+func createSetDamageFunction(
+	serveActor core.ActorSupplier,
+	battleEnemyDisplay *component.BattleEnemyDisplay,
+	subActorDisplay *component.BattleSubActorDisplay,
+	actorDisplay *component.BattleActorDisplay,
+	displayedHp map[core.ActorId]core.HP,
+) func(core.ActorId, core.Damage, core.HP) {
 	return func(actorId core.ActorId, damage core.Damage, afterHp core.HP) {
+		displayedHp[actorId] = afterHp
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
 			battleEnemyDisplay.SetDamage(actorId, damage)

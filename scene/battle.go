@@ -4,20 +4,25 @@ import (
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
 )
 
 type BattleScene struct {
-	ui             battleUI
-	battleSequence *component.BattleEventSequencer
-	enemyData      []*core.EnemyIdPair
-	actorNames     map[core.ActorId]core.TextId
-	endState       core.BattleEndType
-	createSequence sequence.CreateSequence
-	sequences      *sequence.SequenceManager
+	ui                  battleUI
+	battleSequence      *component.BattleEventSequencer
+	enemyData           []*core.EnemyIdPair
+	actorNames          map[core.ActorId]core.TextId
+	endState            core.BattleEndType
+	createSequence      sequence.CreateSequence
+	sequences           *sequence.SequenceManager
+	checkInvokeSequence invoke.CheckInvokeSequence
+	invokedSequences    map[sequence.SequenceId]bool
+	turnCount           core.TurnCount
 }
 
 func (s *BattleScene) onTurnEnd() {
+	s.turnCount++
 	if s.endState == core.BattleEndTypeWin {
 		s.sequences.AddSequence(s.createSequence("test_sequence_0100"))
 		return
@@ -28,6 +33,7 @@ func (s *BattleScene) onTurnEnd() {
 	}
 	s.ui.input.Set(s.ui.battleSelectWindow)
 	s.ui.battleSelectWindow.Open()
+	s.checkAndStartSequences(invoke.InvokeTimingStartTurn)
 }
 
 func (s *BattleScene) onBattleEnd(endType core.BattleEndType) {
@@ -40,10 +46,23 @@ func (s *BattleScene) Update() {
 		s.onTurnEnd()
 	}
 	s.sequences.Update()
+	s.checkAndStartSequences(invoke.InvokeTimingEveryAction)
 }
 
 func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
 	s.ui.Draw(drawFunc)
+}
+
+func (s *BattleScene) checkAndStartSequences(timing invoke.InvokeTiming) {
+	ids := s.checkInvokeSequence(timing, s.turnCount)
+	for _, id := range ids {
+		if s.invokedSequences[id] {
+			continue
+		}
+		sequence := s.createSequence(id)
+		s.sequences.AddSequence(sequence)
+		s.invokedSequences[id] = true
+	}
 }
 
 func advanceBattleSequence(sequence *component.BattleEventSequencer) bool {
@@ -60,6 +79,7 @@ type OnEndBattle func(BattleResult)
 type BattleOption struct {
 	OnEnd           OnEndBattle
 	BattleSettingId core.BattleSettingId
+	BattleId        core.BattleId
 }
 
 type CreateBattleScene func(*BattleOption) *BattleScene

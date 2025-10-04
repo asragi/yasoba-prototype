@@ -63,3 +63,7 @@ events:
     eventType: "close_partner_message_window"
     ownerId: "lune_hp_low_sequence"
     order: 4
+  - id: "lune_hp_low_end_emotion"
+    eventType: "change_emotion"
+    ownerId: "lune_hp_low_sequence"
+    order: 5

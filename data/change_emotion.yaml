@@ -14,3 +14,6 @@ events:
   - id: "lune_hp_low_emotion"
     actorId: "sunny"
     emotion: "angry"
+  - id: "lune_hp_low_end_emotion"
+    actorId: "sunny"
+    emotion: "normal"

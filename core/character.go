@@ -22,6 +22,19 @@ func (h HP) String() string {
 	return strconv.Itoa(int(h))
 }
 
+type HPRatio float64
+
+func (h HP) Ratio(max MaxHP) HPRatio {
+	if max <= 0 {
+		return 0
+	}
+	return HPRatio(float64(h) / float64(max))
+}
+
+func (r HPRatio) Float64() float64 {
+	return float64(r)
+}
+
 type ATK int
 
 func (a ATK) toAttackValue() attackerValue {

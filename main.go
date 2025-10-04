@@ -127,6 +127,7 @@ func init() {
 		&scene.BattleOption{
 			OnEnd:           nil,
 			BattleSettingId: core.BattleSettingTest,
+			BattleId:        core.BattleIdTest001,
 			//BattleSettingId: core.BattleSettingTripleTest,
 		},
 	)

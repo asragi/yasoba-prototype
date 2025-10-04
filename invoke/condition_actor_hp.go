@@ -15,7 +15,7 @@ type conditionActorHp struct {
 type conditionActorHpDataPort func() []*conditionActorHp
 
 type checkActorCondition func(conditionId) bool
-type getActorHpRatio func(core.ActorId) float64
+type getActorHpRatio func(core.ActorId) core.HPRatio
 
 type produceCheckActorCondition func(getActorHpRatio) checkActorCondition
 
@@ -34,7 +34,7 @@ func initializeCheckActorCondition(
 			}
 			actorId := conditionMap[conditionId].actorId
 			hpRatio := getActorHpRatio(actorId)
-			return hpRatio <= conditionMap[conditionId].thresholdRatio
+			return hpRatio.Float64() <= conditionMap[conditionId].thresholdRatio
 		}
 	}
 }
