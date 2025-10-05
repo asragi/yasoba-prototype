@@ -8,7 +8,7 @@ import (
 
 // BattleEnemyGraphics is a component that displays a battle enemy.
 type BattleEnemyGraphics struct {
-	currentEmotion   BattleEmotionType
+	emotion          queuedEmotion
 	animation        map[BattleEmotionType]*widget.Animation
 	displayDamage    *DisplayDamage
 	shake            *frontend.EmitShake
@@ -32,7 +32,7 @@ func (g *BattleEnemyGraphics) GetDefinitivePosition() *frontend.Vector {
 }
 
 func (g *BattleEnemyGraphics) getCurrentAnimation() *widget.Animation {
-	animation, ok := g.animation[g.currentEmotion]
+	animation, ok := g.animation[g.emotion.current()]
 	if !ok {
 		return g.animation[BattleEmotionNormal]
 	}
@@ -51,8 +51,14 @@ func (g *BattleEnemyGraphics) Update(parentCenterPosition *frontend.Vector) {
 	g.shake.Update()
 	g.displayDamage.Update(parentCenterPosition.Add(g.relativePosition))
 	g.parentPosition = parentCenterPosition
+	animation := g.emotion.apply(func(emotion BattleEmotionType) *widget.Animation {
+		return g.animation[emotion]
+	})
+	if animation == nil {
+		return
+	}
 	position := parentCenterPosition.Add(g.shake.Delta())
-	g.getCurrentAnimation().Update(position)
+	animation.Update(position)
 }
 
 func (g *BattleEnemyGraphics) Draw(drawFunc frontend.DrawFunc) {
@@ -61,8 +67,7 @@ func (g *BattleEnemyGraphics) Draw(drawFunc frontend.DrawFunc) {
 }
 
 func (g *BattleEnemyGraphics) SetEmotion(emotion BattleEmotionType) {
-	g.currentEmotion = emotion
-	g.getCurrentAnimation().Reset()
+	g.emotion.Enqueue(emotion)
 }
 
 func (g *BattleEnemyGraphics) SetDisappear() {
@@ -106,7 +111,7 @@ func NewBattleActorGraphics(
 			return result
 		}()
 		return &BattleEnemyGraphics{
-			currentEmotion:   BattleEmotionNormal,
+			emotion:          newQueuedEmotion(BattleEmotionNormal),
 			animation:        animations,
 			shake:            frontend.NewShake(),
 			parentPosition:   frontend.VectorZero,

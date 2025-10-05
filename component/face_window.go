@@ -7,7 +7,7 @@ import (
 )
 
 type FaceWindow struct {
-	emotion BattleEmotionType
+	emotion queuedEmotion
 	face    map[BattleEmotionType]*widget.Animation
 	window  widget.WindowInterface
 }
@@ -20,16 +20,19 @@ type NewFaceWindowFunc func(
 ) *FaceWindow
 
 func (f *FaceWindow) getCurrentAnimation() *widget.Animation {
-	return f.face[f.emotion]
+	return f.face[f.emotion.current()]
 }
 
 func (f *FaceWindow) SetEmotion(emotion BattleEmotionType) {
-	f.emotion = emotion
+	f.emotion.Enqueue(emotion)
 }
 
 func (f *FaceWindow) Update(parentPosition *frontend.Vector) {
 	f.window.Update(parentPosition)
-	f.getCurrentAnimation().Update(f.window.GetPositionCenter())
+	animation := f.emotion.apply(func(emotion BattleEmotionType) *widget.Animation {
+		return f.face[emotion]
+	})
+	animation.Update(f.window.GetPositionCenter())
 }
 
 func (f *FaceWindow) Draw(drawFunc frontend.DrawFunc) {
@@ -95,8 +98,9 @@ func StandByNewFaceWindow(
 			},
 		)
 		return &FaceWindow{
-			face:   animationMap,
-			window: window,
+			emotion: newQueuedEmotion(BattleEmotionNormal),
+			face:    animationMap,
+			window:  window,
 		}
 	}
 }
