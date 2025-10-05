@@ -31,7 +31,7 @@ func InitializeCreateBattleScene(
 ) CreateBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		// 戦闘設定の取得と初期化
-		battleSetting := getBattleSetting(option.BattleSettingId)
+		battleSetting := getBattleSetting(option.BattleId)
 		enemyIds := extractEnemyIds(battleSetting)
 
 		// 戦闘の初期化

@@ -134,10 +134,9 @@ func init() {
 			OnSelectBattle: func() {
 				currentScene = createBattleScene(
 					&scene.BattleOption{
-						OnEnd:           nil,
-						BattleSettingId: core.BattleSettingTest,
-						BattleId:        core.BattleIdTest001,
-						//BattleSettingId: core.BattleSettingTripleTest,
+						OnEnd:    nil,
+						BattleId: core.BattleIdTest001,
+						//BattleId: core.BattleIdTripleTest,
 					},
 				)
 			},
