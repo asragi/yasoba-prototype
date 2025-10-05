@@ -21,10 +21,15 @@ const (
 	DrawRate   = 1
 )
 
+type sceneRunner interface {
+	Update()
+	Draw(frontend.DrawFunc)
+}
+
 var (
-	drawing     *frontend.Drawing
-	battleScene *scene.BattleScene
-	debugParams *debug.Debug
+	drawing      *frontend.Drawing
+	currentScene sceneRunner
+	debugParams  *debug.Debug
 )
 
 func init() {
@@ -103,7 +108,7 @@ func init() {
 	)
 	newVariableMessageWindow := component.StandByNewVariableMessageWindow(newWindow, newText, textServer)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
-	newBattleScene := scene.InitializeCreateBattleScene(
+	createBattleScene := scene.InitializeCreateBattleScene(
 		newMessageWindow,
 		newSelectWindow,
 		newBattleSelectWindow,
@@ -123,28 +128,36 @@ func init() {
 		produceCreateSequence,
 		produceCheckInvokeSequence,
 	)
-	battleScene = newBattleScene(
-		&scene.BattleOption{
-			OnEnd:           nil,
-			BattleSettingId: core.BattleSettingTest,
-			BattleId:        core.BattleIdTest001,
-			//BattleSettingId: core.BattleSettingTripleTest,
+	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindow)
+	debugScene := createDebugScene(
+		&scene.DebugOption{
+			OnSelectBattle: func() {
+				currentScene = createBattleScene(
+					&scene.BattleOption{
+						OnEnd:           nil,
+						BattleSettingId: core.BattleSettingTest,
+						BattleId:        core.BattleIdTest001,
+						//BattleSettingId: core.BattleSettingTripleTest,
+					},
+				)
+			},
 		},
 	)
+	currentScene = debugScene
 	debugParams = debug.CreateDrawParameters(newText)
 }
 
 type Game struct{}
 
 func (g *Game) Update() error {
-	battleScene.Update()
+	currentScene.Update()
 	debugParams.Update()
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	currentScene.Draw(drawing.Draw)
 	debugParams.Draw(drawing.Draw)
-	battleScene.Draw(drawing.Draw)
 	drawing.DrawEnd(screen)
 }
 
