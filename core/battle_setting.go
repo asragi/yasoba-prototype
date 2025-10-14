@@ -9,15 +9,22 @@ type EnemySetting struct {
 	Position *frontend.Vector
 }
 
+type BattleSettingId string
+
+const (
+	BattleSettingTest       BattleSettingId = "test"
+	BattleSettingTripleTest BattleSettingId = "triple_test"
+)
+
 type BattleSetting struct {
 	Enemies []*EnemySetting
 }
 
-type ServeBattleSetting func(BattleId) *BattleSetting
+type ServeBattleSetting func(BattleSettingId) *BattleSetting
 
 func CreateServeBattleSetting() ServeBattleSetting {
-	dict := make(map[BattleId]*BattleSetting)
-	dict[BattleIdTest001] = &BattleSetting{
+	dict := make(map[BattleSettingId]*BattleSetting)
+	dict[BattleSettingTest] = &BattleSetting{
 		Enemies: []*EnemySetting{
 			{
 				EnemyId:  EnemyPunchingBagId,
@@ -25,7 +32,7 @@ func CreateServeBattleSetting() ServeBattleSetting {
 			},
 		},
 	}
-	dict[BattleIdTripleTest] = &BattleSetting{
+	dict[BattleSettingTripleTest] = &BattleSetting{
 		Enemies: []*EnemySetting{
 			{
 				EnemyId:  EnemyPunchingBagId,
@@ -42,7 +49,7 @@ func CreateServeBattleSetting() ServeBattleSetting {
 		},
 	}
 
-	return func(id BattleId) *BattleSetting {
+	return func(id BattleSettingId) *BattleSetting {
 		return dict[id]
 	}
 }

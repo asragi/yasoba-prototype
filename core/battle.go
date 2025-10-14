@@ -7,8 +7,7 @@ import (
 type BattleId string
 
 const (
-	BattleIdTest001    BattleId = "test_battle_001"
-	BattleIdTripleTest BattleId = "test_battle_triple"
+	BattleIdTest001 BattleId = "test_battle_001"
 )
 
 // 0 on battle start and 1 on first actions

@@ -77,8 +77,9 @@ type BattleResult struct{}
 type OnEndBattle func(BattleResult)
 
 type BattleOption struct {
-	OnEnd    OnEndBattle
-	BattleId core.BattleId
+	OnEnd           OnEndBattle
+	BattleSettingId core.BattleSettingId
+	BattleId        core.BattleId
 }
 
 type CreateBattleScene func(*BattleOption) *BattleScene
