@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -23,7 +25,7 @@ type BattleTextDisplay interface {
 type ShakeActor func(actor.ActorId)
 type ChangeEmotion func(actor.ActorId, BattleEmotionType)
 type ShakeScreen func()
-type DisplayDamageFunc func(actor.ActorId, core.Damage, actor.HP)
+type DisplayDamageFunc func(actor.ActorId, battle_skill.Damage, actor.HP)
 type PlayEffect func(widget.EffectId, actor.ActorId)
 type SetDisappear func(actor.ActorId)
 
@@ -45,7 +47,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	normalAttack := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
-			Text:  core.TextIdLuneAttackDesc,
+			Text:  text.TextIdLuneAttackDesc,
 		},
 		&PlayEffectEvent{
 			Frame:    1,
@@ -71,7 +73,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	luneFire := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
-			Text:  core.TextIdLuneFireDesc,
+			Text:  text.TextIdLuneFireDesc,
 		},
 		&PlayEffectEvent{
 			Frame:    1,
@@ -96,7 +98,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	combinationThunder := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
-			Text:  core.TextIdCombinationThunder,
+			Text:  text.TextIdCombinationThunder,
 		},
 		&PlayEffectEvent{
 			Frame:    60,
@@ -128,7 +130,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 		},
 		&DisplayMessageEvent{
 			Frame: 1,
-			Text:  core.TextIdEnemyBeaten,
+			Text:  text.TextIdEnemyBeaten,
 		},
 	}
 	dict[EventSequenceIdPunchingBagBeaten] = &BattleEventSequence{
@@ -146,7 +148,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 
 type DamageInformation struct {
 	Target  actor.ActorId
-	Damage  core.Damage
+	Damage  battle_skill.Damage
 	AfterHP actor.HP
 }
 
@@ -171,7 +173,7 @@ type PrepareBattleEventSequenceFunc func(
 ) NewBattleSequenceFunc
 
 func CreateExecBattleEventSequence(
-	textServer core.ServeTextDataFunc,
+	textServer text.ServeTextDataFunc,
 	serveEvent ServeBattleEventSequenceFunc,
 ) PrepareBattleEventSequenceFunc {
 	return func(
@@ -211,8 +213,8 @@ func CreateExecBattleEventSequence(
 							return result
 						}()
 						for target, damages := range damageMap {
-							allDamage := func() core.Damage {
-								var result core.Damage = 0
+							allDamage := func() battle_skill.Damage {
+								var result battle_skill.Damage = 0
 								for _, d := range damages {
 									result += d.Damage
 								}
@@ -254,7 +256,7 @@ type ServeBattleEventSequenceFunc func(id EventSequenceId) *BattleEventSequence
 
 type DisplayMessageEvent struct {
 	Frame int
-	Text  core.TextId
+	Text  text.TextId
 }
 
 func (e *DisplayMessageEvent) IsActive(frame int) bool {

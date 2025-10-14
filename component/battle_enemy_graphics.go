@@ -1,6 +1,7 @@
 package component
 
 import (
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -18,7 +19,7 @@ type BattleEnemyGraphics struct {
 }
 
 type BattleEnemyGraphicsInterface interface {
-	SetDamage(core.Damage)
+	SetDamage(battle_skill.Damage)
 	DoShake()
 	widget.PositionUpdater
 	widget.Drawer
@@ -39,7 +40,7 @@ func (g *BattleEnemyGraphics) getCurrentAnimation() *widget.Animation {
 	return animation
 }
 
-func (g *BattleEnemyGraphics) SetDamage(damage core.Damage) {
+func (g *BattleEnemyGraphics) SetDamage(damage battle_skill.Damage) {
 	g.displayDamage.DisplayDamage(damage)
 }
 

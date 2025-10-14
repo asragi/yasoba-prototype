@@ -5,7 +5,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/text"
 )
 
 // YAMLデータ構造体
@@ -34,7 +34,7 @@ func createPartnerDialogueDataPortFromYAML(filePath string) partnerDialogueDataP
 		eventId := eventId(dialogue.EventID)
 		dialogueMap[eventId] = &partnerDialogueModel{
 			eventId: eventId,
-			textId:  core.TextId(dialogue.TextID),
+			textId:  text.TextId(dialogue.TextID),
 		}
 	}
 

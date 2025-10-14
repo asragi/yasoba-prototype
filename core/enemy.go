@@ -1,6 +1,9 @@
 package core
 
-import "github.com/asragi/yasoba-prototype/actor"
+import (
+	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/text"
+)
 
 type EnemyId string
 
@@ -36,12 +39,12 @@ func CreateEnemyServer() ServeEnemyData {
 	}
 }
 
-type EnemyNameServer func(EnemyId) TextId
+type EnemyNameServer func(EnemyId) text.TextId
 
 func CreateEnemyNameServer() EnemyNameServer {
-	dict := make(map[EnemyId]TextId)
-	dict[EnemyPunchingBagId] = TextIdPunchingBagName
-	return func(id EnemyId) TextId {
+	dict := make(map[EnemyId]text.TextId)
+	dict[EnemyPunchingBagId] = text.TextIdPunchingBagName
+	return func(id EnemyId) text.TextId {
 		return dict[id]
 	}
 }

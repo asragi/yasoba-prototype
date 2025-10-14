@@ -1,12 +1,12 @@
 package sequence
 
-import "github.com/asragi/yasoba-prototype/core"
+import "github.com/asragi/yasoba-prototype/text"
 
-type SetPartnerDialogue func(core.TextString) *SetPartnerDialogueResponse
+type SetPartnerDialogue func(text.String) *SetPartnerDialogueResponse
 
 type ProduceCreateSequence func(SetPartnerDialogue, SetEmotion, OpenPartnerMessageWindow, ClosePartnerMessageWindow) CreateSequence
 
-type PrepareProduceCreateSequence func(core.ServeTextDataFunc) ProduceCreateSequence
+type PrepareProduceCreateSequence func(text.ServeTextDataFunc) ProduceCreateSequence
 
 // DIにあたる処理を行いpackage外にexportする
 func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
@@ -24,7 +24,7 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 		sequencesDataAdapter,
 	)
 	return func(
-		serveTextData core.ServeTextDataFunc,
+		serveTextData text.ServeTextDataFunc,
 	) ProduceCreateSequence {
 		return func(
 			setPartnerDialogue SetPartnerDialogue,

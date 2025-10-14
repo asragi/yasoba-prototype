@@ -2,6 +2,7 @@ package component
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
@@ -20,7 +21,7 @@ func (d *BattleEnemyDisplay) SetDisappear(actorId actor.ActorId) {
 	graphics.SetDisappear()
 }
 
-func (d *BattleEnemyDisplay) SetDamage(actorId actor.ActorId, damage core.Damage) {
+func (d *BattleEnemyDisplay) SetDamage(actorId actor.ActorId, damage battle_skill.Damage) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
 		return

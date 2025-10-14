@@ -6,6 +6,10 @@ import (
 
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle"
+	"github.com/asragi/yasoba-prototype/battle_combination"
+	"github.com/asragi/yasoba-prototype/battle_decision"
+	"github.com/asragi/yasoba-prototype/battle_partner"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/debug"
@@ -13,6 +17,7 @@ import (
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
+	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -37,7 +42,7 @@ func init() {
 	}
 	prepareProduceCreateSequence := sequence.InitializeProduceCreateSequence()
 	actorServer := actor.NewInMemoryActorServer()
-	textServer, err := core.LoadTextDataFromYaml("data/text_data.yaml")
+	textServer, err := text.LoadFromYAML("data/text_data.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,7 +60,7 @@ func init() {
 	battleSettingServer := core.CreateServeBattleSetting()
 	skillServer := core.NewSkillServer()
 	random := rand.Float64
-	applySkill := core.CreateSkillApply(skillServer, actorServer.Get, actorServer.Upsert, random)
+	applySkill := battle_skill.CreateSkillApply(skillServer, actorServer.Get, actorServer.Upsert, random)
 	battleSequenceServer := component.CreateServeBattleEventSequence()
 	prepareBattleSequence := component.CreateExecBattleEventSequence(
 		textServer,
@@ -80,17 +85,17 @@ func init() {
 	effectData := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(effectData, resource)
 	serveEnemyView := component.NewServeEnemyViewData()
-	choiceTarget := core.CreateChoiceSkillTarget(random)
-	newChoiceRandomAction := core.StandByCreateRandomAction(
+	choiceTarget := battle_decision.CreateChoiceSkillTarget(random)
+	newChoiceRandomAction := battle_decision.StandByCreateRandomAction(
 		random,
 		skillServer,
 		choiceTarget,
 	)
-	choiceAction := core.CreateNewChoiceAction(newChoiceRandomAction)
+	choiceAction := battle_decision.CreateNewChoiceAction(newChoiceRandomAction)
 	decideActionOrder := battle.CreateDecideActionOrder(actorServer)
-	serveBattleState := core.CreateServeBattleState(actorServer)
-	checkCombination := core.CreateCheckCombination()
-	newPartnerActionServer := core.StandByNewPartnerActionServer(random, serveBattleState)
+	serveBattleState := battle_decision.CreateServeBattleState(actorServer)
+	checkCombination := battle_combination.CreateCheckCombination()
+	newPartnerActionServer := battle_partner.StandByNewPartnerActionServer(random, serveBattleState)
 	partnerActionServer := newPartnerActionServer()
 	initializeBattle := battle.CreateInitializeBattle(prepareActor, partnerActionServer.DecidePlan)
 	newProcessBattle := battle.StandByCreateProcessBattle(

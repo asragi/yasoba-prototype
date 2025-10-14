@@ -2,8 +2,8 @@ package component
 
 import (
 	"github.com/asragi/yasoba-prototype/battle"
-	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/text"
 )
 
 type BattleCommand int
@@ -74,8 +74,8 @@ func StandByNewBattleSelectWindow(
 		onSubmitIndex := func(index int) {
 			onSubmit(commands[index])
 		}
-		commandTexts := func() []core.TextId {
-			texts := make([]core.TextId, len(commands))
+		commandTexts := func() []text.TextId {
+			texts := make([]text.TextId, len(commands))
 			for i, command := range commands {
 				texts[i] = command.ToTextId()
 			}

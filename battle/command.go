@@ -2,7 +2,9 @@ package battle
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/core"
+	textpkg "github.com/asragi/yasoba-prototype/text"
 )
 
 // PlayerCommand is a command that the player can select in the battle.
@@ -19,29 +21,29 @@ const (
 )
 
 // ToTextId converts a player command into the associated text ID.
-func (b *PlayerCommand) ToTextId() core.TextId {
+func (b *PlayerCommand) ToTextId() textpkg.TextId {
 	switch *b {
 	case PlayerCommandAttack:
-		return "battle_command_attack"
+		return textpkg.TextIdBattleCommandAttack
 	case PlayerCommandFire:
-		return "battle_command_fire"
+		return textpkg.TextIdBattleCommandFire
 	case PlayerCommandThunder:
-		return "battle_command_thunder"
+		return textpkg.TextIdBattleCommandThunder
 	case PlayerCommandBarrier:
-		return "battle_command_barrier"
+		return textpkg.TextIdBattleCommandBarrier
 	case PlayerCommandWind:
-		return "battle_command_wind"
+		return textpkg.TextIdBattleCommandWind
 	case PlayerCommandFocus:
-		return "battle_command_focus"
+		return textpkg.TextIdBattleCommandFocus
 	case PlayerCommandDefend:
-		return "battle_command_defend"
+		return textpkg.TextIdBattleCommandDefend
 	}
 	return ""
 }
 
 // BattlePlayerCommandResult holds the SelectedAction triggered by a command.
 type BattlePlayerCommandResult struct {
-	SkillApplyArgs *core.SelectedAction
+	SkillApplyArgs *battle_skill.SelectedAction
 }
 
 // ProcessPlayerCommandFunc determines the SelectedAction for a player command.
@@ -72,7 +74,7 @@ func CreateProcessPlayerCommand(supplyActor actor.ActorSupplier) ProcessPlayerCo
 			return core.SkillIdLuneAttack
 		}()
 		return &BattlePlayerCommandResult{
-			SkillApplyArgs: &core.SelectedAction{
+			SkillApplyArgs: &battle_skill.SelectedAction{
 				Id:       decidedSkillId,
 				Actor:    command.ActorId,
 				SubActor: actor.ActorEmptyId,

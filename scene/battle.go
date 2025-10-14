@@ -3,19 +3,21 @@ package scene
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
+	"github.com/asragi/yasoba-prototype/text"
 )
 
 type BattleScene struct {
 	ui                  battleUI
 	battleSequence      *component.BattleEventSequencer
 	enemyData           []*core.EnemyIdPair
-	actorNames          map[actor.ActorId]core.TextId
-	endState            core.BattleEndType
+	actorNames          map[actor.ActorId]text.TextId
+	endState            battle.BattleEndType
 	createSequence      sequence.CreateSequence
 	sequences           *sequence.SequenceManager
 	checkInvokeSequence invoke.CheckInvokeSequence
@@ -25,11 +27,11 @@ type BattleScene struct {
 
 func (s *BattleScene) onTurnEnd() {
 	s.turnCount++
-	if s.endState == core.BattleEndTypeWin {
+	if s.endState == battle.BattleEndTypeWin {
 		s.sequences.AddSequence(s.createSequence("test_sequence_0100"))
 		return
 	}
-	if s.endState == core.BattleEndTypeLose {
+	if s.endState == battle.BattleEndTypeLose {
 		s.ui.messageWindow.SetText("やられてしまった……", false)
 		return
 	}
@@ -38,7 +40,7 @@ func (s *BattleScene) onTurnEnd() {
 	s.checkAndStartSequences(invoke.InvokeTimingStartTurn)
 }
 
-func (s *BattleScene) onBattleEnd(endType core.BattleEndType) {
+func (s *BattleScene) onBattleEnd(endType battle.BattleEndType) {
 	s.endState = endType
 }
 
@@ -86,7 +88,7 @@ type BattleOption struct {
 
 type CreateBattleScene func(*BattleOption) *BattleScene
 
-type playBattleSequenceFunc func([]*core.SkillApplyResult)
+type playBattleSequenceFunc func([]*battle_skill.SkillApplyResult)
 
 // SkillApplyResultに基づいて戦闘の演出を行う
 func createPlayBattleSequence(
@@ -96,7 +98,7 @@ func createPlayBattleSequence(
 	actorIdToEnemy map[actor.ActorId]core.EnemyId,
 	serveEnemyView component.ServeEnemyViewData,
 ) playBattleSequenceFunc {
-	return func(skillApplyResultSet []*core.SkillApplyResult) {
+	return func(skillApplyResultSet []*battle_skill.SkillApplyResult) {
 		for _, skillApplyResult := range skillApplyResultSet {
 			skillId := skillApplyResult.SkillId
 			sequenceId := skillToSequence(skillId)
@@ -157,7 +159,7 @@ func createOnTargetSelect(
 	indexToActor func(int) actor.ActorId,
 	serveSelectedCommand func() battle.PlayerCommand,
 	resetBattleSequence func(),
-	playSequence func([]*core.SkillApplyResult),
+	playSequence func([]*battle_skill.SkillApplyResult),
 	processBattle battle.ProcessBattleFunc,
 ) func(int) {
 	return func(index int) {

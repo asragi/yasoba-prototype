@@ -2,6 +2,10 @@ package battle
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle_combination"
+	"github.com/asragi/yasoba-prototype/battle_decision"
+	"github.com/asragi/yasoba-prototype/battle_partner"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/core"
 )
 
@@ -20,42 +24,42 @@ type ProcessBattleRequest struct {
 
 // ProcessBattleResponse contains the set of applied skill results.
 type ProcessBattleResponse struct {
-	SkillApplyResults []*core.SkillApplyResult
+	SkillApplyResults []*battle_skill.SkillApplyResult
 }
 
 // ProcessBattleFunc advances the battle by one set of actions.
 type ProcessBattleFunc func(*ProcessBattleRequest) *ProcessBattleResponse
 
 // NewProcessBattleFunc constructs a ProcessBattleFunc for a prepared battle.
-type NewProcessBattleFunc func(res *InitializeBattleResponse, onBattleEnd func(core.BattleEndType)) ProcessBattleFunc
+type NewProcessBattleFunc func(res *InitializeBattleResponse, onBattleEnd func(BattleEndType)) ProcessBattleFunc
 
 // StandByCreateProcessBattle wires all dependencies to handle battle progression.
 func StandByCreateProcessBattle(
 	getActor actor.ActorSupplier,
-	getState core.ServeBattleState,
+	getState battle_decision.ServeBattleState,
 	processPlayerCommand ProcessPlayerCommandFunc,
-	getPartnerPlan core.GetPartnerPlanFunc,
-	checkCombination core.CheckCombinationFunc,
-	skillApply core.SkillApplyFunc,
+	getPartnerPlan battle_partner.GetPartnerPlanFunc,
+	checkCombination battle_combination.CheckFunc,
+	skillApply battle_skill.SkillApplyFunc,
 	decideActionOrder DecideActionOrderFunc,
-	newChoiceAction core.NewChoiceActionFunc,
+	newChoiceAction battle_decision.NewChoiceActionFunc,
 ) NewProcessBattleFunc {
-	checkBattleShouldEnd := func() (core.BattleEndType, bool) {
+	checkBattleShouldEnd := func() (BattleEndType, bool) {
 		state := getState()
 		if state.IsAllBeaten(actor.ActorSidePlayer) {
-			return core.BattleEndTypeLose, true
+			return BattleEndTypeLose, true
 		}
 		if state.IsAllBeaten(actor.ActorSideEnemy) {
-			return core.BattleEndTypeWin, true
+			return BattleEndTypeWin, true
 		}
-		return core.BattleEndTypeNone, false
+		return BattleEndTypeNone, false
 	}
 
 	return func(
 		initializeBattleResponse *InitializeBattleResponse,
-		onBattleEndArg func(core.BattleEndType),
+		onBattleEndArg func(BattleEndType),
 	) ProcessBattleFunc {
-		onBattleEnd := func(battleState core.BattleEndType, applyResult []*core.SkillApplyResult) *ProcessBattleResponse {
+		onBattleEnd := func(battleState BattleEndType, applyResult []*battle_skill.SkillApplyResult) *ProcessBattleResponse {
 			onBattleEndArg(battleState)
 			return &ProcessBattleResponse{
 				SkillApplyResults: applyResult,
@@ -70,12 +74,12 @@ func StandByCreateProcessBattle(
 			}
 			return result
 		}()
-		choiceActionList := func() map[actor.ActorId]core.DecideActionFunc {
-			result := make(map[actor.ActorId]core.DecideActionFunc)
+		choiceActionList := func() map[actor.ActorId]battle_decision.DecideActionFunc {
+			result := make(map[actor.ActorId]battle_decision.DecideActionFunc)
 			for key, value := range actorIdToEnemy {
-				result[key] = newChoiceAction(core.EnemyIdToChoiceActionId(value))
+				result[key] = newChoiceAction(battle_decision.EnemyIdToChoiceActionId(value))
 			}
-			result[subActorId] = newChoiceAction(core.CharacterIdToChoiceActionId(core.CharacterSunnyId))
+			result[subActorId] = newChoiceAction(battle_decision.CharacterIdToChoiceActionId(core.CharacterSunnyId))
 			return result
 		}()
 
@@ -90,7 +94,7 @@ func StandByCreateProcessBattle(
 			selectedAction := actualAction.SkillApplyArgs
 			partnerPlan := getPartnerPlan()
 			combinationResult := checkCombination(
-				&core.CheckCombinationRequest{
+				&battle_combination.Request{
 					MainActorSkillId: selectedAction.Id,
 					// TODO: consider multi target
 					MainActorTarget: selectedAction.Target[0],
@@ -98,9 +102,9 @@ func StandByCreateProcessBattle(
 					SubActorTarget:  partnerPlan.SelectedTarget,
 				},
 			)
-			resultAction := func() *core.SelectedAction {
+			resultAction := func() *battle_skill.SelectedAction {
 				if combinationResult.IsCombination {
-					return &core.SelectedAction{
+					return &battle_skill.SelectedAction{
 						Id:       combinationResult.SkillId,
 						Actor:    selectedAction.Actor,
 						SubActor: subActorId,
@@ -111,7 +115,7 @@ func StandByCreateProcessBattle(
 			}()
 
 			mainActorApplyResult := skillApply(resultAction)
-			result := []*core.SkillApplyResult{mainActorApplyResult}
+			result := []*battle_skill.SkillApplyResult{mainActorApplyResult}
 			if battleState, battleShouldEnd := checkBattleShouldEnd(); battleShouldEnd {
 				return onBattleEnd(battleState, result)
 			}
@@ -126,7 +130,7 @@ func StandByCreateProcessBattle(
 				decideActionFunction := choiceActionList[actorId]
 				decidedAction := decideActionFunction(actionActor, state)
 				applyResult := skillApply(
-					&core.SelectedAction{
+					&battle_skill.SelectedAction{
 						Id:       decidedAction.SelectedSkill,
 						Actor:    actorId,
 						SubActor: actor.ActorEmptyId,

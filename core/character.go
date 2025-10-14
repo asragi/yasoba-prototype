@@ -1,6 +1,9 @@
 package core
 
-import "github.com/asragi/yasoba-prototype/actor"
+import (
+	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/text"
+)
 
 type CharacterId string
 
@@ -16,7 +19,7 @@ func CreateCharacterServer() ServeCharacterFunc {
 	dict := make(map[CharacterId]*CharacterData)
 	dict[CharacterLuneId] = &CharacterData{
 		Id:    CharacterLuneId,
-		Name:  TextIdLuneName,
+		Name:  text.TextIdLuneName,
 		MaxHP: 110,
 		HP:    110,
 		ATK:   6,
@@ -26,7 +29,7 @@ func CreateCharacterServer() ServeCharacterFunc {
 	}
 	dict[CharacterSunnyId] = &CharacterData{
 		Id:    CharacterSunnyId,
-		Name:  TextIdSunnyName,
+		Name:  text.TextIdSunnyName,
 		MaxHP: 220,
 		HP:    220,
 		ATK:   22,
@@ -41,7 +44,7 @@ func CreateCharacterServer() ServeCharacterFunc {
 
 type CharacterData struct {
 	Id    CharacterId
-	Name  TextId
+	Name  text.TextId
 	MaxHP actor.MaxHP
 	HP    actor.HP
 	ATK   actor.ATK

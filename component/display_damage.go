@@ -3,7 +3,7 @@ package component
 import (
 	"image/color"
 
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -44,7 +44,7 @@ func CreateNewDisplayDamage(newText widget.NewTextFunc) NewDisplayDamageFunc {
 	}
 }
 
-func (d *DisplayDamage) DisplayDamage(damage core.Damage) {
+func (d *DisplayDamage) DisplayDamage(damage battle_skill.Damage) {
 	d.text.SetText(damage.String(), true)
 	d.popFrame = 0
 }

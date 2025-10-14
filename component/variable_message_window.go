@@ -1,8 +1,8 @@
 package component
 
 import (
-	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -10,14 +10,14 @@ type VariableMessageWindowInterface interface {
 	widget.PositionUpdater
 	widget.Drawer
 	SetActive(bool)
-	SetText(core.TextId)
+	SetText(text.TextId)
 }
 
 type VariableMessageWindow struct {
 	isActive  bool
 	text      widget.TextInterface
 	window    widget.WindowInterface
-	serveText core.ServeTextDataFunc
+	serveText text.ServeTextDataFunc
 }
 
 func (w *VariableMessageWindow) Draw(drawFunc frontend.DrawFunc) {
@@ -37,7 +37,7 @@ func (w *VariableMessageWindow) SetActive(isActive bool) {
 	w.isActive = isActive
 }
 
-func (w *VariableMessageWindow) SetText(textId core.TextId) {
+func (w *VariableMessageWindow) SetText(textId text.TextId) {
 	text := w.serveText(textId)
 	w.text.SetText(text.Text.String(), false)
 	padding := w.window.GetPadding().Multiply(2)
@@ -53,7 +53,7 @@ type NewVariableMessageWindowFunc func(
 func StandByNewVariableMessageWindow(
 	newWindow widget.NewWindowFunc,
 	newText widget.NewTextFunc,
-	serveTextData core.ServeTextDataFunc,
+	serveTextData text.ServeTextDataFunc,
 ) NewVariableMessageWindowFunc {
 	padding := &frontend.Vector{X: 16, Y: 8}
 	windowTexture := frontend.TextureWindow

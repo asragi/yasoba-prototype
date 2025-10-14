@@ -3,11 +3,13 @@ package scene
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
+	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -200,10 +202,10 @@ func createActorIdToEnemyMapping(enemyIds []*core.EnemyIdPair) map[actor.ActorId
 	return result
 }
 
-func createActorNamesMapping(enemyIds []*core.EnemyIdPair, serveEnemyName core.EnemyNameServer) map[actor.ActorId]core.TextId {
-	names := make(map[actor.ActorId]core.TextId)
-	names[actor.ActorLuneId] = core.TextIdLuneName
-	names[actor.ActorSunnyId] = core.TextIdSunnyName
+func createActorNamesMapping(enemyIds []*core.EnemyIdPair, serveEnemyName core.EnemyNameServer) map[actor.ActorId]text.TextId {
+	names := make(map[actor.ActorId]text.TextId)
+	names[actor.ActorLuneId] = text.TextIdLuneName
+	names[actor.ActorSunnyId] = text.TextIdSunnyName
 	for _, pair := range enemyIds {
 		names[pair.ActorId] = serveEnemyName(pair.EnemyId)
 	}
@@ -222,8 +224,8 @@ func createAllActorIdList(battleResponse *battle.InitializeBattleResponse) []act
 	return append(ids, enemyActorIds...)
 }
 
-func createAllTextIdList(allActorId []actor.ActorId, actorNames map[actor.ActorId]core.TextId) []core.TextId {
-	texts := make([]core.TextId, 0)
+func createAllTextIdList(allActorId []actor.ActorId, actorNames map[actor.ActorId]text.TextId) []text.TextId {
+	texts := make([]text.TextId, 0)
 	for _, id := range allActorId {
 		texts = append(texts, actorNames[id])
 	}
@@ -314,8 +316,8 @@ func createSetDamageFunction(
 	subActorDisplay *component.BattleSubActorDisplay,
 	actorDisplay *component.BattleActorDisplay,
 	displayedHp map[actor.ActorId]actor.HP,
-) func(actor.ActorId, core.Damage, actor.HP) {
-	return func(actorId actor.ActorId, damage core.Damage, afterHp actor.HP) {
+) func(actor.ActorId, battle_skill.Damage, actor.HP) {
+	return func(actorId actor.ActorId, damage battle_skill.Damage, afterHp actor.HP) {
 		displayedHp[actorId] = afterHp
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -345,9 +347,9 @@ func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay
 	}
 }
 
-func createSetPartnerDialogueFunction(subActorDialog *component.BattlePartnerDialogue) func(core.TextString) *sequence.SetPartnerDialogueResponse {
-	return func(text core.TextString) *sequence.SetPartnerDialogueResponse {
-		subActorDialog.SetText(text.String(), false)
+func createSetPartnerDialogueFunction(subActorDialog *component.BattlePartnerDialogue) func(text.String) *sequence.SetPartnerDialogueResponse {
+	return func(textValue text.String) *sequence.SetPartnerDialogueResponse {
+		subActorDialog.SetText(textValue.String(), false)
 		return &sequence.SetPartnerDialogueResponse{
 			CheckIsEnd: func() sequence.IsEnd {
 				result := subActorDialog.IsTextEnd()

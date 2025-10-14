@@ -1,12 +1,10 @@
 package sequence
 
-import (
-	"github.com/asragi/yasoba-prototype/core"
-)
+import "github.com/asragi/yasoba-prototype/text"
 
 type partnerDialogueModel struct {
 	eventId eventId
-	textId  core.TextId
+	textId  text.TextId
 }
 
 type partnerDialogueDataPort func(eventId) *partnerDialogueModel
@@ -18,7 +16,7 @@ type SetPartnerDialogueResponse struct {
 }
 
 func produceCreatePartnerDialogueEventToUnit(
-	serveTextData core.ServeTextDataFunc,
+	serveTextData text.ServeTextDataFunc,
 	partnerDialogueDataPort partnerDialogueDataPort,
 	setPartnerDialogue SetPartnerDialogue,
 ) createPartnerDialogueEvent {

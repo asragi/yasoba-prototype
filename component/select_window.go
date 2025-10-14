@@ -1,8 +1,8 @@
 package component
 
 import (
-	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -84,7 +84,7 @@ type NewSelectWindowFunc func(
 	*frontend.Vector,
 	*frontend.Pivot,
 	frontend.Depth,
-	[]core.TextId,
+	[]text.TextId,
 	func(int),
 	bool,
 ) *SelectWindow
@@ -92,13 +92,13 @@ type NewSelectWindowFunc func(
 func StandByNewSelectWindow(
 	resource *frontend.ResourceManager,
 	newText widget.NewTextFunc,
-	textServer core.ServeTextDataFunc,
+	textServer text.ServeTextDataFunc,
 ) NewSelectWindowFunc {
 	return func(
 		relativePosition *frontend.Vector,
 		pivot *frontend.Pivot,
 		depth frontend.Depth,
-		commands []core.TextId,
+		commands []text.TextId,
 		onSubmit func(int),
 		closeOnSubmit bool,
 	) *SelectWindow {

@@ -2,6 +2,7 @@ package component
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle_skill"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -13,7 +14,7 @@ type BattleActorDisplay struct {
 	parameterDisplay *BattleParameterDisplay
 }
 
-func (d *BattleActorDisplay) SetDamage(damage core.Damage, afterHP actor.HP) {
+func (d *BattleActorDisplay) SetDamage(damage battle_skill.Damage, afterHP actor.HP) {
 	d.displayDamage.DisplayDamage(damage)
 	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }
@@ -101,7 +102,7 @@ func CreateNewBattleSubActorDisplay(
 	}
 }
 
-func (d *BattleSubActorDisplay) SetDamage(damage core.Damage, afterHP actor.HP) {
+func (d *BattleSubActorDisplay) SetDamage(damage battle_skill.Damage, afterHP actor.HP) {
 	d.displayDamage.DisplayDamage(damage)
 	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }
