@@ -1,16 +1,55 @@
 package actor
 
 import (
-	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
+	"github.com/asragi/yasoba-prototype/component/battle/emotion"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/widget"
+	"github.com/hajimehoshi/ebiten/v2"
+)
+
+type (
+	emotionQueue interface {
+		Current() emotion.BattleEmotionType
+		Enqueue(emotion.BattleEmotionType)
+		Apply(func(emotion.BattleEmotionType) *widget.Animation) *widget.Animation
+	}
+
+	animation interface {
+		Update(*frontend.Vector)
+		Draw(frontend.DrawFunc)
+		SetScaleBySize(*frontend.Vector)
+	}
+
+	window interface {
+		Update(*frontend.Vector)
+		Draw(frontend.DrawFunc)
+		GetPositionCenter() *frontend.Vector
+		GetPositionTopCenter() *frontend.Vector
+		GetPositionUpperLeft() *frontend.Vector
+		GetPositionLowerRight() *frontend.Vector
+	}
+
+	resourceProvider interface {
+		GetAnimationData(frontend.AnimationId) *frontend.AnimationData
+		GetTexture(frontend.TextureId) *ebiten.Image
+	}
+
+	newWindowFunc    func(*widget.WindowOption) window
+	newAnimationFunc func(
+		*frontend.Vector,
+		*frontend.Pivot,
+		frontend.Depth,
+		*ebiten.Image,
+		*frontend.AnimationData,
+	) animation
+	newEmotionQueueFunc func(emotion.BattleEmotionType) emotionQueue
 )
 
 type FaceWindow struct {
-	emotion battleemotion.Queued
-	face    map[battleemotion.BattleEmotionType]*widget.Animation
-	window  widget.WindowInterface
+	emotion emotionQueue
+	face    map[emotion.BattleEmotionType]animation
+	window  window
 }
 
 type NewFaceWindowFunc func(
@@ -20,20 +59,20 @@ type NewFaceWindowFunc func(
 	character.CharacterId,
 ) *FaceWindow
 
-func (f *FaceWindow) getCurrentAnimation() *widget.Animation {
+func (f *FaceWindow) getCurrentAnimation() animation {
 	return f.face[f.emotion.Current()]
 }
 
-func (f *FaceWindow) SetEmotion(emotion battleemotion.BattleEmotionType) {
+func (f *FaceWindow) SetEmotion(emotion emotion.BattleEmotionType) {
 	f.emotion.Enqueue(emotion)
 }
 
 func (f *FaceWindow) Update(parentPosition *frontend.Vector) {
 	f.window.Update(parentPosition)
-	animation := f.emotion.Apply(func(emotion battleemotion.BattleEmotionType) *widget.Animation {
-		return f.face[emotion]
+	anim := f.emotion.Apply(func(emotion emotion.BattleEmotionType) *widget.Animation {
+		return f.face[emotion].(*widget.Animation)
 	})
-	animation.Update(f.window.GetPositionCenter())
+	anim.Update(f.window.GetPositionCenter())
 }
 
 func (f *FaceWindow) Draw(drawFunc frontend.DrawFunc) {
@@ -61,6 +100,39 @@ func StandByNewFaceWindow(
 	resource *frontend.ResourceManager,
 	newWindow widget.NewWindowFunc,
 ) NewFaceWindowFunc {
+	return standByNewFaceWindow(
+		resource,
+		func(option *widget.WindowOption) window {
+			return newWindow(option)
+		},
+		func(
+			relativePosition *frontend.Vector,
+			pivot *frontend.Pivot,
+			depth frontend.Depth,
+			texture *ebiten.Image,
+			data *frontend.AnimationData,
+		) animation {
+			return widget.NewAnimation(
+				relativePosition,
+				pivot,
+				depth,
+				texture,
+				data,
+			)
+		},
+		func(initial emotion.BattleEmotionType) emotionQueue {
+			queue := emotion.NewQueued(initial)
+			return &queue
+		},
+	)
+}
+
+func standByNewFaceWindow(
+	resource resourceProvider,
+	newWindow newWindowFunc,
+	newAnimation newAnimationFunc,
+	newEmotionQueue newEmotionQueueFunc,
+) NewFaceWindowFunc {
 	getAllEmotion := createGetAllEmotionFunc()
 	allEmotion := getAllEmotion()
 	return func(
@@ -71,12 +143,12 @@ func StandByNewFaceWindow(
 	) *FaceWindow {
 		const padding = 6
 		const faceSize = 74
-		animationMap := func() map[battleemotion.BattleEmotionType]*widget.Animation {
-			result := map[battleemotion.BattleEmotionType]*widget.Animation{}
+		animationMap := func() map[emotion.BattleEmotionType]animation {
+			result := map[emotion.BattleEmotionType]animation{}
 			for emotion, animationId := range allEmotion[characterId] {
 				animationData := resource.GetAnimationData(animationId)
 				texture := resource.GetTexture(animationData.TextureId)
-				animation := widget.NewAnimation(
+				animation := newAnimation(
 					frontend.VectorZero,
 					frontend.PivotCenter,
 					depth,
@@ -99,30 +171,30 @@ func StandByNewFaceWindow(
 			},
 		)
 		return &FaceWindow{
-			emotion: battleemotion.NewQueued(battleemotion.BattleEmotionNormal),
+			emotion: newEmotionQueue(emotion.BattleEmotionNormal),
 			face:    animationMap,
 			window:  window,
 		}
 	}
 }
 
-type getAllEmotionFunc func() map[character.CharacterId]map[battleemotion.BattleEmotionType]frontend.AnimationId
+type getAllEmotionFunc func() map[character.CharacterId]map[emotion.BattleEmotionType]frontend.AnimationId
 
 func createGetAllEmotionFunc() getAllEmotionFunc {
-	dict := map[character.CharacterId]map[battleemotion.BattleEmotionType]frontend.AnimationId{
+	dict := map[character.CharacterId]map[emotion.BattleEmotionType]frontend.AnimationId{
 		character.CharacterLuneId: {
-			battleemotion.BattleEmotionNormal: frontend.AnimationIdLuneNormal,
-			battleemotion.BattleEmotionDamage: frontend.AnimationIdLuneDamage,
+			emotion.BattleEmotionNormal: frontend.AnimationIdLuneNormal,
+			emotion.BattleEmotionDamage: frontend.AnimationIdLuneDamage,
 		},
 		character.CharacterSunnyId: {
-			battleemotion.BattleEmotionNormal:  frontend.AnimationIdSunnyNormal,
-			battleemotion.BattleEmotionDamage:  frontend.AnimationIdSunnyDamage,
-			battleemotion.BattleEmotionSmile:   frontend.AnimationIdSunnySmile,
-			battleemotion.BattleEmotionAngry:   frontend.AnimationIdSunnyAngry,
-			battleemotion.BattleEmotionAnnoyed: frontend.AnimationIdSunnyAnnoyed,
+			emotion.BattleEmotionNormal:  frontend.AnimationIdSunnyNormal,
+			emotion.BattleEmotionDamage:  frontend.AnimationIdSunnyDamage,
+			emotion.BattleEmotionSmile:   frontend.AnimationIdSunnySmile,
+			emotion.BattleEmotionAngry:   frontend.AnimationIdSunnyAngry,
+			emotion.BattleEmotionAnnoyed: frontend.AnimationIdSunnyAnnoyed,
 		},
 	}
-	return func() map[character.CharacterId]map[battleemotion.BattleEmotionType]frontend.AnimationId {
+	return func() map[character.CharacterId]map[emotion.BattleEmotionType]frontend.AnimationId {
 		return dict
 	}
 }
