@@ -13,6 +13,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
+	battleactor "github.com/asragi/yasoba-prototype/component/battle_actor"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
@@ -78,9 +79,9 @@ func init() {
 		newDisplayDamage,
 	)
 	newHPDisplay := component.CreateNewBattleHPDisplay(frontend.MaruMinya, newText)
-	newParameterDisplay := component.CreateNewBattleParameterDisplay(newWindow, newHPDisplay)
-	newBattleActorDisplay := component.CreateNewBattleActorDisplay(newFaceWindow, newDisplayDamage, newParameterDisplay)
-	newBattleSubActorDisplay := component.CreateNewBattleSubActorDisplay(
+	newParameterDisplay := battleactor.CreateNewBattleParameterDisplay(newWindow, newHPDisplay)
+	newBattleActorDisplay := battleactor.CreateNewBattleActorDisplay(newFaceWindow, newDisplayDamage, newParameterDisplay)
+	newBattleSubActorDisplay := battleactor.CreateNewBattleSubActorDisplay(
 		newFaceWindow,
 		newDisplayDamage,
 		newParameterDisplay,

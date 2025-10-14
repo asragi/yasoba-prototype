@@ -2,6 +2,7 @@ package scene
 
 import (
 	"github.com/asragi/yasoba-prototype/component"
+	battleactor "github.com/asragi/yasoba-prototype/component/battle_actor"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -9,8 +10,8 @@ import (
 type battleUI struct {
 	messageWindow      *component.MessageWindow
 	battleSelectWindow *component.BattleSelectWindow
-	actorDisplay       *component.BattleActorDisplay
-	subActorDisplay    *component.BattleSubActorDisplay
+	actorDisplay       *battleactor.BattleActorDisplay
+	subActorDisplay    *battleactor.BattleSubActorDisplay
 	subActorDialog     *component.BattlePartnerDialogue
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager

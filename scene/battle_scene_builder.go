@@ -7,6 +7,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
+	battleactor "github.com/asragi/yasoba-prototype/component/battle_actor"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
@@ -20,8 +21,8 @@ func InitializeCreateBattleScene(
 	newMessageWindow component.NewMessageWindowFunc,
 	newSelectWindow component.NewSelectWindowFunc,
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
-	newBattleActorDisplay component.NewBattleActorDisplayFunc,
-	newBattleSubActorDisplay component.NewBattleSubActorDisplayFunc,
+	newBattleActorDisplay battleactor.NewBattleActorDisplayFunc,
+	newBattleSubActorDisplay battleactor.NewBattleSubActorDisplayFunc,
 	serveEnemyName enemy.NameServer,
 	initializeBattle battle.InitializeBattleFunc,
 	getBattleSetting config.ServeFunc,
@@ -281,7 +282,7 @@ func createBattleSelectWindow(
 	return battleSelectWindow
 }
 
-func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, actorDisplay *component.BattleActorDisplay, effectManager *widget.EffectManager) func(widget.EffectId, actor.ActorId) {
+func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay, effectManager *widget.EffectManager) func(widget.EffectId, actor.ActorId) {
 	return func(effectId widget.EffectId, target actor.ActorId) {
 		targetActor := serveActor(target)
 		position := func() *frontend.Vector {
@@ -297,7 +298,7 @@ func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay
 	}
 }
 
-func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, shake *frontend.EmitShake) func(actor.ActorId) {
+func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, shake *frontend.EmitShake) func(actor.ActorId) {
 	return func(actorId actor.ActorId) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -316,8 +317,8 @@ func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *c
 func createSetDamageFunction(
 	serveActor actor.ActorSupplier,
 	battleEnemyDisplay *component.BattleEnemyDisplay,
-	subActorDisplay *component.BattleSubActorDisplay,
-	actorDisplay *component.BattleActorDisplay,
+	subActorDisplay *battleactor.BattleSubActorDisplay,
+	actorDisplay *battleactor.BattleActorDisplay,
 	displayedHp map[actor.ActorId]actor.HP,
 ) func(actor.ActorId, battleSkill.Damage, actor.HP) {
 	return func(actorId actor.ActorId, damage battleSkill.Damage, afterHp actor.HP) {
@@ -335,7 +336,7 @@ func createSetDamageFunction(
 	}
 }
 
-func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, actorDisplay *component.BattleActorDisplay) func(actor.ActorId, component.BattleEmotionType) {
+func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay) func(actor.ActorId, component.BattleEmotionType) {
 	return func(actorId actor.ActorId, emotion component.BattleEmotionType) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
