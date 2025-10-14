@@ -1,5 +1,6 @@
-package core
+package skilldata
 
+// SkillId identifies a battle skill.
 type SkillId string
 
 const (
@@ -14,6 +15,7 @@ const (
 	SkillIdNormalTackle       SkillId = "normal-tackle"
 )
 
+// SkillFunctionId classifies skill execution logic.
 type SkillFunctionId string
 
 const (
@@ -21,7 +23,7 @@ const (
 	SkillFunctionIdCombination SkillFunctionId = "combination"
 )
 
-// SkillType represents which function will be used to calculate the damage.
+// SkillType represents damage calculation mode.
 type SkillType int
 
 const (
@@ -29,12 +31,13 @@ const (
 	SkillTypeMagical
 )
 
+// SkillPower is the base strength of a skill row.
 type SkillPower float64
 
-// AttackTargetType is a type that represents how actually targets are selected.
+// AttackTargetType describes actual target application.
 type AttackTargetType int
 
-// SkillSelectTargetType is a type that represents how to select the target of the skill.
+// SkillSelectTargetType describes target selection behaviour.
 type SkillSelectTargetType int
 
 const (
@@ -42,14 +45,16 @@ const (
 	SkillTargetTypeSingleOther
 )
 
+// ServeSkillData retrieves skill data by ID.
 type ServeSkillData func(id SkillId) *SkillData
 
+// NewSkillServer creates a simple in-memory skill repository.
 func NewSkillServer() ServeSkillData {
 	const (
-		FirePower             = 6.0
-		ThunderPower          = 7.5
-		KickPower             = 1.0
-		CombinationEfficiency = 1.5
+		firePower             = 6.0
+		thunderPower          = 7.5
+		kickPower             = 1.0
+		combinationEfficiency = 1.5
 	)
 	dict := map[SkillId]*SkillData{}
 	register := func(id SkillId, targetType SkillSelectTargetType, funcId SkillFunctionId, rows []*SkillDataDetail) {
@@ -62,34 +67,25 @@ func NewSkillServer() ServeSkillData {
 	}
 	register(
 		SkillIdLuneAttack, SkillTargetTypeSingleOther, SkillFunctionIdNormal, []*SkillDataDetail{
-			{
-				Power: 1.0,
-				Type:  SkillTypePhysical,
-			},
+			{Power: 1.0, Type: SkillTypePhysical},
 		},
 	)
 	register(
 		SkillIdLuneFireEnemy, SkillTargetTypeSingleOther, SkillFunctionIdNormal, []*SkillDataDetail{
-			{
-				Power: FirePower,
-				Type:  SkillTypeMagical,
-			},
+			{Power: firePower, Type: SkillTypeMagical},
 		},
 	)
 	register(
 		SkillIdNormalTackle, SkillTargetTypeSingleOther, SkillFunctionIdNormal, []*SkillDataDetail{
-			{
-				Power: 1.0,
-				Type:  SkillTypePhysical,
-			},
+			{Power: 1.0, Type: SkillTypePhysical},
 		},
 	)
 	register(
 		SkillIdCombinationThunder, SkillTargetTypeNone, SkillFunctionIdCombination, []*SkillDataDetail{
 			{
-				Power:    ThunderPower * CombinationEfficiency,
+				Power:    thunderPower * combinationEfficiency,
 				Type:     SkillTypeMagical,
-				SubPower: KickPower * CombinationEfficiency,
+				SubPower: kickPower * combinationEfficiency,
 				SubType:  SkillTypePhysical,
 			},
 		},
@@ -103,6 +99,7 @@ func NewSkillServer() ServeSkillData {
 	}
 }
 
+// SkillDataDetail represents a single row in a skill definition.
 type SkillDataDetail struct {
 	Power            SkillPower
 	Type             SkillType
@@ -112,9 +109,11 @@ type SkillDataDetail struct {
 	SkillFunctionId  SkillFunctionId
 }
 
+// SkillData binds metadata with execution details.
 type SkillData struct {
 	SkillId         SkillId
 	SkillFunctionId SkillFunctionId
 	TargetType      SkillSelectTargetType
 	Rows            []*SkillDataDetail
 }
+

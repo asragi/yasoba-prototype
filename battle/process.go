@@ -6,7 +6,8 @@ import (
 	"github.com/asragi/yasoba-prototype/battle_decision"
 	"github.com/asragi/yasoba-prototype/battle_partner"
 	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/characterdata"
+	"github.com/asragi/yasoba-prototype/enemydata"
 )
 
 // PostCommandRequest captures the player's chosen command.
@@ -67,8 +68,8 @@ func StandByCreateProcessBattle(
 		}
 		mainActorId := initializeBattleResponse.MainActorId
 		subActorId := initializeBattleResponse.SubActorId
-		actorIdToEnemy := func() map[actor.ActorId]core.EnemyId {
-			result := make(map[actor.ActorId]core.EnemyId)
+		actorIdToEnemy := func() map[actor.ActorId]enemydata.EnemyId {
+			result := make(map[actor.ActorId]enemydata.EnemyId)
 			for _, pair := range initializeBattleResponse.EnemyIds {
 				result[pair.ActorId] = pair.EnemyId
 			}
@@ -79,7 +80,7 @@ func StandByCreateProcessBattle(
 			for key, value := range actorIdToEnemy {
 				result[key] = newChoiceAction(battle_decision.EnemyIdToChoiceActionId(value))
 			}
-			result[subActorId] = newChoiceAction(battle_decision.CharacterIdToChoiceActionId(core.CharacterSunnyId))
+			result[subActorId] = newChoiceAction(battle_decision.CharacterIdToChoiceActionId(characterdata.CharacterSunnyId))
 			return result
 		}()
 

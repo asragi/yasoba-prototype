@@ -4,8 +4,10 @@ import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle_skill"
+	"github.com/asragi/yasoba-prototype/battleconfig"
+	"github.com/asragi/yasoba-prototype/battlesetup"
 	"github.com/asragi/yasoba-prototype/component"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/enemydata"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
@@ -15,7 +17,7 @@ import (
 type BattleScene struct {
 	ui                  battleUI
 	battleSequence      *component.BattleEventSequencer
-	enemyData           []*core.EnemyIdPair
+	enemyData           []*battlesetup.EnemyIdPair
 	actorNames          map[actor.ActorId]text.TextId
 	endState            battle.BattleEndType
 	createSequence      sequence.CreateSequence
@@ -82,7 +84,7 @@ type OnEndBattle func(BattleResult)
 
 type BattleOption struct {
 	OnEnd           OnEndBattle
-	BattleSettingId core.BattleSettingId
+	BattleSettingId battleconfig.Id
 	BattleId        battle.BattleId
 }
 
@@ -95,7 +97,7 @@ func createPlayBattleSequence(
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleSequence component.NewBattleSequenceFunc,
 	addBattleSequence func(component.BattleSequenceFunc),
-	actorIdToEnemy map[actor.ActorId]core.EnemyId,
+	actorIdToEnemy map[actor.ActorId]enemydata.EnemyId,
 	serveEnemyView component.ServeEnemyViewData,
 ) playBattleSequenceFunc {
 	return func(skillApplyResultSet []*battle_skill.SkillApplyResult) {

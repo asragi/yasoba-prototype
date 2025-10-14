@@ -1,7 +1,7 @@
 package component
 
 import (
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/characterdata"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -16,7 +16,7 @@ type NewFaceWindowFunc func(
 	*frontend.Vector,
 	frontend.Depth,
 	*frontend.Pivot,
-	core.CharacterId,
+	characterdata.CharacterId,
 ) *FaceWindow
 
 func (f *FaceWindow) getCurrentAnimation() *widget.Animation {
@@ -66,7 +66,7 @@ func StandByNewFaceWindow(
 		relativePosition *frontend.Vector,
 		depth frontend.Depth,
 		pivot *frontend.Pivot,
-		characterId core.CharacterId,
+		characterId characterdata.CharacterId,
 	) *FaceWindow {
 		const padding = 6
 		const faceSize = 74
@@ -115,15 +115,15 @@ const (
 	BattleEmotionAnnoyed
 )
 
-type getAllEmotionFunc func() map[core.CharacterId]map[BattleEmotionType]frontend.AnimationId
+type getAllEmotionFunc func() map[characterdata.CharacterId]map[BattleEmotionType]frontend.AnimationId
 
 func createGetAllEmotionFunc() getAllEmotionFunc {
-	dict := map[core.CharacterId]map[BattleEmotionType]frontend.AnimationId{
-		core.CharacterLuneId: {
+	dict := map[characterdata.CharacterId]map[BattleEmotionType]frontend.AnimationId{
+		characterdata.CharacterLuneId: {
 			BattleEmotionNormal: frontend.AnimationIdLuneNormal,
 			BattleEmotionDamage: frontend.AnimationIdLuneDamage,
 		},
-		core.CharacterSunnyId: {
+		characterdata.CharacterSunnyId: {
 			BattleEmotionNormal:  frontend.AnimationIdSunnyNormal,
 			BattleEmotionDamage:  frontend.AnimationIdSunnyDamage,
 			BattleEmotionSmile:   frontend.AnimationIdSunnySmile,
@@ -131,7 +131,7 @@ func createGetAllEmotionFunc() getAllEmotionFunc {
 			BattleEmotionAnnoyed: frontend.AnimationIdSunnyAnnoyed,
 		},
 	}
-	return func() map[core.CharacterId]map[BattleEmotionType]frontend.AnimationId {
+	return func() map[characterdata.CharacterId]map[BattleEmotionType]frontend.AnimationId {
 		return dict
 	}
 }

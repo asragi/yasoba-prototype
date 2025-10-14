@@ -3,7 +3,7 @@ package component
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/characterdata"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -63,7 +63,7 @@ func CreateNewBattleActorDisplay(
 				&frontend.Vector{X: 0, Y: -parameter.GetHeight()},
 				frontend.DepthPlayer,
 				frontend.PivotBottomLeft,
-				core.CharacterLuneId,
+				characterdata.CharacterLuneId,
 			),
 			displayDamage:    newDisplayDamage(),
 			parameterDisplay: parameter,
@@ -93,7 +93,7 @@ func CreateNewBattleSubActorDisplay(
 				&frontend.Vector{X: 0, Y: -height},
 				frontend.DepthPlayer,
 				frontend.PivotBottomRight,
-				core.CharacterSunnyId,
+				characterdata.CharacterSunnyId,
 			),
 			displayDamage:    newDisplayDamage(),
 			parameterDisplay: parameterDisplay,

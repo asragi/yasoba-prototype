@@ -1,22 +1,25 @@
 package component
 
 import (
-	"github.com/asragi/yasoba-prototype/core"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"testing"
+
+	"github.com/asragi/yasoba-prototype/battleconfig"
+	"github.com/asragi/yasoba-prototype/battlesetup"
+	"github.com/asragi/yasoba-prototype/enemydata"
+	"github.com/asragi/yasoba-prototype/frontend"
 )
 
 func TestToDisplayArgs(t *testing.T) {
 	type testCase struct {
-		enemyIdPair   []*core.EnemyIdPair
-		enemySettings []*core.EnemySetting
+		enemyIdPair   []*battlesetup.EnemyIdPair
+		enemySettings []*battleconfig.EnemySetting
 		expect        []*BattleDisplayArgs
 	}
-	enemyId := core.EnemyId("enemy_id")
-	anotherEnemyId := core.EnemyId("another_enemy_id")
+	enemyId := enemydata.EnemyId("enemy_id")
+	anotherEnemyId := enemydata.EnemyId("another_enemy_id")
 	testCases := []testCase{
 		{
-			enemyIdPair: []*core.EnemyIdPair{
+			enemyIdPair: []*battlesetup.EnemyIdPair{
 				{
 					EnemyId: enemyId,
 					ActorId: "actor1",
@@ -30,7 +33,7 @@ func TestToDisplayArgs(t *testing.T) {
 					ActorId: "actor3",
 				},
 			},
-			enemySettings: []*core.EnemySetting{
+			enemySettings: []*battleconfig.EnemySetting{
 				{
 					EnemyId:  enemyId,
 					Position: &frontend.Vector{X: 1, Y: 2},

@@ -4,12 +4,12 @@ import (
 	"math"
 
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/skilldata"
 	"github.com/asragi/yasoba-prototype/util"
 )
 
-func decideAttackValue(atk actor.ATK, mag actor.MAG, skillType core.SkillType) attackValue {
-	if skillType == core.SkillTypePhysical {
+func decideAttackValue(atk actor.ATK, mag actor.MAG, skillType skilldata.SkillType) attackValue {
+	if skillType == skilldata.SkillTypePhysical {
 		return attackValue(atk)
 	}
 	return attackValue(mag)
@@ -22,15 +22,15 @@ type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
 
 // CreateSkillApply creates a SkillApplyFunc given repositories and RNG.
 func CreateSkillApply(
-	skillServer core.ServeSkillData,
+	skillServer skilldata.ServeSkillData,
 	supplyActor actor.ActorSupplier,
 	updateActor actor.UpdateActorFunc,
 	random util.EmitRandomFunc,
 ) SkillApplyFunc {
 	applyAttack := func(
 		args *SelectedAction,
-		decidePower func(*core.SkillDataDetail) attackPower,
-		decideAttack func(*core.SkillDataDetail) attackValue,
+		decidePower func(*skilldata.SkillDataDetail) attackPower,
+		decideAttack func(*skilldata.SkillDataDetail) attackValue,
 	) *SkillApplyResult {
 		result := make([]*SkillApplyResultRow, 0)
 		data := skillServer(args.Id)
@@ -74,11 +74,11 @@ func CreateSkillApply(
 		mainActor := supplyActor(actorId)
 		return applyAttack(
 			args,
-			func(row *core.SkillDataDetail) attackPower {
+			func(row *skilldata.SkillDataDetail) attackPower {
 				attack := decideAttackValue(mainActor.ATK, mainActor.MAG, row.Type)
 				return calculateNormalAttackPower(attack, row.Power)
 			},
-			func(row *core.SkillDataDetail) attackValue {
+			func(row *skilldata.SkillDataDetail) attackValue {
 				return decideAttackValue(mainActor.ATK, mainActor.MAG, row.Type)
 			},
 		)
@@ -88,7 +88,7 @@ func CreateSkillApply(
 		subActor := supplyActor(args.SubActor)
 		return applyAttack(
 			args,
-			func(row *core.SkillDataDetail) attackPower {
+			func(row *skilldata.SkillDataDetail) attackPower {
 				return calculateCombinationAttackPower(
 					mainActor.ATK,
 					mainActor.MAG,
@@ -100,7 +100,7 @@ func CreateSkillApply(
 					row.SubType,
 				)
 			},
-			func(row *core.SkillDataDetail) attackValue {
+			func(row *skilldata.SkillDataDetail) attackValue {
 				return decideAttackValue(mainActor.ATK, mainActor.MAG, row.Type)
 			},
 		)
@@ -108,7 +108,7 @@ func CreateSkillApply(
 
 	return func(args *SelectedAction) *SkillApplyResult {
 		skill := skillServer(args.Id)
-		if skill.SkillFunctionId == core.SkillFunctionIdCombination {
+		if skill.SkillFunctionId == skilldata.SkillFunctionIdCombination {
 			return combinationAttack(args)
 		}
 		return normalAttack(args)
@@ -127,7 +127,7 @@ const attackPowerBase = 7.0
 
 func calculateNormalAttackPower(
 	attackValue attackValue,
-	power core.SkillPower,
+	power skilldata.SkillPower,
 ) attackPower {
 	return attackPower(
 		float64(power) * attackPowerBase *
@@ -141,10 +141,10 @@ func calculateCombinationAttackPower(
 	attackerMAG actor.MAG,
 	subAttackerATK actor.ATK,
 	subAttackerMAG actor.MAG,
-	power core.SkillPower,
-	subPower core.SkillPower,
-	attackType core.SkillType,
-	subAttackType core.SkillType,
+	power skilldata.SkillPower,
+	subPower skilldata.SkillPower,
+	attackType skilldata.SkillType,
+	subAttackType skilldata.SkillType,
 ) attackPower {
 	mainAttackValue := decideAttackValue(attackerATK, attackerMAG, attackType)
 	subAttackValue := decideAttackValue(subAttackerATK, subAttackerMAG, subAttackType)
@@ -160,11 +160,11 @@ func calculateNormalAttackDamage(
 	attackPower attackPower,
 	defenderDEF actor.DEF,
 	defenderMAG actor.MAG,
-	attackType core.SkillType,
+	attackType skilldata.SkillType,
 	randomDamage randomDamage,
 ) Damage {
 	defenderValue := func() float64 {
-		if attackType == core.SkillTypePhysical {
+		if attackType == skilldata.SkillTypePhysical {
 			return float64(defenderDEF)
 		}
 		return float64(defenderMAG)

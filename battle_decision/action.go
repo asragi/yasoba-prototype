@@ -2,13 +2,15 @@ package battle_decision
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/characterdata"
+	"github.com/asragi/yasoba-prototype/enemydata"
+	"github.com/asragi/yasoba-prototype/skilldata"
 	"github.com/asragi/yasoba-prototype/util"
 )
 
 // BattleAction describes an auto-selected battle action.
 type BattleAction struct {
-	SelectedSkill  core.SkillId
+	SelectedSkill  skilldata.SkillId
 	TargetActorIds []actor.ActorId
 }
 
@@ -16,17 +18,17 @@ type BattleAction struct {
 type DecideActionFunc func(*actor.Actor, *BattleState) *BattleAction
 
 // NewChoiceRandomActionFunc prepares a random action selector given skill IDs.
-type NewChoiceRandomActionFunc func([]core.SkillId) DecideActionFunc
+type NewChoiceRandomActionFunc func([]skilldata.SkillId) DecideActionFunc
 
 // StandByCreateRandomAction prepares a function that picks random skills.
 func StandByCreateRandomAction(
 	getRandom util.EmitRandomFunc,
-	serveSkillData core.ServeSkillData,
+	serveSkillData skilldata.ServeSkillData,
 	choiceSkillTarget ChoiceSkillTargetFunc,
 ) NewChoiceRandomActionFunc {
-	return func(skillIds []core.SkillId) DecideActionFunc {
-		skills := func() []*core.SkillData {
-			var result []*core.SkillData
+	return func(skillIds []skilldata.SkillId) DecideActionFunc {
+		skills := func() []*skilldata.SkillData {
+			var result []*skilldata.SkillData
 			for _, id := range skillIds {
 				result = append(result, serveSkillData(id))
 			}
@@ -47,7 +49,7 @@ func StandByCreateRandomAction(
 
 // ChoiceSkillTargetFunc selects targets for a skill.
 type ChoiceSkillTargetFunc func(
-	skill *core.SkillData,
+	skill *skilldata.SkillData,
 	actionActor *actor.Actor,
 	state *BattleState,
 ) []actor.ActorId
@@ -71,11 +73,11 @@ func CreateChoiceSkillTarget(getRandom util.EmitRandomFunc) ChoiceSkillTargetFun
 		return possibleActors[targetIndex]
 	}
 	return func(
-		skill *core.SkillData,
+		skill *skilldata.SkillData,
 		actionActor *actor.Actor,
 		state *BattleState,
 	) []actor.ActorId {
-		if skill.TargetType == core.SkillTargetTypeSingleOther {
+		if skill.TargetType == skilldata.SkillTargetTypeSingleOther {
 			target := choiceSingleTarget(actionActor, state)
 			return []actor.ActorId{target.Id}
 		}
@@ -89,8 +91,8 @@ type NewChoiceActionFunc func(ChoiceActionId) DecideActionFunc
 // CreateNewChoiceAction links choice IDs to specific random action factories.
 func CreateNewChoiceAction(newChoiceRandomAction NewChoiceRandomActionFunc) NewChoiceActionFunc {
 	dict := map[ChoiceActionId]DecideActionFunc{
-		CharacterIdToChoiceActionId(core.CharacterSunnyId): newChoiceRandomAction([]core.SkillId{core.SkillIdNormalTackle}),
-		EnemyIdToChoiceActionId(core.EnemyPunchingBagId):   newChoiceRandomAction([]core.SkillId{core.SkillIdNormalTackle}),
+		CharacterIdToChoiceActionId(characterdata.CharacterSunnyId): newChoiceRandomAction([]skilldata.SkillId{skilldata.SkillIdNormalTackle}),
+		EnemyIdToChoiceActionId(enemydata.EnemyPunchingBagId):       newChoiceRandomAction([]skilldata.SkillId{skilldata.SkillIdNormalTackle}),
 	}
 	return func(id ChoiceActionId) DecideActionFunc {
 		return dict[id]

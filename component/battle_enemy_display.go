@@ -3,7 +3,9 @@ package component
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/battleconfig"
+	"github.com/asragi/yasoba-prototype/battlesetup"
+	"github.com/asragi/yasoba-prototype/enemydata"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
 
@@ -69,24 +71,24 @@ func (d *BattleEnemyDisplay) Draw(drawFunc frontend.DrawFunc) {
 
 type BattleDisplayArgs struct {
 	ActorId  actor.ActorId
-	EnemyId  core.EnemyId
+	EnemyId  enemydata.EnemyId
 	Position *frontend.Vector
 }
 
 func ToDisplayArgs(
-	enemyIdPair []*core.EnemyIdPair,
-	enemySettings []*core.EnemySetting,
+	enemyIdPair []*battlesetup.EnemyIdPair,
+	enemySettings []*battleconfig.EnemySetting,
 ) []*BattleDisplayArgs {
-	enemySettingMap := func() map[core.EnemyId][]*core.EnemySetting {
-		result := make(map[core.EnemyId][]*core.EnemySetting)
+	enemySettingMap := func() map[enemydata.EnemyId][]*battleconfig.EnemySetting {
+		result := make(map[enemydata.EnemyId][]*battleconfig.EnemySetting)
 		for _, setting := range enemySettings {
 			result[setting.EnemyId] = append(result[setting.EnemyId], setting)
 		}
 		return result
 	}()
 	result := make([]*BattleDisplayArgs, len(enemyIdPair))
-	enemyIndex := func() map[core.EnemyId]int {
-		result := make(map[core.EnemyId]int)
+	enemyIndex := func() map[enemydata.EnemyId]int {
+		result := make(map[enemydata.EnemyId]int)
 		for _, pair := range enemyIdPair {
 			result[pair.EnemyId] = 0
 		}

@@ -3,22 +3,22 @@ package battle_partner
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle_decision"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/skilldata"
 	"github.com/asragi/yasoba-prototype/util"
 )
 
 // PartnerActionPlan describes the partner's planned action.
 type PartnerActionPlan struct {
-	SkillId        core.SkillId
+	SkillId        skilldata.SkillId
 	SelectedTarget actor.ActorId
 }
 
 type decidePartnerPlanFunc func()
 
 func createDecidePartnerAction(random util.EmitRandomFunc, state *battle_decision.BattleState) *PartnerActionPlan {
-	skillList := []core.SkillId{
-		core.SkillIdSunnyKick,
-		core.SkillIdSunnyUppercut,
+	skillList := []skilldata.SkillId{
+		skilldata.SkillIdSunnyKick,
+		skilldata.SkillIdSunnyUppercut,
 	}
 	target := func(enemies []*actor.Actor) actor.ActorId {
 		return enemies[0].Id

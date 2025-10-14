@@ -2,7 +2,7 @@ package component
 
 import (
 	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/enemydata"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -81,7 +81,7 @@ type NewBattleEnemyGraphicsFunc func(
 	*frontend.Vector,
 	*frontend.Pivot,
 	frontend.Depth,
-	core.EnemyId,
+	enemydata.EnemyId,
 ) BattleEnemyGraphicsInterface
 
 func NewBattleActorGraphics(
@@ -93,7 +93,7 @@ func NewBattleActorGraphics(
 		relativePosition *frontend.Vector,
 		pivot *frontend.Pivot,
 		depth frontend.Depth,
-		enemyId core.EnemyId,
+		enemyId enemydata.EnemyId,
 	) BattleEnemyGraphicsInterface {
 		enemyGraphicsData := getEnemyGraphics(enemyId)
 		animations := func() map[BattleEmotionType]*widget.Animation {
@@ -129,11 +129,11 @@ type BattleActorAnimationSet struct {
 	animation frontend.AnimationId
 }
 
-type GetEnemyGraphicsFunc func(core.EnemyId) []*BattleActorAnimationSet
+type GetEnemyGraphicsFunc func(enemydata.EnemyId) []*BattleActorAnimationSet
 
 func CreateGetEnemyGraphics() GetEnemyGraphicsFunc {
-	dict := map[core.EnemyId][]*BattleActorAnimationSet{
-		core.EnemyPunchingBagId: {
+	dict := map[enemydata.EnemyId][]*BattleActorAnimationSet{
+		enemydata.EnemyPunchingBagId: {
 			{
 				emotion:   BattleEmotionNormal,
 				texture:   frontend.TextureMarshmallowNormal,
@@ -146,7 +146,7 @@ func CreateGetEnemyGraphics() GetEnemyGraphicsFunc {
 			},
 		},
 	}
-	return func(enemyId core.EnemyId) []*BattleActorAnimationSet {
+	return func(enemyId enemydata.EnemyId) []*BattleActorAnimationSet {
 		return dict[enemyId]
 	}
 }

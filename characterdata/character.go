@@ -1,4 +1,4 @@
-package core
+package characterdata
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"

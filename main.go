@@ -10,13 +10,17 @@ import (
 	"github.com/asragi/yasoba-prototype/battle_decision"
 	"github.com/asragi/yasoba-prototype/battle_partner"
 	"github.com/asragi/yasoba-prototype/battle_skill"
+	"github.com/asragi/yasoba-prototype/battleconfig"
+	"github.com/asragi/yasoba-prototype/battlesetup"
+	"github.com/asragi/yasoba-prototype/characterdata"
 	"github.com/asragi/yasoba-prototype/component"
-	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/debug"
+	"github.com/asragi/yasoba-prototype/enemydata"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
+	"github.com/asragi/yasoba-prototype/skilldata"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -47,9 +51,9 @@ func init() {
 		log.Fatal(err)
 	}
 	produceCreateSequence := prepareProduceCreateSequence(textServer)
-	characterServer := core.CreateCharacterServer()
-	enemyServer := core.CreateEnemyServer()
-	prepareActor := core.CreatePrepareActorService(characterServer, enemyServer, actorServer)
+	characterServer := characterdata.CreateCharacterServer()
+	enemyServer := enemydata.CreateEnemyServer()
+	prepareActor := battlesetup.NewPrepareService(characterServer, enemyServer, actorServer)
 	processCommand := battle.CreateProcessPlayerCommand(actorServer.Get)
 	newWindow := widget.CreateNewWindow(resource, GameWidth, GameHeight)
 	newText := widget.CreateNewText(resource)
@@ -57,8 +61,8 @@ func init() {
 	newSelectWindow := component.StandByNewSelectWindow(resource, newText, textServer)
 	newBattleSelectWindow := component.StandByNewBattleSelectWindow(newSelectWindow)
 	newFaceWindow := component.StandByNewFaceWindow(resource, newWindow)
-	battleSettingServer := core.CreateServeBattleSetting()
-	skillServer := core.NewSkillServer()
+	battleSettingServer := battleconfig.NewServer()
+	skillServer := skilldata.NewSkillServer()
 	random := rand.Float64
 	applySkill := battle_skill.CreateSkillApply(skillServer, actorServer.Get, actorServer.Upsert, random)
 	battleSequenceServer := component.CreateServeBattleEventSequence()
@@ -116,7 +120,7 @@ func init() {
 		newBattleSelectWindow,
 		newBattleActorDisplay,
 		newBattleSubActorDisplay,
-		core.CreateEnemyNameServer(),
+		enemydata.CreateNameServer(),
 		initializeBattle,
 		battleSettingServer,
 		prepareBattleSequence,
@@ -133,9 +137,9 @@ func init() {
 	battleScene = newBattleScene(
 		&scene.BattleOption{
 			OnEnd:           nil,
-			BattleSettingId: core.BattleSettingTest,
+			BattleSettingId: battleconfig.IdTest,
 			BattleId:        battle.BattleIdTest001,
-			//BattleSettingId: core.BattleSettingTripleTest,
+			//BattleSettingId: battleconfig.IdTripleTest,
 		},
 	)
 	debugParams = debug.CreateDrawParameters(newText)

@@ -1,36 +1,38 @@
-package core
+package battlesetup
 
 import (
 	"fmt"
 
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/characterdata"
+	"github.com/asragi/yasoba-prototype/enemydata"
 )
 
-type PrepareActorArgs struct {
-	MainActorCharacterId CharacterId
-	SubActorCharacterId  CharacterId
-	EnemyIds             []EnemyId
+type PrepareArgs struct {
+	MainActorCharacterId characterdata.CharacterId
+	SubActorCharacterId  characterdata.CharacterId
+	EnemyIds             []enemydata.EnemyId
 }
 
 type EnemyIdPair struct {
-	EnemyId EnemyId
+	EnemyId enemydata.EnemyId
 	ActorId actor.ActorId
 }
 
-type PrepareActorResult struct {
+type PrepareResult struct {
 	MainActorId actor.ActorId
 	SubActorId  actor.ActorId
 	EnemyIds    []*EnemyIdPair
 }
 
-type PrepareActorService func(*PrepareActorArgs) *PrepareActorResult
+type Service func(*PrepareArgs) *PrepareResult
 
 type actorInserter interface {
 	ClearAll()
-	Upsert(actor *actor.Actor)
+	Upsert(*actor.Actor)
 }
 
-func characterToActor(character *CharacterData, id actor.ActorId) *actor.Actor {
+func characterToActor(character *characterdata.CharacterData, id actor.ActorId) *actor.Actor {
 	return &actor.Actor{
 		Id:    id,
 		MaxHP: character.MaxHP,
@@ -43,7 +45,7 @@ func characterToActor(character *CharacterData, id actor.ActorId) *actor.Actor {
 	}
 }
 
-func enemyToActor(enemy *EnemyData, id actor.ActorId) *actor.Actor {
+func enemyToActor(enemy *enemydata.EnemyData, id actor.ActorId) *actor.Actor {
 	return &actor.Actor{
 		Id:    id,
 		MaxHP: enemy.MaxHP,
@@ -56,21 +58,21 @@ func enemyToActor(enemy *EnemyData, id actor.ActorId) *actor.Actor {
 	}
 }
 
-func CreatePrepareActorService(
-	serveCharacter ServeCharacterFunc,
-	serveEnemy ServeEnemyData,
+func NewPrepareService(
+	serveCharacter characterdata.ServeCharacterFunc,
+	serveEnemy enemydata.ServeEnemyData,
 	actorServer actorInserter,
-) PrepareActorService {
-	const MainActorId = actor.ActorLuneId
-	const SubActorId = actor.ActorSunnyId
-	return func(args *PrepareActorArgs) *PrepareActorResult {
+) Service {
+	const mainActorId = actor.ActorLuneId
+	const subActorId = actor.ActorSunnyId
+	return func(args *PrepareArgs) *PrepareResult {
 		actorServer.ClearAll()
 		mainCharacter := serveCharacter(args.MainActorCharacterId)
-		mainActor := characterToActor(mainCharacter, MainActorId)
+		mainActor := characterToActor(mainCharacter, mainActorId)
 		actorServer.Upsert(mainActor)
-		if args.SubActorCharacterId != CharacterEmptyId {
+		if args.SubActorCharacterId != characterdata.CharacterEmptyId {
 			subCharacter := serveCharacter(args.SubActorCharacterId)
-			subActor := characterToActor(subCharacter, SubActorId)
+			subActor := characterToActor(subCharacter, subActorId)
 			actorServer.Upsert(subActor)
 		}
 		result := make([]*EnemyIdPair, len(args.EnemyIds))
@@ -84,9 +86,9 @@ func CreatePrepareActorService(
 			actorServer.Upsert(enemyToActor(enemyData, actorId))
 		}
 
-		return &PrepareActorResult{
-			MainActorId: MainActorId,
-			SubActorId:  SubActorId,
+		return &PrepareResult{
+			MainActorId: mainActorId,
+			SubActorId:  subActorId,
 			EnemyIds:    result,
 		}
 	}

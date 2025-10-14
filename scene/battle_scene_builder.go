@@ -4,8 +4,11 @@ import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle_skill"
+	"github.com/asragi/yasoba-prototype/battleconfig"
+	"github.com/asragi/yasoba-prototype/battlesetup"
+	"github.com/asragi/yasoba-prototype/characterdata"
 	"github.com/asragi/yasoba-prototype/component"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/enemydata"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
@@ -19,9 +22,9 @@ func InitializeCreateBattleScene(
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
 	newBattleActorDisplay component.NewBattleActorDisplayFunc,
 	newBattleSubActorDisplay component.NewBattleSubActorDisplayFunc,
-	serveEnemyName core.EnemyNameServer,
+	serveEnemyName enemydata.NameServer,
 	initializeBattle battle.InitializeBattleFunc,
-	getBattleSetting core.ServeBattleSetting,
+	getBattleSetting battleconfig.ServeFunc,
 	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc,
@@ -41,8 +44,8 @@ func InitializeCreateBattleScene(
 		// 戦闘の初期化
 		initializeRequest := &battle.InitializeBattleRequest{
 			// TODO: variables must be provided by args
-			MainActorCharacterId: core.CharacterLuneId,
-			SubActorCharacterId:  core.CharacterSunnyId,
+			MainActorCharacterId: characterdata.CharacterLuneId,
+			SubActorCharacterId:  characterdata.CharacterSunnyId,
 			EnemyIds:             enemyIds,
 		}
 		battleResponse := initializeBattle(initializeRequest)
@@ -186,23 +189,23 @@ func InitializeCreateBattleScene(
 	}
 }
 
-func extractEnemyIds(battleSetting *core.BattleSetting) []core.EnemyId {
-	ids := make([]core.EnemyId, len(battleSetting.Enemies))
+func extractEnemyIds(battleSetting *battleconfig.Setting) []enemydata.EnemyId {
+	ids := make([]enemydata.EnemyId, len(battleSetting.Enemies))
 	for i, set := range battleSetting.Enemies {
 		ids[i] = set.EnemyId
 	}
 	return ids
 }
 
-func createActorIdToEnemyMapping(enemyIds []*core.EnemyIdPair) map[actor.ActorId]core.EnemyId {
-	result := make(map[actor.ActorId]core.EnemyId)
+func createActorIdToEnemyMapping(enemyIds []*battlesetup.EnemyIdPair) map[actor.ActorId]enemydata.EnemyId {
+	result := make(map[actor.ActorId]enemydata.EnemyId)
 	for _, pair := range enemyIds {
 		result[pair.ActorId] = pair.EnemyId
 	}
 	return result
 }
 
-func createActorNamesMapping(enemyIds []*core.EnemyIdPair, serveEnemyName core.EnemyNameServer) map[actor.ActorId]text.TextId {
+func createActorNamesMapping(enemyIds []*battlesetup.EnemyIdPair, serveEnemyName enemydata.NameServer) map[actor.ActorId]text.TextId {
 	names := make(map[actor.ActorId]text.TextId)
 	names[actor.ActorLuneId] = text.TextIdLuneName
 	names[actor.ActorSunnyId] = text.TextIdSunnyName
@@ -245,7 +248,7 @@ func createMessageWindow(newMessageWindow component.NewMessageWindowFunc) *compo
 	return messageWindow
 }
 
-func createBattleEnemyDisplay(newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc, enemyIds []*core.EnemyIdPair, enemySettings []*core.EnemySetting) *component.BattleEnemyDisplay {
+func createBattleEnemyDisplay(newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc, enemyIds []*battlesetup.EnemyIdPair, enemySettings []*battleconfig.EnemySetting) *component.BattleEnemyDisplay {
 	displayArgs := component.ToDisplayArgs(enemyIds, enemySettings)
 	return newBattleEnemyDisplay(
 		displayArgs,

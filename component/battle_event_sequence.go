@@ -5,7 +5,7 @@ import (
 
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/skilldata"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -29,15 +29,15 @@ type DisplayDamageFunc func(actor.ActorId, battle_skill.Damage, actor.HP)
 type PlayEffect func(widget.EffectId, actor.ActorId)
 type SetDisappear func(actor.ActorId)
 
-type SkillToSequenceFunc func(core.SkillId) EventSequenceId
+type SkillToSequenceFunc func(skilldata.SkillId) EventSequenceId
 
-func ToEventSequenceId(skillId core.SkillId) EventSequenceId {
+func ToEventSequenceId(skillId skilldata.SkillId) EventSequenceId {
 	return EventSequenceId(skillId)
 }
 
 func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	dict := map[EventSequenceId]*BattleEventSequence{}
-	register := func(id core.SkillId, rows []BattleEventRow) {
+	register := func(id skilldata.SkillId, rows []BattleEventRow) {
 		eventId := ToEventSequenceId(id)
 		dict[eventId] = &BattleEventSequence{
 			Id:   eventId,
@@ -68,8 +68,8 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			EmotionType: BattleEmotionNormal,
 		},
 	}
-	register(core.SkillIdLuneAttack, normalAttack)
-	register(core.SkillIdNormalTackle, normalAttack)
+	register(skilldata.SkillIdLuneAttack, normalAttack)
+	register(skilldata.SkillIdNormalTackle, normalAttack)
 	luneFire := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
@@ -94,7 +94,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			EmotionType: BattleEmotionNormal,
 		},
 	}
-	register(core.SkillIdLuneFireEnemy, luneFire)
+	register(skilldata.SkillIdLuneFireEnemy, luneFire)
 	combinationThunder := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
@@ -119,7 +119,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			EmotionType: BattleEmotionNormal,
 		},
 	}
-	register(core.SkillIdCombinationThunder, combinationThunder)
+	register(skilldata.SkillIdCombinationThunder, combinationThunder)
 	punchingBagBeaten := []BattleEventRow{
 		&ChangeEmotionEvent{
 			Frame:       1,

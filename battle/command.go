@@ -3,7 +3,7 @@ package battle
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/skilldata"
 	textpkg "github.com/asragi/yasoba-prototype/text"
 )
 
@@ -59,19 +59,19 @@ func CreateProcessPlayerCommand(supplyActor actor.ActorSupplier) ProcessPlayerCo
 		return target.Side == actor.ActorSideEnemy
 	}
 	return func(command *PostCommandRequest) *BattlePlayerCommandResult {
-		decidedSkillId := func() core.SkillId {
+		decidedSkillId := func() skilldata.SkillId {
 			if isToEnemy(command.TargetId) {
 				switch command.Command {
 				case PlayerCommandAttack:
-					return core.SkillIdLuneAttack
+					return skilldata.SkillIdLuneAttack
 				case PlayerCommandFire:
-					return core.SkillIdLuneFireEnemy
+					return skilldata.SkillIdLuneFireEnemy
 				default:
 					panic("not implemented")
 				}
 			}
 			// TODO: implement friendly-target commands
-			return core.SkillIdLuneAttack
+			return skilldata.SkillIdLuneAttack
 		}()
 		return &BattlePlayerCommandResult{
 			SkillApplyArgs: &battle_skill.SelectedAction{
