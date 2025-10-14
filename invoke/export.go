@@ -1,12 +1,12 @@
 package invoke
 
-import "github.com/asragi/yasoba-prototype/core"
+import "github.com/asragi/yasoba-prototype/battle"
 
 type GetActorHpRatio = getActorHpRatio
 type CheckInvokeSequence = checkEventInvoke
 
 type ProduceCheckInvokeSequence func(
-	core.BattleId,
+	battle.BattleId,
 	GetActorHpRatio,
 ) CheckInvokeSequence
 
@@ -26,7 +26,7 @@ func InitializeProduceCheckInvokeSequence() ProduceCheckInvokeSequence {
 	)
 	produceCheckActorCondition := initializeCheckActorCondition(conditionActorHpDataPort)
 	return func(
-		battleId core.BattleId,
+		battleId battle.BattleId,
 		getActorHpRatio GetActorHpRatio,
 	) CheckInvokeSequence {
 		checkActorCondition := produceCheckActorCondition(getActorHpRatio)

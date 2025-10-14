@@ -87,7 +87,11 @@ type BattleAction struct {
 
 type ServeBattleState func() *BattleState
 
-func CreateServeBattleState(supplyActor AllActorServer) ServeBattleState {
+type allActorServer interface {
+	GetAllActor() []*actor.Actor
+}
+
+func CreateServeBattleState(supplyActor allActorServer) ServeBattleState {
 	return func() *BattleState {
 		actors := supplyActor.GetAllActor()
 		return &BattleState{

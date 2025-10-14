@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"gopkg.in/yaml.v3"
 )
@@ -97,7 +97,7 @@ func createBattleSequenceRelationDataPortFromYAML(path string) battleSequenceRel
 		result := make([]*battleSequenceRelation, 0, len(yamlData.Relations))
 		for _, row := range yamlData.Relations {
 			result = append(result, &battleSequenceRelation{
-				ownerId:    core.BattleId(row.BattleId),
+				ownerId:    battle.BattleId(row.BattleId),
 				sequenceId: sequence.SequenceId(row.SequenceId),
 			})
 		}

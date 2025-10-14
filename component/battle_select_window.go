@@ -1,6 +1,7 @@
 package component
 
 import (
+	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
@@ -8,8 +9,8 @@ import (
 type BattleCommand int
 
 type BattleSelectWindow struct {
-	commands     []core.PlayerCommand
-	onSubmit     func(core.PlayerCommand)
+	commands     []battle.PlayerCommand
+	onSubmit     func(battle.PlayerCommand)
 	selectWindow *SelectWindow
 }
 
@@ -56,8 +57,8 @@ type NewBattleSelectWindowFunc func(
 	*frontend.Vector,
 	*frontend.Pivot,
 	frontend.Depth,
-	[]core.PlayerCommand,
-	func(core.PlayerCommand),
+	[]battle.PlayerCommand,
+	func(battle.PlayerCommand),
 ) *BattleSelectWindow
 
 func StandByNewBattleSelectWindow(
@@ -67,8 +68,8 @@ func StandByNewBattleSelectWindow(
 		relativePosition *frontend.Vector,
 		pivot *frontend.Pivot,
 		depth frontend.Depth,
-		commands []core.PlayerCommand,
-		onSubmit func(core.PlayerCommand),
+		commands []battle.PlayerCommand,
+		onSubmit func(battle.PlayerCommand),
 	) *BattleSelectWindow {
 		onSubmitIndex := func(index int) {
 			onSubmit(commands[index])

@@ -2,6 +2,7 @@ package scene
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
@@ -19,7 +20,7 @@ type BattleScene struct {
 	sequences           *sequence.SequenceManager
 	checkInvokeSequence invoke.CheckInvokeSequence
 	invokedSequences    map[sequence.SequenceId]bool
-	turnCount           core.TurnCount
+	turnCount           battle.TurnCount
 }
 
 func (s *BattleScene) onTurnEnd() {
@@ -80,7 +81,7 @@ type OnEndBattle func(BattleResult)
 type BattleOption struct {
 	OnEnd           OnEndBattle
 	BattleSettingId core.BattleSettingId
-	BattleId        core.BattleId
+	BattleId        battle.BattleId
 }
 
 type CreateBattleScene func(*BattleOption) *BattleScene
@@ -154,17 +155,17 @@ func createPlayBattleSequence(
 func createOnTargetSelect(
 	closeWindow func(),
 	indexToActor func(int) actor.ActorId,
-	serveSelectedCommand func() core.PlayerCommand,
+	serveSelectedCommand func() battle.PlayerCommand,
 	resetBattleSequence func(),
 	playSequence func([]*core.SkillApplyResult),
-	processBattle core.ProcessBattleFunc,
+	processBattle battle.ProcessBattleFunc,
 ) func(int) {
 	return func(index int) {
 		closeWindow()
 		target := indexToActor(index)
 		command := serveSelectedCommand()
 		response := processBattle(
-			&core.ProcessBattleRequest{
+			&battle.ProcessBattleRequest{
 				TargetId: []actor.ActorId{target},
 				Command:  command,
 			},

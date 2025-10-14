@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/debug"
@@ -44,7 +45,7 @@ func init() {
 	characterServer := core.CreateCharacterServer()
 	enemyServer := core.CreateEnemyServer()
 	prepareActor := core.CreatePrepareActorService(characterServer, enemyServer, actorServer)
-	processCommand := core.CreateProcessPlayerCommand(actorServer.Get)
+	processCommand := battle.CreateProcessPlayerCommand(actorServer.Get)
 	newWindow := widget.CreateNewWindow(resource, GameWidth, GameHeight)
 	newText := widget.CreateNewText(resource)
 	newMessageWindow := component.StandByNewMessageWindow(newText, newWindow)
@@ -86,13 +87,13 @@ func init() {
 		choiceTarget,
 	)
 	choiceAction := core.CreateNewChoiceAction(newChoiceRandomAction)
-	decideActionOrder := core.CreateDecideActionOrder(actorServer)
+	decideActionOrder := battle.CreateDecideActionOrder(actorServer)
 	serveBattleState := core.CreateServeBattleState(actorServer)
 	checkCombination := core.CreateCheckCombination()
 	newPartnerActionServer := core.StandByNewPartnerActionServer(random, serveBattleState)
 	partnerActionServer := newPartnerActionServer()
-	initializeBattle := core.CreateInitializeBattle(prepareActor, partnerActionServer.DecidePlan)
-	newProcessBattle := core.StandByCreateProcessBattle(
+	initializeBattle := battle.CreateInitializeBattle(prepareActor, partnerActionServer.DecidePlan)
+	newProcessBattle := battle.StandByCreateProcessBattle(
 		actorServer.Get,
 		serveBattleState,
 		processCommand,
@@ -128,7 +129,7 @@ func init() {
 		&scene.BattleOption{
 			OnEnd:           nil,
 			BattleSettingId: core.BattleSettingTest,
-			BattleId:        core.BattleIdTest001,
+			BattleId:        battle.BattleIdTest001,
 			//BattleSettingId: core.BattleSettingTripleTest,
 		},
 	)

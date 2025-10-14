@@ -2,6 +2,7 @@ package scene
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
@@ -17,7 +18,7 @@ func InitializeCreateBattleScene(
 	newBattleActorDisplay component.NewBattleActorDisplayFunc,
 	newBattleSubActorDisplay component.NewBattleSubActorDisplayFunc,
 	serveEnemyName core.EnemyNameServer,
-	initializeBattle core.InitializeBattleFunc,
+	initializeBattle battle.InitializeBattleFunc,
 	getBattleSetting core.ServeBattleSetting,
 	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
 	skillToSequence component.SkillToSequenceFunc,
@@ -26,7 +27,7 @@ func InitializeCreateBattleScene(
 	serveEnemyView component.ServeEnemyViewData,
 	serveActor actor.ActorSupplier,
 	newVariableMessageWindow component.NewVariableMessageWindowFunc,
-	newProcessBattle core.NewProcessBattleFunc,
+	newProcessBattle battle.NewProcessBattleFunc,
 	produceCreateSequence sequence.ProduceCreateSequence,
 	produceCheckInvokeSequence invoke.ProduceCheckInvokeSequence,
 ) CreateBattleScene {
@@ -36,7 +37,7 @@ func InitializeCreateBattleScene(
 		enemyIds := extractEnemyIds(battleSetting)
 
 		// 戦闘の初期化
-		initializeRequest := &core.InitializeBattleRequest{
+		initializeRequest := &battle.InitializeBattleRequest{
 			// TODO: variables must be provided by args
 			MainActorCharacterId: core.CharacterLuneId,
 			SubActorCharacterId:  core.CharacterSunnyId,
@@ -72,9 +73,9 @@ func InitializeCreateBattleScene(
 
 		// バトル選択ウィンドウの設定
 		input := &frontend.KeyBoardInput{}
-		var selectedCommand core.PlayerCommand
+		var selectedCommand battle.PlayerCommand
 		var targetSelectWindow *component.SelectWindow
-		onSubmit := func(command core.PlayerCommand) {
+		onSubmit := func(command battle.PlayerCommand) {
 			selectedCommand = command
 			targetSelectWindow.Open()
 			input.Set(targetSelectWindow)
@@ -149,7 +150,7 @@ func InitializeCreateBattleScene(
 		onTargetSelect := createOnTargetSelect(
 			closeWindowOnTargetSelect,
 			func(index int) actor.ActorId { return allActorId[index] },
-			func() core.PlayerCommand { return selectedCommand },
+			func() battle.PlayerCommand { return selectedCommand },
 			battleScene.battleSequence.Reset,
 			playSequence,
 			processBattle,
@@ -209,7 +210,7 @@ func createActorNamesMapping(enemyIds []*core.EnemyIdPair, serveEnemyName core.E
 	return names
 }
 
-func createAllActorIdList(battleResponse *core.InitializeBattleResponse) []actor.ActorId {
+func createAllActorIdList(battleResponse *battle.InitializeBattleResponse) []actor.ActorId {
 	ids := []actor.ActorId{battleResponse.MainActorId}
 	if battleResponse.SubActorId != actor.ActorEmptyId {
 		ids = append(ids, battleResponse.SubActorId)
@@ -253,20 +254,20 @@ func createBattleEnemyDisplay(newBattleEnemyDisplay component.NewBattleEnemyDisp
 func createBattleSelectWindow(
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
 	input frontend.InputManager,
-	onSubmit func(core.PlayerCommand),
+	onSubmit func(battle.PlayerCommand),
 ) *component.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
 		&frontend.Vector{X: 0, Y: 0},
 		frontend.PivotBottomLeft,
 		frontend.DepthWindow,
-		[]core.PlayerCommand{
-			core.PlayerCommandAttack,
-			core.PlayerCommandFire,
-			core.PlayerCommandBarrier,
-			core.PlayerCommandThunder,
-			core.PlayerCommandWind,
-			core.PlayerCommandFocus,
-			core.PlayerCommandDefend,
+		[]battle.PlayerCommand{
+			battle.PlayerCommandAttack,
+			battle.PlayerCommandFire,
+			battle.PlayerCommandBarrier,
+			battle.PlayerCommandThunder,
+			battle.PlayerCommandWind,
+			battle.PlayerCommandFocus,
+			battle.PlayerCommandDefend,
 		},
 		onSubmit,
 	)

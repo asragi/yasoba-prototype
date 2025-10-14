@@ -1,7 +1,7 @@
 package invoke
 
 import (
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/sequence"
 )
 
@@ -16,11 +16,11 @@ const (
 // 起動するべきSequenceのIdを返す
 type checkEventInvoke func(
 	invokeTiming InvokeTiming,
-	turn core.TurnCount,
+	turn battle.TurnCount,
 ) []sequence.SequenceId
 
 type produceCheckEventInvokeFunc func(
-	core.BattleId,
+	battle.BattleId,
 	checkActorCondition,
 ) checkEventInvoke
 
@@ -42,13 +42,13 @@ func initializeProduceCheckEventInvoke(
 	getConditions getConditionsPort,
 ) produceCheckEventInvokeFunc {
 	return func(
-		battleId core.BattleId,
+		battleId battle.BattleId,
 		checkActorCondition checkActorCondition,
 	) checkEventInvoke {
 		sequenceAndConditions := getConditions(battleId)
 		return func(
 			invokeTiming InvokeTiming,
-			turn core.TurnCount,
+			turn battle.TurnCount,
 		) []sequence.SequenceId {
 			invokingSequenceIds := []sequence.SequenceId{}
 			for sequenceId, conditions := range sequenceAndConditions {

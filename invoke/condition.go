@@ -1,7 +1,7 @@
 package invoke
 
 import (
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/sequence"
 )
 
@@ -20,7 +20,7 @@ type eventConditionData struct {
 }
 
 // BattleIdに対してSequenceとConditionのmapを返す
-type getConditionsPort func(core.BattleId) map[sequence.SequenceId][]*eventConditionData
+type getConditionsPort func(battle.BattleId) map[sequence.SequenceId][]*eventConditionData
 
 func initializeGetConditionsPort(
 	conditionDataPort conditionDataPort,
@@ -39,7 +39,7 @@ func initializeGetConditionsPort(
 		return result
 	}
 
-	return func(battleId core.BattleId) map[sequence.SequenceId][]*eventConditionData {
+	return func(battleId battle.BattleId) map[sequence.SequenceId][]*eventConditionData {
 		sequenceIds := getBattleRelation(battleId)
 		return getCondition(sequenceIds)
 	}
