@@ -2,8 +2,8 @@ package battle
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/skilldata"
+	"github.com/asragi/yasoba-prototype/battle/skill"
+	gameSkill "github.com/asragi/yasoba-prototype/game/skill"
 	textpkg "github.com/asragi/yasoba-prototype/text"
 )
 
@@ -43,7 +43,7 @@ func (b *PlayerCommand) ToTextId() textpkg.TextId {
 
 // BattlePlayerCommandResult holds the SelectedAction triggered by a command.
 type BattlePlayerCommandResult struct {
-	SkillApplyArgs *battle_skill.SelectedAction
+	SkillApplyArgs *skill.SelectedAction
 }
 
 // ProcessPlayerCommandFunc determines the SelectedAction for a player command.
@@ -59,22 +59,22 @@ func CreateProcessPlayerCommand(supplyActor actor.ActorSupplier) ProcessPlayerCo
 		return target.Side == actor.ActorSideEnemy
 	}
 	return func(command *PostCommandRequest) *BattlePlayerCommandResult {
-		decidedSkillId := func() skilldata.SkillId {
+		decidedSkillId := func() gameSkill.SkillId {
 			if isToEnemy(command.TargetId) {
 				switch command.Command {
 				case PlayerCommandAttack:
-					return skilldata.SkillIdLuneAttack
+					return gameSkill.SkillIdLuneAttack
 				case PlayerCommandFire:
-					return skilldata.SkillIdLuneFireEnemy
+					return gameSkill.SkillIdLuneFireEnemy
 				default:
 					panic("not implemented")
 				}
 			}
 			// TODO: implement friendly-target commands
-			return skilldata.SkillIdLuneAttack
+			return gameSkill.SkillIdLuneAttack
 		}()
 		return &BattlePlayerCommandResult{
-			SkillApplyArgs: &battle_skill.SelectedAction{
+			SkillApplyArgs: &skill.SelectedAction{
 				Id:       decidedSkillId,
 				Actor:    command.ActorId,
 				SubActor: actor.ActorEmptyId,

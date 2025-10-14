@@ -6,21 +6,21 @@ import (
 
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle"
-	"github.com/asragi/yasoba-prototype/battle_combination"
-	"github.com/asragi/yasoba-prototype/battle_decision"
-	"github.com/asragi/yasoba-prototype/battle_partner"
-	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/battleconfig"
-	"github.com/asragi/yasoba-prototype/battlesetup"
-	"github.com/asragi/yasoba-prototype/characterdata"
+	"github.com/asragi/yasoba-prototype/battle/combination"
+	"github.com/asragi/yasoba-prototype/battle/config"
+	"github.com/asragi/yasoba-prototype/battle/decision"
+	"github.com/asragi/yasoba-prototype/battle/partner"
+	"github.com/asragi/yasoba-prototype/battle/setup"
+	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/debug"
-	"github.com/asragi/yasoba-prototype/enemydata"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/game/character"
+	"github.com/asragi/yasoba-prototype/game/enemy"
+	gameSkill "github.com/asragi/yasoba-prototype/game/skill"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
-	"github.com/asragi/yasoba-prototype/skilldata"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -51,9 +51,9 @@ func init() {
 		log.Fatal(err)
 	}
 	produceCreateSequence := prepareProduceCreateSequence(textServer)
-	characterServer := characterdata.CreateCharacterServer()
-	enemyServer := enemydata.CreateEnemyServer()
-	prepareActor := battlesetup.NewPrepareService(characterServer, enemyServer, actorServer)
+	characterServer := character.CreateCharacterServer()
+	enemyServer := enemy.CreateEnemyServer()
+	prepareActor := setup.NewPrepareService(characterServer, enemyServer, actorServer)
 	processCommand := battle.CreateProcessPlayerCommand(actorServer.Get)
 	newWindow := widget.CreateNewWindow(resource, GameWidth, GameHeight)
 	newText := widget.CreateNewText(resource)
@@ -61,10 +61,10 @@ func init() {
 	newSelectWindow := component.StandByNewSelectWindow(resource, newText, textServer)
 	newBattleSelectWindow := component.StandByNewBattleSelectWindow(newSelectWindow)
 	newFaceWindow := component.StandByNewFaceWindow(resource, newWindow)
-	battleSettingServer := battleconfig.NewServer()
-	skillServer := skilldata.NewSkillServer()
+	battleSettingServer := config.NewServer()
+	skillServer := gameSkill.NewSkillServer()
 	random := rand.Float64
-	applySkill := battle_skill.CreateSkillApply(skillServer, actorServer.Get, actorServer.Upsert, random)
+	applySkill := skill.CreateSkillApply(skillServer, actorServer.Get, actorServer.Upsert, random)
 	battleSequenceServer := component.CreateServeBattleEventSequence()
 	prepareBattleSequence := component.CreateExecBattleEventSequence(
 		textServer,
@@ -89,17 +89,17 @@ func init() {
 	effectData := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(effectData, resource)
 	serveEnemyView := component.NewServeEnemyViewData()
-	choiceTarget := battle_decision.CreateChoiceSkillTarget(random)
-	newChoiceRandomAction := battle_decision.StandByCreateRandomAction(
+	choiceTarget := decision.CreateChoiceSkillTarget(random)
+	newChoiceRandomAction := decision.StandByCreateRandomAction(
 		random,
 		skillServer,
 		choiceTarget,
 	)
-	choiceAction := battle_decision.CreateNewChoiceAction(newChoiceRandomAction)
+	choiceAction := decision.CreateNewChoiceAction(newChoiceRandomAction)
 	decideActionOrder := battle.CreateDecideActionOrder(actorServer)
-	serveBattleState := battle_decision.CreateServeBattleState(actorServer)
-	checkCombination := battle_combination.CreateCheckCombination()
-	newPartnerActionServer := battle_partner.StandByNewPartnerActionServer(random, serveBattleState)
+	serveBattleState := decision.CreateServeBattleState(actorServer)
+	checkCombination := combination.CreateCheckCombination()
+	newPartnerActionServer := partner.StandByNewPartnerActionServer(random, serveBattleState)
 	partnerActionServer := newPartnerActionServer()
 	initializeBattle := battle.CreateInitializeBattle(prepareActor, partnerActionServer.DecidePlan)
 	newProcessBattle := battle.StandByCreateProcessBattle(
@@ -120,7 +120,7 @@ func init() {
 		newBattleSelectWindow,
 		newBattleActorDisplay,
 		newBattleSubActorDisplay,
-		enemydata.CreateNameServer(),
+		enemy.CreateNameServer(),
 		initializeBattle,
 		battleSettingServer,
 		prepareBattleSequence,
@@ -137,9 +137,9 @@ func init() {
 	battleScene = newBattleScene(
 		&scene.BattleOption{
 			OnEnd:           nil,
-			BattleSettingId: battleconfig.IdTest,
+			BattleSettingId: config.IdTest,
 			BattleId:        battle.BattleIdTest001,
-			//BattleSettingId: battleconfig.IdTripleTest,
+			//BattleSettingId: config.IdTripleTest,
 		},
 	)
 	debugParams = debug.CreateDrawParameters(newText)

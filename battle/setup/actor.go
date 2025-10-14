@@ -1,21 +1,21 @@
-package battlesetup
+package setup
 
 import (
 	"fmt"
 
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/characterdata"
-	"github.com/asragi/yasoba-prototype/enemydata"
+	"github.com/asragi/yasoba-prototype/game/character"
+	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
 type PrepareArgs struct {
-	MainActorCharacterId characterdata.CharacterId
-	SubActorCharacterId  characterdata.CharacterId
-	EnemyIds             []enemydata.EnemyId
+	MainActorCharacterId character.CharacterId
+	SubActorCharacterId  character.CharacterId
+	EnemyIds             []enemy.EnemyId
 }
 
 type EnemyIdPair struct {
-	EnemyId enemydata.EnemyId
+	EnemyId enemy.EnemyId
 	ActorId actor.ActorId
 }
 
@@ -32,7 +32,7 @@ type actorInserter interface {
 	Upsert(*actor.Actor)
 }
 
-func characterToActor(character *characterdata.CharacterData, id actor.ActorId) *actor.Actor {
+func characterToActor(character *character.CharacterData, id actor.ActorId) *actor.Actor {
 	return &actor.Actor{
 		Id:    id,
 		MaxHP: character.MaxHP,
@@ -45,7 +45,7 @@ func characterToActor(character *characterdata.CharacterData, id actor.ActorId) 
 	}
 }
 
-func enemyToActor(enemy *enemydata.EnemyData, id actor.ActorId) *actor.Actor {
+func enemyToActor(enemy *enemy.EnemyData, id actor.ActorId) *actor.Actor {
 	return &actor.Actor{
 		Id:    id,
 		MaxHP: enemy.MaxHP,
@@ -59,8 +59,8 @@ func enemyToActor(enemy *enemydata.EnemyData, id actor.ActorId) *actor.Actor {
 }
 
 func NewPrepareService(
-	serveCharacter characterdata.ServeCharacterFunc,
-	serveEnemy enemydata.ServeEnemyData,
+	serveCharacter character.ServeCharacterFunc,
+	serveEnemy enemy.ServeEnemyData,
 	actorServer actorInserter,
 ) Service {
 	const mainActorId = actor.ActorLuneId
@@ -70,7 +70,7 @@ func NewPrepareService(
 		mainCharacter := serveCharacter(args.MainActorCharacterId)
 		mainActor := characterToActor(mainCharacter, mainActorId)
 		actorServer.Upsert(mainActor)
-		if args.SubActorCharacterId != characterdata.CharacterEmptyId {
+		if args.SubActorCharacterId != character.CharacterEmptyId {
 			subCharacter := serveCharacter(args.SubActorCharacterId)
 			subActor := characterToActor(subCharacter, subActorId)
 			actorServer.Upsert(subActor)

@@ -1,24 +1,24 @@
-package battle_partner
+package partner
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/battle_decision"
-	"github.com/asragi/yasoba-prototype/skilldata"
+	"github.com/asragi/yasoba-prototype/battle/decision"
+	gameSkill "github.com/asragi/yasoba-prototype/game/skill"
 	"github.com/asragi/yasoba-prototype/util"
 )
 
 // PartnerActionPlan describes the partner's planned action.
 type PartnerActionPlan struct {
-	SkillId        skilldata.SkillId
+	SkillId        gameSkill.SkillId
 	SelectedTarget actor.ActorId
 }
 
 type decidePartnerPlanFunc func()
 
-func createDecidePartnerAction(random util.EmitRandomFunc, state *battle_decision.BattleState) *PartnerActionPlan {
-	skillList := []skilldata.SkillId{
-		skilldata.SkillIdSunnyKick,
-		skilldata.SkillIdSunnyUppercut,
+func createDecidePartnerAction(random util.EmitRandomFunc, state *decision.BattleState) *PartnerActionPlan {
+	skillList := []gameSkill.SkillId{
+		gameSkill.SkillIdSunnyKick,
+		gameSkill.SkillIdSunnyUppercut,
 	}
 	target := func(enemies []*actor.Actor) actor.ActorId {
 		return enemies[0].Id
@@ -40,7 +40,7 @@ type GetPartnerPlanFunc func() *PartnerActionPlan
 type PartnerActionServer struct {
 	StoredPlan *PartnerActionPlan
 	random     util.EmitRandomFunc
-	serveState battle_decision.ServeBattleState
+	serveState decision.ServeBattleState
 }
 
 // NewPartnerActionServer creates new partner action servers lazily.
@@ -49,7 +49,7 @@ type NewPartnerActionServer func() *PartnerActionServer
 // StandByNewPartnerActionServer prepares a constructor for PartnerActionServer.
 func StandByNewPartnerActionServer(
 	random util.EmitRandomFunc,
-	serveState battle_decision.ServeBattleState,
+	serveState decision.ServeBattleState,
 ) NewPartnerActionServer {
 	return func() *PartnerActionServer {
 		return &PartnerActionServer{

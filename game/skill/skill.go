@@ -1,4 +1,4 @@
-package skilldata
+package skill
 
 // SkillId identifies a battle skill.
 type SkillId string
@@ -116,4 +116,3 @@ type SkillData struct {
 	TargetType      SkillSelectTargetType
 	Rows            []*SkillDataDetail
 }
-

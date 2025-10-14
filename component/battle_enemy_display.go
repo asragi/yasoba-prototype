@@ -2,11 +2,11 @@ package component
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/battleconfig"
-	"github.com/asragi/yasoba-prototype/battlesetup"
-	"github.com/asragi/yasoba-prototype/enemydata"
+	"github.com/asragi/yasoba-prototype/battle/config"
+	"github.com/asragi/yasoba-prototype/battle/setup"
+	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
 // BattleEnemyDisplay is a component that displays battle enemies.
@@ -23,7 +23,7 @@ func (d *BattleEnemyDisplay) SetDisappear(actorId actor.ActorId) {
 	graphics.SetDisappear()
 }
 
-func (d *BattleEnemyDisplay) SetDamage(actorId actor.ActorId, damage battle_skill.Damage) {
+func (d *BattleEnemyDisplay) SetDamage(actorId actor.ActorId, damage battleSkill.Damage) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
 		return
@@ -71,24 +71,24 @@ func (d *BattleEnemyDisplay) Draw(drawFunc frontend.DrawFunc) {
 
 type BattleDisplayArgs struct {
 	ActorId  actor.ActorId
-	EnemyId  enemydata.EnemyId
+	EnemyId  enemy.EnemyId
 	Position *frontend.Vector
 }
 
 func ToDisplayArgs(
-	enemyIdPair []*battlesetup.EnemyIdPair,
-	enemySettings []*battleconfig.EnemySetting,
+	enemyIdPair []*setup.EnemyIdPair,
+	enemySettings []*config.EnemySetting,
 ) []*BattleDisplayArgs {
-	enemySettingMap := func() map[enemydata.EnemyId][]*battleconfig.EnemySetting {
-		result := make(map[enemydata.EnemyId][]*battleconfig.EnemySetting)
+	enemySettingMap := func() map[enemy.EnemyId][]*config.EnemySetting {
+		result := make(map[enemy.EnemyId][]*config.EnemySetting)
 		for _, setting := range enemySettings {
 			result[setting.EnemyId] = append(result[setting.EnemyId], setting)
 		}
 		return result
 	}()
 	result := make([]*BattleDisplayArgs, len(enemyIdPair))
-	enemyIndex := func() map[enemydata.EnemyId]int {
-		result := make(map[enemydata.EnemyId]int)
+	enemyIndex := func() map[enemy.EnemyId]int {
+		result := make(map[enemy.EnemyId]int)
 		for _, pair := range enemyIdPair {
 			result[pair.EnemyId] = 0
 		}

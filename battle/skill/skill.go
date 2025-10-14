@@ -1,15 +1,15 @@
-package battle_skill
+package skill
 
 import (
 	"math"
 
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/skilldata"
+	gameskill "github.com/asragi/yasoba-prototype/game/skill"
 	"github.com/asragi/yasoba-prototype/util"
 )
 
-func decideAttackValue(atk actor.ATK, mag actor.MAG, skillType skilldata.SkillType) attackValue {
-	if skillType == skilldata.SkillTypePhysical {
+func decideAttackValue(atk actor.ATK, mag actor.MAG, skillType gameskill.SkillType) attackValue {
+	if skillType == gameskill.SkillTypePhysical {
 		return attackValue(atk)
 	}
 	return attackValue(mag)
@@ -22,15 +22,15 @@ type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
 
 // CreateSkillApply creates a SkillApplyFunc given repositories and RNG.
 func CreateSkillApply(
-	skillServer skilldata.ServeSkillData,
+	skillServer gameskill.ServeSkillData,
 	supplyActor actor.ActorSupplier,
 	updateActor actor.UpdateActorFunc,
 	random util.EmitRandomFunc,
 ) SkillApplyFunc {
 	applyAttack := func(
 		args *SelectedAction,
-		decidePower func(*skilldata.SkillDataDetail) attackPower,
-		decideAttack func(*skilldata.SkillDataDetail) attackValue,
+		decidePower func(*gameskill.SkillDataDetail) attackPower,
+		decideAttack func(*gameskill.SkillDataDetail) attackValue,
 	) *SkillApplyResult {
 		result := make([]*SkillApplyResultRow, 0)
 		data := skillServer(args.Id)
@@ -74,11 +74,11 @@ func CreateSkillApply(
 		mainActor := supplyActor(actorId)
 		return applyAttack(
 			args,
-			func(row *skilldata.SkillDataDetail) attackPower {
+			func(row *gameskill.SkillDataDetail) attackPower {
 				attack := decideAttackValue(mainActor.ATK, mainActor.MAG, row.Type)
 				return calculateNormalAttackPower(attack, row.Power)
 			},
-			func(row *skilldata.SkillDataDetail) attackValue {
+			func(row *gameskill.SkillDataDetail) attackValue {
 				return decideAttackValue(mainActor.ATK, mainActor.MAG, row.Type)
 			},
 		)
@@ -88,7 +88,7 @@ func CreateSkillApply(
 		subActor := supplyActor(args.SubActor)
 		return applyAttack(
 			args,
-			func(row *skilldata.SkillDataDetail) attackPower {
+			func(row *gameskill.SkillDataDetail) attackPower {
 				return calculateCombinationAttackPower(
 					mainActor.ATK,
 					mainActor.MAG,
@@ -100,7 +100,7 @@ func CreateSkillApply(
 					row.SubType,
 				)
 			},
-			func(row *skilldata.SkillDataDetail) attackValue {
+			func(row *gameskill.SkillDataDetail) attackValue {
 				return decideAttackValue(mainActor.ATK, mainActor.MAG, row.Type)
 			},
 		)
@@ -108,7 +108,7 @@ func CreateSkillApply(
 
 	return func(args *SelectedAction) *SkillApplyResult {
 		skill := skillServer(args.Id)
-		if skill.SkillFunctionId == skilldata.SkillFunctionIdCombination {
+		if skill.SkillFunctionId == gameskill.SkillFunctionIdCombination {
 			return combinationAttack(args)
 		}
 		return normalAttack(args)
@@ -127,7 +127,7 @@ const attackPowerBase = 7.0
 
 func calculateNormalAttackPower(
 	attackValue attackValue,
-	power skilldata.SkillPower,
+	power gameskill.SkillPower,
 ) attackPower {
 	return attackPower(
 		float64(power) * attackPowerBase *
@@ -141,10 +141,10 @@ func calculateCombinationAttackPower(
 	attackerMAG actor.MAG,
 	subAttackerATK actor.ATK,
 	subAttackerMAG actor.MAG,
-	power skilldata.SkillPower,
-	subPower skilldata.SkillPower,
-	attackType skilldata.SkillType,
-	subAttackType skilldata.SkillType,
+	power gameskill.SkillPower,
+	subPower gameskill.SkillPower,
+	attackType gameskill.SkillType,
+	subAttackType gameskill.SkillType,
 ) attackPower {
 	mainAttackValue := decideAttackValue(attackerATK, attackerMAG, attackType)
 	subAttackValue := decideAttackValue(subAttackerATK, subAttackerMAG, subAttackType)
@@ -160,11 +160,11 @@ func calculateNormalAttackDamage(
 	attackPower attackPower,
 	defenderDEF actor.DEF,
 	defenderMAG actor.MAG,
-	attackType skilldata.SkillType,
+	attackType gameskill.SkillType,
 	randomDamage randomDamage,
 ) Damage {
 	defenderValue := func() float64 {
-		if attackType == skilldata.SkillTypePhysical {
+		if attackType == gameskill.SkillTypePhysical {
 			return float64(defenderDEF)
 		}
 		return float64(defenderMAG)

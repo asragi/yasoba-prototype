@@ -1,13 +1,13 @@
-package battle_skill
+package skill
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/skilldata"
+	gameskill "github.com/asragi/yasoba-prototype/game/skill"
 )
 
 // SelectedAction describes the actor, partner, and targets of a skill.
 type SelectedAction struct {
-	Id       skilldata.SkillId
+	Id       gameskill.SkillId
 	Actor    actor.ActorId
 	SubActor actor.ActorId
 	Target   []actor.ActorId
@@ -18,7 +18,7 @@ type SkillApplyResultRow struct {
 	ActorId        actor.ActorId
 	TargetId       actor.ActorId
 	TargetSide     actor.ActorSide
-	SkillId        skilldata.SkillId
+	SkillId        gameskill.SkillId
 	Damage         Damage
 	IsTargetBeaten bool
 	AfterHp        actor.HP
@@ -28,6 +28,6 @@ type SkillApplyResultRow struct {
 type SkillApplyResult struct {
 	Actor    actor.ActorId
 	SubActor actor.ActorId
-	SkillId  skilldata.SkillId
+	SkillId  gameskill.SkillId
 	Rows     []*SkillApplyResultRow
 }

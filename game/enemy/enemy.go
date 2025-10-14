@@ -1,8 +1,8 @@
-package enemydata
+package enemy
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/skilldata"
+	gameSkill "github.com/asragi/yasoba-prototype/game/skill"
 	"github.com/asragi/yasoba-prototype/text"
 )
 
@@ -21,7 +21,7 @@ type EnemyData struct {
 	Mag    actor.MAG
 	Def    actor.DEF
 	Spd    actor.SPD
-	Skills []skilldata.SkillId
+	Skills []gameSkill.SkillId
 }
 
 func CreateEnemyServer() ServeEnemyData {
@@ -33,7 +33,7 @@ func CreateEnemyServer() ServeEnemyData {
 		Mag:    10,
 		Def:    10,
 		Spd:    10,
-		Skills: []skilldata.SkillId{},
+		Skills: []gameSkill.SkillId{},
 	}
 	return func(id EnemyId) *EnemyData {
 		return dict[id]

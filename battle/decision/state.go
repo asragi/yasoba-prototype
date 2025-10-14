@@ -1,21 +1,21 @@
-package battle_decision
+package decision
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/characterdata"
-	"github.com/asragi/yasoba-prototype/enemydata"
+	"github.com/asragi/yasoba-prototype/game/character"
+	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
 // ChoiceActionId is issued for each one enemy.
 type ChoiceActionId string
 
 // CharacterIdToChoiceActionId converts a character ID to a choice action ID.
-func CharacterIdToChoiceActionId(id characterdata.CharacterId) ChoiceActionId {
+func CharacterIdToChoiceActionId(id character.CharacterId) ChoiceActionId {
 	return ChoiceActionId(id)
 }
 
 // EnemyIdToChoiceActionId converts an enemy ID to a choice action ID.
-func EnemyIdToChoiceActionId(id enemydata.EnemyId) ChoiceActionId {
+func EnemyIdToChoiceActionId(id enemy.EnemyId) ChoiceActionId {
 	return ChoiceActionId(id)
 }
 

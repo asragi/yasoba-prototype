@@ -1,12 +1,12 @@
-package battleconfig
+package config
 
 import (
-	"github.com/asragi/yasoba-prototype/enemydata"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
 type EnemySetting struct {
-	EnemyId  enemydata.EnemyId
+	EnemyId  enemy.EnemyId
 	Position *frontend.Vector
 }
 
@@ -28,7 +28,7 @@ func NewServer() ServeFunc {
 	dict[IdTest] = &Setting{
 		Enemies: []*EnemySetting{
 			{
-				EnemyId:  enemydata.EnemyPunchingBagId,
+				EnemyId:  enemy.EnemyPunchingBagId,
 				Position: frontend.VectorZero,
 			},
 		},
@@ -36,15 +36,15 @@ func NewServer() ServeFunc {
 	dict[IdTripleTest] = &Setting{
 		Enemies: []*EnemySetting{
 			{
-				EnemyId:  enemydata.EnemyPunchingBagId,
+				EnemyId:  enemy.EnemyPunchingBagId,
 				Position: &frontend.Vector{X: -100},
 			},
 			{
-				EnemyId:  enemydata.EnemyPunchingBagId,
+				EnemyId:  enemy.EnemyPunchingBagId,
 				Position: frontend.VectorZero,
 			},
 			{
-				EnemyId:  enemydata.EnemyPunchingBagId,
+				EnemyId:  enemy.EnemyPunchingBagId,
 				Position: &frontend.Vector{X: 100},
 			},
 		},

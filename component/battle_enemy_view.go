@@ -3,26 +3,26 @@ package component
 import (
 	"fmt"
 
-	"github.com/asragi/yasoba-prototype/enemydata"
+	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
 type EnemyViewData struct {
-	EnemyId          enemydata.EnemyId
+	EnemyId          enemy.EnemyId
 	BeatenSequenceId EventSequenceId
 }
 
-type ServeEnemyViewData func(id enemydata.EnemyId) *EnemyViewData
+type ServeEnemyViewData func(id enemy.EnemyId) *EnemyViewData
 
 func NewServeEnemyViewData() ServeEnemyViewData {
-	dict := map[enemydata.EnemyId]*EnemyViewData{}
-	register := func(id enemydata.EnemyId, beatenSequenceId EventSequenceId) {
+	dict := map[enemy.EnemyId]*EnemyViewData{}
+	register := func(id enemy.EnemyId, beatenSequenceId EventSequenceId) {
 		dict[id] = &EnemyViewData{
 			EnemyId:          id,
 			BeatenSequenceId: beatenSequenceId,
 		}
 	}
-	register(enemydata.EnemyPunchingBagId, EventSequenceIdPunchingBagBeaten)
-	return func(id enemydata.EnemyId) *EnemyViewData {
+	register(enemy.EnemyPunchingBagId, EventSequenceIdPunchingBagBeaten)
+	return func(id enemy.EnemyId) *EnemyViewData {
 		data, ok := dict[id]
 		if !ok {
 			panic(fmt.Sprintf("enemy view data not found: %v", id))

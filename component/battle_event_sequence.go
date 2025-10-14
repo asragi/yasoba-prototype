@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/skilldata"
+	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	gameSkill "github.com/asragi/yasoba-prototype/game/skill"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -25,19 +25,19 @@ type BattleTextDisplay interface {
 type ShakeActor func(actor.ActorId)
 type ChangeEmotion func(actor.ActorId, BattleEmotionType)
 type ShakeScreen func()
-type DisplayDamageFunc func(actor.ActorId, battle_skill.Damage, actor.HP)
+type DisplayDamageFunc func(actor.ActorId, battleSkill.Damage, actor.HP)
 type PlayEffect func(widget.EffectId, actor.ActorId)
 type SetDisappear func(actor.ActorId)
 
-type SkillToSequenceFunc func(skilldata.SkillId) EventSequenceId
+type SkillToSequenceFunc func(gameSkill.SkillId) EventSequenceId
 
-func ToEventSequenceId(skillId skilldata.SkillId) EventSequenceId {
+func ToEventSequenceId(skillId gameSkill.SkillId) EventSequenceId {
 	return EventSequenceId(skillId)
 }
 
 func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 	dict := map[EventSequenceId]*BattleEventSequence{}
-	register := func(id skilldata.SkillId, rows []BattleEventRow) {
+	register := func(id gameSkill.SkillId, rows []BattleEventRow) {
 		eventId := ToEventSequenceId(id)
 		dict[eventId] = &BattleEventSequence{
 			Id:   eventId,
@@ -68,8 +68,8 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			EmotionType: BattleEmotionNormal,
 		},
 	}
-	register(skilldata.SkillIdLuneAttack, normalAttack)
-	register(skilldata.SkillIdNormalTackle, normalAttack)
+	register(gameSkill.SkillIdLuneAttack, normalAttack)
+	register(gameSkill.SkillIdNormalTackle, normalAttack)
 	luneFire := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
@@ -94,7 +94,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			EmotionType: BattleEmotionNormal,
 		},
 	}
-	register(skilldata.SkillIdLuneFireEnemy, luneFire)
+	register(gameSkill.SkillIdLuneFireEnemy, luneFire)
 	combinationThunder := []BattleEventRow{
 		&DisplayMessageEvent{
 			Frame: 1,
@@ -119,7 +119,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 			EmotionType: BattleEmotionNormal,
 		},
 	}
-	register(skilldata.SkillIdCombinationThunder, combinationThunder)
+	register(gameSkill.SkillIdCombinationThunder, combinationThunder)
 	punchingBagBeaten := []BattleEventRow{
 		&ChangeEmotionEvent{
 			Frame:       1,
@@ -148,7 +148,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 
 type DamageInformation struct {
 	Target  actor.ActorId
-	Damage  battle_skill.Damage
+	Damage  battleSkill.Damage
 	AfterHP actor.HP
 }
 
@@ -213,8 +213,8 @@ func CreateExecBattleEventSequence(
 							return result
 						}()
 						for target, damages := range damageMap {
-							allDamage := func() battle_skill.Damage {
-								var result battle_skill.Damage = 0
+							allDamage := func() battleSkill.Damage {
+								var result battleSkill.Damage = 0
 								for _, d := range damages {
 									result += d.Damage
 								}

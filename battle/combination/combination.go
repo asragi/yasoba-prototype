@@ -1,22 +1,22 @@
-package battle_combination
+package combination
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/skilldata"
+	"github.com/asragi/yasoba-prototype/game/skill"
 )
 
 // Request carries the input data for checking skill combinations.
 type Request struct {
-	MainActorSkillId skilldata.SkillId
+	MainActorSkillId skill.SkillId
 	MainActorTarget  actor.ActorId
-	SubActorSkillId  skilldata.SkillId
+	SubActorSkillId  skill.SkillId
 	SubActorTarget   actor.ActorId
 }
 
 // Response reports whether a combination occurs and the resulting skill.
 type Response struct {
 	IsCombination bool
-	SkillId       skilldata.SkillId
+	SkillId       skill.SkillId
 	TargetId      actor.ActorId
 }
 
@@ -24,10 +24,11 @@ type Response struct {
 type CheckFunc func(request *Request) *Response
 
 // CreateCheckCombination returns the default combination checker.
+
 func CreateCheckCombination() CheckFunc {
-	combinationDict := map[skilldata.SkillId]map[skilldata.SkillId]skilldata.SkillId{
-		skilldata.SkillIdLuneFireEnemy: {
-			skilldata.SkillIdSunnyUppercut: skilldata.SkillIdCombinationThunder,
+	combinationDict := map[skill.SkillId]map[skill.SkillId]skill.SkillId{
+		skill.SkillIdLuneFireEnemy: {
+			skill.SkillIdSunnyUppercut: skill.SkillIdCombinationThunder,
 		},
 	}
 	return func(request *Request) *Response {

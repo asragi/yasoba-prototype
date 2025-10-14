@@ -1,9 +1,9 @@
 package component
 
 import (
-	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/enemydata"
+	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/game/enemy"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -19,7 +19,7 @@ type BattleEnemyGraphics struct {
 }
 
 type BattleEnemyGraphicsInterface interface {
-	SetDamage(battle_skill.Damage)
+	SetDamage(battleSkill.Damage)
 	DoShake()
 	widget.PositionUpdater
 	widget.Drawer
@@ -40,7 +40,7 @@ func (g *BattleEnemyGraphics) getCurrentAnimation() *widget.Animation {
 	return animation
 }
 
-func (g *BattleEnemyGraphics) SetDamage(damage battle_skill.Damage) {
+func (g *BattleEnemyGraphics) SetDamage(damage battleSkill.Damage) {
 	g.displayDamage.DisplayDamage(damage)
 }
 
@@ -81,7 +81,7 @@ type NewBattleEnemyGraphicsFunc func(
 	*frontend.Vector,
 	*frontend.Pivot,
 	frontend.Depth,
-	enemydata.EnemyId,
+	enemy.EnemyId,
 ) BattleEnemyGraphicsInterface
 
 func NewBattleActorGraphics(
@@ -93,7 +93,7 @@ func NewBattleActorGraphics(
 		relativePosition *frontend.Vector,
 		pivot *frontend.Pivot,
 		depth frontend.Depth,
-		enemyId enemydata.EnemyId,
+		enemyId enemy.EnemyId,
 	) BattleEnemyGraphicsInterface {
 		enemyGraphicsData := getEnemyGraphics(enemyId)
 		animations := func() map[BattleEmotionType]*widget.Animation {
@@ -129,11 +129,11 @@ type BattleActorAnimationSet struct {
 	animation frontend.AnimationId
 }
 
-type GetEnemyGraphicsFunc func(enemydata.EnemyId) []*BattleActorAnimationSet
+type GetEnemyGraphicsFunc func(enemy.EnemyId) []*BattleActorAnimationSet
 
 func CreateGetEnemyGraphics() GetEnemyGraphicsFunc {
-	dict := map[enemydata.EnemyId][]*BattleActorAnimationSet{
-		enemydata.EnemyPunchingBagId: {
+	dict := map[enemy.EnemyId][]*BattleActorAnimationSet{
+		enemy.EnemyPunchingBagId: {
 			{
 				emotion:   BattleEmotionNormal,
 				texture:   frontend.TextureMarshmallowNormal,
@@ -146,7 +146,7 @@ func CreateGetEnemyGraphics() GetEnemyGraphicsFunc {
 			},
 		},
 	}
-	return func(enemyId enemydata.EnemyId) []*BattleActorAnimationSet {
+	return func(enemyId enemy.EnemyId) []*BattleActorAnimationSet {
 		return dict[enemyId]
 	}
 }

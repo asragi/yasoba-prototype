@@ -1,4 +1,4 @@
-package battle_skill
+package skill
 
 import (
 	"math"

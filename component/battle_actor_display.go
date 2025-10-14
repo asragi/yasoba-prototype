@@ -2,9 +2,9 @@ package component
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/characterdata"
+	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -14,7 +14,7 @@ type BattleActorDisplay struct {
 	parameterDisplay *BattleParameterDisplay
 }
 
-func (d *BattleActorDisplay) SetDamage(damage battle_skill.Damage, afterHP actor.HP) {
+func (d *BattleActorDisplay) SetDamage(damage battleSkill.Damage, afterHP actor.HP) {
 	d.displayDamage.DisplayDamage(damage)
 	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }
@@ -63,7 +63,7 @@ func CreateNewBattleActorDisplay(
 				&frontend.Vector{X: 0, Y: -parameter.GetHeight()},
 				frontend.DepthPlayer,
 				frontend.PivotBottomLeft,
-				characterdata.CharacterLuneId,
+				character.CharacterLuneId,
 			),
 			displayDamage:    newDisplayDamage(),
 			parameterDisplay: parameter,
@@ -93,7 +93,7 @@ func CreateNewBattleSubActorDisplay(
 				&frontend.Vector{X: 0, Y: -height},
 				frontend.DepthPlayer,
 				frontend.PivotBottomRight,
-				characterdata.CharacterSunnyId,
+				character.CharacterSunnyId,
 			),
 			displayDamage:    newDisplayDamage(),
 			parameterDisplay: parameterDisplay,
@@ -102,7 +102,7 @@ func CreateNewBattleSubActorDisplay(
 	}
 }
 
-func (d *BattleSubActorDisplay) SetDamage(damage battle_skill.Damage, afterHP actor.HP) {
+func (d *BattleSubActorDisplay) SetDamage(damage battleSkill.Damage, afterHP actor.HP) {
 	d.displayDamage.DisplayDamage(damage)
 	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }

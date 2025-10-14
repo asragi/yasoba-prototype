@@ -3,13 +3,13 @@ package scene
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle"
-	"github.com/asragi/yasoba-prototype/battle_skill"
-	"github.com/asragi/yasoba-prototype/battleconfig"
-	"github.com/asragi/yasoba-prototype/battlesetup"
-	"github.com/asragi/yasoba-prototype/characterdata"
+	"github.com/asragi/yasoba-prototype/battle/config"
+	"github.com/asragi/yasoba-prototype/battle/setup"
+	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
-	"github.com/asragi/yasoba-prototype/enemydata"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/game/character"
+	"github.com/asragi/yasoba-prototype/game/enemy"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/text"
@@ -22,9 +22,9 @@ func InitializeCreateBattleScene(
 	newBattleSelectWindow component.NewBattleSelectWindowFunc,
 	newBattleActorDisplay component.NewBattleActorDisplayFunc,
 	newBattleSubActorDisplay component.NewBattleSubActorDisplayFunc,
-	serveEnemyName enemydata.NameServer,
+	serveEnemyName enemy.NameServer,
 	initializeBattle battle.InitializeBattleFunc,
-	getBattleSetting battleconfig.ServeFunc,
+	getBattleSetting config.ServeFunc,
 	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc,
@@ -44,8 +44,8 @@ func InitializeCreateBattleScene(
 		// 戦闘の初期化
 		initializeRequest := &battle.InitializeBattleRequest{
 			// TODO: variables must be provided by args
-			MainActorCharacterId: characterdata.CharacterLuneId,
-			SubActorCharacterId:  characterdata.CharacterSunnyId,
+			MainActorCharacterId: character.CharacterLuneId,
+			SubActorCharacterId:  character.CharacterSunnyId,
 			EnemyIds:             enemyIds,
 		}
 		battleResponse := initializeBattle(initializeRequest)
@@ -189,23 +189,23 @@ func InitializeCreateBattleScene(
 	}
 }
 
-func extractEnemyIds(battleSetting *battleconfig.Setting) []enemydata.EnemyId {
-	ids := make([]enemydata.EnemyId, len(battleSetting.Enemies))
+func extractEnemyIds(battleSetting *config.Setting) []enemy.EnemyId {
+	ids := make([]enemy.EnemyId, len(battleSetting.Enemies))
 	for i, set := range battleSetting.Enemies {
 		ids[i] = set.EnemyId
 	}
 	return ids
 }
 
-func createActorIdToEnemyMapping(enemyIds []*battlesetup.EnemyIdPair) map[actor.ActorId]enemydata.EnemyId {
-	result := make(map[actor.ActorId]enemydata.EnemyId)
+func createActorIdToEnemyMapping(enemyIds []*setup.EnemyIdPair) map[actor.ActorId]enemy.EnemyId {
+	result := make(map[actor.ActorId]enemy.EnemyId)
 	for _, pair := range enemyIds {
 		result[pair.ActorId] = pair.EnemyId
 	}
 	return result
 }
 
-func createActorNamesMapping(enemyIds []*battlesetup.EnemyIdPair, serveEnemyName enemydata.NameServer) map[actor.ActorId]text.TextId {
+func createActorNamesMapping(enemyIds []*setup.EnemyIdPair, serveEnemyName enemy.NameServer) map[actor.ActorId]text.TextId {
 	names := make(map[actor.ActorId]text.TextId)
 	names[actor.ActorLuneId] = text.TextIdLuneName
 	names[actor.ActorSunnyId] = text.TextIdSunnyName
@@ -248,7 +248,7 @@ func createMessageWindow(newMessageWindow component.NewMessageWindowFunc) *compo
 	return messageWindow
 }
 
-func createBattleEnemyDisplay(newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc, enemyIds []*battlesetup.EnemyIdPair, enemySettings []*battleconfig.EnemySetting) *component.BattleEnemyDisplay {
+func createBattleEnemyDisplay(newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc, enemyIds []*setup.EnemyIdPair, enemySettings []*config.EnemySetting) *component.BattleEnemyDisplay {
 	displayArgs := component.ToDisplayArgs(enemyIds, enemySettings)
 	return newBattleEnemyDisplay(
 		displayArgs,
@@ -319,8 +319,8 @@ func createSetDamageFunction(
 	subActorDisplay *component.BattleSubActorDisplay,
 	actorDisplay *component.BattleActorDisplay,
 	displayedHp map[actor.ActorId]actor.HP,
-) func(actor.ActorId, battle_skill.Damage, actor.HP) {
-	return func(actorId actor.ActorId, damage battle_skill.Damage, afterHp actor.HP) {
+) func(actor.ActorId, battleSkill.Damage, actor.HP) {
+	return func(actorId actor.ActorId, damage battleSkill.Damage, afterHp actor.HP) {
 		displayedHp[actorId] = afterHp
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {

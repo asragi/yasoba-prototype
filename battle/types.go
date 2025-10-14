@@ -1,6 +1,6 @@
 package battle
 
-import "github.com/asragi/yasoba-prototype/battle_decision"
+import "github.com/asragi/yasoba-prototype/battle/decision"
 
 // BattleId identifies a battle scenario.
 type BattleId string
@@ -13,10 +13,10 @@ const (
 type TurnCount int
 
 // BattleEndType mirrors the decision package end state type.
-type BattleEndType = battle_decision.BattleEndType
+type BattleEndType = decision.BattleEndType
 
 const (
-	BattleEndTypeNone = battle_decision.BattleEndTypeNone
-	BattleEndTypeWin  = battle_decision.BattleEndTypeWin
-	BattleEndTypeLose = battle_decision.BattleEndTypeLose
+	BattleEndTypeNone = decision.BattleEndTypeNone
+	BattleEndTypeWin  = decision.BattleEndTypeWin
+	BattleEndTypeLose = decision.BattleEndTypeLose
 )

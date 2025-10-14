@@ -2,23 +2,23 @@ package battle
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/battlesetup"
-	"github.com/asragi/yasoba-prototype/characterdata"
-	"github.com/asragi/yasoba-prototype/enemydata"
+	"github.com/asragi/yasoba-prototype/battle/setup"
+	"github.com/asragi/yasoba-prototype/game/character"
+	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
 // InitializeBattleRequest points to the characters and enemies to prepare.
 type InitializeBattleRequest struct {
-	MainActorCharacterId characterdata.CharacterId
-	SubActorCharacterId  characterdata.CharacterId
-	EnemyIds             []enemydata.EnemyId
+	MainActorCharacterId character.CharacterId
+	SubActorCharacterId  character.CharacterId
+	EnemyIds             []enemy.EnemyId
 }
 
 // InitializeBattleResponse reports the actor IDs that were prepared.
 type InitializeBattleResponse struct {
 	MainActorId actor.ActorId
 	SubActorId  actor.ActorId
-	EnemyIds    []*battlesetup.EnemyIdPair
+	EnemyIds    []*setup.EnemyIdPair
 }
 
 // InitializeBattleFunc initializes battle actors from the provided request.
@@ -26,12 +26,12 @@ type InitializeBattleFunc func(*InitializeBattleRequest) *InitializeBattleRespon
 
 // CreateInitializeBattle prepares actors and triggers partner plan selection.
 func CreateInitializeBattle(
-	prepareActorService battlesetup.Service,
+	prepareActorService setup.Service,
 	decidePartnerPlan func(),
 ) InitializeBattleFunc {
 	return func(option *InitializeBattleRequest) *InitializeBattleResponse {
 		prepareResult := prepareActorService(
-			&battlesetup.PrepareArgs{
+			&setup.PrepareArgs{
 				MainActorCharacterId: option.MainActorCharacterId,
 				SubActorCharacterId:  option.SubActorCharacterId,
 				EnemyIds:             option.EnemyIds,
