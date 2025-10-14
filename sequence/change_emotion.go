@@ -4,19 +4,19 @@ import (
 	"fmt"
 
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/component"
+	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
 )
 
 type ChangeEmotion struct {
 	actorId actor.ActorId
-	emotion component.BattleEmotionType
+	emotion battleemotion.BattleEmotionType
 }
 
 type changeEmotionDataPort func(eventId) *ChangeEmotion
 
 type createChangeEmotionEvent func(eventId) *eventUnit
 
-type SetEmotion func(actor.ActorId, component.BattleEmotionType)
+type SetEmotion func(actor.ActorId, battleemotion.BattleEmotionType)
 
 func produceCreateChangeEmotionEventToUnit(
 	changeEmotionDataPort changeEmotionDataPort,

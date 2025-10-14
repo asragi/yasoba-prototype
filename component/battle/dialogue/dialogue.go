@@ -1,6 +1,7 @@
-package component
+package dialogue
 
 import (
+	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
 
@@ -14,9 +15,16 @@ type PartnerDialogueMessageWindow interface {
 	IsTextEnd() bool
 }
 
+type makeMessageWindowFunc func(
+	*frontend.Vector,
+	*frontend.Vector,
+	frontend.Depth,
+	*frontend.Pivot,
+) PartnerDialogueMessageWindow
+
 type BattlePartnerDialogue struct {
 	window        PartnerDialogueMessageWindow
-	newWindowFunc NewMessageWindowFunc
+	newWindowFunc makeMessageWindowFunc
 	textWait      int
 }
 
@@ -78,10 +86,17 @@ func (d *BattlePartnerDialogue) newWindow() PartnerDialogueMessageWindow {
 	return window
 }
 
-func CreateNewBattlePartnerDialogue(newWindow NewMessageWindowFunc) NewBattlePartnerDialogueFunc {
+func CreateNewBattlePartnerDialogue(newWindow component.NewMessageWindowFunc) NewBattlePartnerDialogueFunc {
 	return func() *BattlePartnerDialogue {
 		return &BattlePartnerDialogue{
-			newWindowFunc: newWindow,
+			newWindowFunc: func(
+				relativePosition *frontend.Vector,
+				size *frontend.Vector,
+				depth frontend.Depth,
+				pivot *frontend.Pivot,
+			) PartnerDialogueMessageWindow {
+				return newWindow(relativePosition, size, depth, pivot)
+			},
 		}
 	}
 }

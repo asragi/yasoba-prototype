@@ -2,20 +2,23 @@ package scene
 
 import (
 	"github.com/asragi/yasoba-prototype/component"
-	battleactor "github.com/asragi/yasoba-prototype/component/battle_actor"
+	battleactor "github.com/asragi/yasoba-prototype/component/battle/actor"
+	battledialogue "github.com/asragi/yasoba-prototype/component/battle/dialogue"
+	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
+	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type battleUI struct {
 	messageWindow      *component.MessageWindow
-	battleSelectWindow *component.BattleSelectWindow
+	battleSelectWindow *battleselect.BattleSelectWindow
 	actorDisplay       *battleactor.BattleActorDisplay
 	subActorDisplay    *battleactor.BattleSubActorDisplay
-	subActorDialog     *component.BattlePartnerDialogue
+	subActorDialog     *battledialogue.BattlePartnerDialogue
 	targetSelectWindow *component.SelectWindow
 	input              frontend.InputManager
-	battleEnemyDisplay *component.BattleEnemyDisplay
+	battleEnemyDisplay *battleenemy.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
 	shake              *frontend.EmitShake
 	layout             battleUILayout

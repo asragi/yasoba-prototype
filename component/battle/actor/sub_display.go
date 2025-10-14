@@ -1,15 +1,16 @@
-package battle_actor
+package actor
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
+	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 )
 
 type BattleSubActorDisplay struct {
-	faceWindow       *component.FaceWindow
+	faceWindow       *FaceWindow
 	displayDamage    *component.DisplayDamage
 	parameterDisplay *BattleParameterDisplay
 	shake            *frontend.EmitShake
@@ -18,7 +19,7 @@ type BattleSubActorDisplay struct {
 type NewBattleSubActorDisplayFunc func(*actor.Actor) *BattleSubActorDisplay
 
 func CreateNewBattleSubActorDisplay(
-	newFaceWindow component.NewFaceWindowFunc,
+	newFaceWindow NewFaceWindowFunc,
 	newDisplayDamage component.NewDisplayDamageFunc,
 	newParameterDisplay NewBattleParameterDisplayFunc,
 ) NewBattleSubActorDisplayFunc {
@@ -73,6 +74,6 @@ func (d *BattleSubActorDisplay) GetCenterPosition() *frontend.Vector {
 	return d.faceWindow.GetCenterPosition()
 }
 
-func (d *BattleSubActorDisplay) SetEmotion(emotion component.BattleEmotionType) {
+func (d *BattleSubActorDisplay) SetEmotion(emotion battleemotion.BattleEmotionType) {
 	d.faceWindow.SetEmotion(emotion)
 }

@@ -1,4 +1,4 @@
-package component
+package hp
 
 import (
 	"image/color"

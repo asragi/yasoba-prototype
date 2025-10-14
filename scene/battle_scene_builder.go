@@ -7,7 +7,12 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
-	battleactor "github.com/asragi/yasoba-prototype/component/battle_actor"
+	battleactor "github.com/asragi/yasoba-prototype/component/battle/actor"
+	battledialogue "github.com/asragi/yasoba-prototype/component/battle/dialogue"
+	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
+	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
+	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
+	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
@@ -20,17 +25,17 @@ import (
 func InitializeCreateBattleScene(
 	newMessageWindow component.NewMessageWindowFunc,
 	newSelectWindow component.NewSelectWindowFunc,
-	newBattleSelectWindow component.NewBattleSelectWindowFunc,
+	newBattleSelectWindow battleselect.NewBattleSelectWindowFunc,
 	newBattleActorDisplay battleactor.NewBattleActorDisplayFunc,
 	newBattleSubActorDisplay battleactor.NewBattleSubActorDisplayFunc,
 	serveEnemyName enemy.NameServer,
 	initializeBattle battle.InitializeBattleFunc,
 	getBattleSetting config.ServeFunc,
-	createNewBattleSequence component.PrepareBattleEventSequenceFunc,
-	skillToSequence component.SkillToSequenceFunc,
-	newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc,
+	createNewBattleSequence battleevent.PrepareBattleEventSequenceFunc,
+	skillToSequence battleevent.SkillToSequenceFunc,
+	newBattleEnemyDisplay battleenemy.NewBattleEnemyDisplayFunc,
 	effectManager *widget.EffectManager,
-	serveEnemyView component.ServeEnemyViewData,
+	serveEnemyView battleenemy.ServeEnemyViewData,
 	serveActor actor.ActorSupplier,
 	newVariableMessageWindow component.NewVariableMessageWindowFunc,
 	newProcessBattle battle.NewProcessBattleFunc,
@@ -89,7 +94,7 @@ func InitializeCreateBattleScene(
 
 		actorDisplay := newBattleActorDisplay(mainActor)
 		subActorDisplay := newBattleSubActorDisplay(subActor)
-		subActorDialog := component.CreateNewBattlePartnerDialogue(newMessageWindow)()
+		subActorDialog := battledialogue.CreateNewBattlePartnerDialogue(newMessageWindow)()
 
 		// エフェクト関数の定義
 		playEffect := createPlayEffectFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, effectManager)
@@ -133,7 +138,7 @@ func InitializeCreateBattleScene(
 				effectManager:      effectManager,
 				shake:              shake,
 			},
-			battleSequence: component.NewBattleEventSequencer(),
+			battleSequence: battleevent.NewBattleEventSequencer(),
 			enemyData:      battleResponse.EnemyIds,
 			actorNames:     actorNames,
 			createSequence: createSequence,
@@ -249,8 +254,8 @@ func createMessageWindow(newMessageWindow component.NewMessageWindowFunc) *compo
 	return messageWindow
 }
 
-func createBattleEnemyDisplay(newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc, enemyIds []*setup.EnemyIdPair, enemySettings []*config.EnemySetting) *component.BattleEnemyDisplay {
-	displayArgs := component.ToDisplayArgs(enemyIds, enemySettings)
+func createBattleEnemyDisplay(newBattleEnemyDisplay battleenemy.NewBattleEnemyDisplayFunc, enemyIds []*setup.EnemyIdPair, enemySettings []*config.EnemySetting) *battleenemy.BattleEnemyDisplay {
+	displayArgs := battleenemy.ToDisplayArgs(enemyIds, enemySettings)
 	return newBattleEnemyDisplay(
 		displayArgs,
 		frontend.DepthEnemy,
@@ -258,10 +263,10 @@ func createBattleEnemyDisplay(newBattleEnemyDisplay component.NewBattleEnemyDisp
 }
 
 func createBattleSelectWindow(
-	newBattleSelectWindow component.NewBattleSelectWindowFunc,
+	newBattleSelectWindow battleselect.NewBattleSelectWindowFunc,
 	input frontend.InputManager,
 	onSubmit func(battle.PlayerCommand),
-) *component.BattleSelectWindow {
+) *battleselect.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
 		&frontend.Vector{X: 0, Y: 0},
 		frontend.PivotBottomLeft,
@@ -282,7 +287,7 @@ func createBattleSelectWindow(
 	return battleSelectWindow
 }
 
-func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay, effectManager *widget.EffectManager) func(widget.EffectId, actor.ActorId) {
+func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay, effectManager *widget.EffectManager) func(widget.EffectId, actor.ActorId) {
 	return func(effectId widget.EffectId, target actor.ActorId) {
 		targetActor := serveActor(target)
 		position := func() *frontend.Vector {
@@ -298,7 +303,7 @@ func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay
 	}
 }
 
-func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, shake *frontend.EmitShake) func(actor.ActorId) {
+func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, shake *frontend.EmitShake) func(actor.ActorId) {
 	return func(actorId actor.ActorId) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -316,7 +321,7 @@ func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *c
 
 func createSetDamageFunction(
 	serveActor actor.ActorSupplier,
-	battleEnemyDisplay *component.BattleEnemyDisplay,
+	battleEnemyDisplay *battleenemy.BattleEnemyDisplay,
 	subActorDisplay *battleactor.BattleSubActorDisplay,
 	actorDisplay *battleactor.BattleActorDisplay,
 	displayedHp map[actor.ActorId]actor.HP,
@@ -336,8 +341,8 @@ func createSetDamageFunction(
 	}
 }
 
-func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay) func(actor.ActorId, component.BattleEmotionType) {
-	return func(actorId actor.ActorId, emotion component.BattleEmotionType) {
+func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay) func(actor.ActorId, battleemotion.BattleEmotionType) {
+	return func(actorId actor.ActorId, emotion battleemotion.BattleEmotionType) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
 			battleEnemyDisplay.SetEmotion(actorId, emotion)
@@ -351,7 +356,7 @@ func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay
 	}
 }
 
-func createSetPartnerDialogueFunction(subActorDialog *component.BattlePartnerDialogue) func(text.String) *sequence.SetPartnerDialogueResponse {
+func createSetPartnerDialogueFunction(subActorDialog *battledialogue.BattlePartnerDialogue) func(text.String) *sequence.SetPartnerDialogueResponse {
 	return func(textValue text.String) *sequence.SetPartnerDialogueResponse {
 		subActorDialog.SetText(textValue.String(), false)
 		return &sequence.SetPartnerDialogueResponse{
@@ -364,7 +369,7 @@ func createSetPartnerDialogueFunction(subActorDialog *component.BattlePartnerDia
 }
 
 func createOnSubmitTargetSelect(
-	battleSelectWindow *component.BattleSelectWindow,
+	battleSelectWindow *battleselect.BattleSelectWindow,
 	input frontend.InputManager,
 ) func() {
 	return func() {

@@ -1,15 +1,15 @@
-package component
+package enemy
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
-// BattleEnemyDisplay is a component that displays battle enemies.
 type BattleEnemyDisplay struct {
 	actorIds      []actor.ActorId
 	actorGraphics map[actor.ActorId]BattleEnemyGraphicsInterface
@@ -39,7 +39,7 @@ func (d *BattleEnemyDisplay) DoShake(actorId actor.ActorId) {
 	graphics.DoShake()
 }
 
-func (d *BattleEnemyDisplay) SetEmotion(actorId actor.ActorId, emotion BattleEmotionType) {
+func (d *BattleEnemyDisplay) SetEmotion(actorId actor.ActorId, emotion battleemotion.BattleEmotionType) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
 		return

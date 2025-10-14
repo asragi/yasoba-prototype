@@ -13,7 +13,11 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
-	battleactor "github.com/asragi/yasoba-prototype/component/battle_actor"
+	battleactor "github.com/asragi/yasoba-prototype/component/battle/actor"
+	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
+	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
+	battlehp "github.com/asragi/yasoba-prototype/component/battle/hp"
+	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
@@ -60,25 +64,25 @@ func init() {
 	newText := widget.CreateNewText(resource)
 	newMessageWindow := component.StandByNewMessageWindow(newText, newWindow)
 	newSelectWindow := component.StandByNewSelectWindow(resource, newText, textServer)
-	newBattleSelectWindow := component.StandByNewBattleSelectWindow(newSelectWindow)
-	newFaceWindow := component.StandByNewFaceWindow(resource, newWindow)
+	newBattleSelectWindow := battleselect.StandByNewBattleSelectWindow(newSelectWindow)
+	newFaceWindow := battleactor.StandByNewFaceWindow(resource, newWindow)
 	battleSettingServer := config.NewServer()
 	skillServer := gameSkill.NewSkillServer()
 	random := rand.Float64
 	applySkill := skill.CreateSkillApply(skillServer, actorServer.Get, actorServer.Upsert, random)
-	battleSequenceServer := component.CreateServeBattleEventSequence()
-	prepareBattleSequence := component.CreateExecBattleEventSequence(
+	battleSequenceServer := battleevent.CreateServeBattleEventSequence()
+	prepareBattleSequence := battleevent.CreateExecBattleEventSequence(
 		textServer,
 		battleSequenceServer,
 	)
-	enemyGraphicServer := component.CreateGetEnemyGraphics()
+	enemyGraphicServer := battleenemy.CreateGetEnemyGraphics()
 	newDisplayDamage := component.CreateNewDisplayDamage(newText)
-	newBattleActorGraphics := component.NewBattleActorGraphics(
+	newBattleActorGraphics := battleenemy.NewBattleActorGraphics(
 		resource,
 		enemyGraphicServer,
 		newDisplayDamage,
 	)
-	newHPDisplay := component.CreateNewBattleHPDisplay(frontend.MaruMinya, newText)
+	newHPDisplay := battlehp.CreateNewBattleHPDisplay(frontend.MaruMinya, newText)
 	newParameterDisplay := battleactor.CreateNewBattleParameterDisplay(newWindow, newHPDisplay)
 	newBattleActorDisplay := battleactor.CreateNewBattleActorDisplay(newFaceWindow, newDisplayDamage, newParameterDisplay)
 	newBattleSubActorDisplay := battleactor.CreateNewBattleSubActorDisplay(
@@ -86,10 +90,10 @@ func init() {
 		newDisplayDamage,
 		newParameterDisplay,
 	)
-	newBattleEnemyDisplay := component.CreateNewBattleEnemyDisplay(newBattleActorGraphics)
+	newBattleEnemyDisplay := battleenemy.CreateNewBattleEnemyDisplay(newBattleActorGraphics)
 	effectData := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(effectData, resource)
-	serveEnemyView := component.NewServeEnemyViewData()
+	serveEnemyView := battleenemy.NewServeEnemyViewData()
 	choiceTarget := decision.CreateChoiceSkillTarget(random)
 	newChoiceRandomAction := decision.StandByCreateRandomAction(
 		random,
@@ -125,7 +129,7 @@ func init() {
 		initializeBattle,
 		battleSettingServer,
 		prepareBattleSequence,
-		component.ToEventSequenceId,
+		battleevent.ToEventSequenceId,
 		newBattleEnemyDisplay,
 		effectManager,
 		serveEnemyView,

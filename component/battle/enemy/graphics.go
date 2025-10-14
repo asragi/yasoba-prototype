@@ -1,17 +1,18 @@
-package component
+package enemy
 
 import (
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/component"
+	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
-// BattleEnemyGraphics is a component that displays a battle enemy.
 type BattleEnemyGraphics struct {
-	emotion          queuedEmotion
-	animation        map[BattleEmotionType]*widget.Animation
-	displayDamage    *DisplayDamage
+	emotion          battleemotion.Queued
+	animation        map[battleemotion.BattleEmotionType]*widget.Animation
+	displayDamage    *component.DisplayDamage
 	shake            *frontend.EmitShake
 	disappearShader  *frontend.Shader
 	parentPosition   *frontend.Vector
@@ -23,7 +24,7 @@ type BattleEnemyGraphicsInterface interface {
 	DoShake()
 	widget.PositionUpdater
 	widget.Drawer
-	SetEmotion(BattleEmotionType)
+	SetEmotion(battleemotion.BattleEmotionType)
 	SetDisappear()
 	GetDefinitivePosition() *frontend.Vector
 }
@@ -33,9 +34,9 @@ func (g *BattleEnemyGraphics) GetDefinitivePosition() *frontend.Vector {
 }
 
 func (g *BattleEnemyGraphics) getCurrentAnimation() *widget.Animation {
-	animation, ok := g.animation[g.emotion.current()]
+	animation, ok := g.animation[g.emotion.Current()]
 	if !ok {
-		return g.animation[BattleEmotionNormal]
+		return g.animation[battleemotion.BattleEmotionNormal]
 	}
 	return animation
 }
@@ -52,7 +53,7 @@ func (g *BattleEnemyGraphics) Update(parentCenterPosition *frontend.Vector) {
 	g.shake.Update()
 	g.displayDamage.Update(parentCenterPosition.Add(g.relativePosition))
 	g.parentPosition = parentCenterPosition
-	animation := g.emotion.apply(func(emotion BattleEmotionType) *widget.Animation {
+	animation := g.emotion.Apply(func(emotion battleemotion.BattleEmotionType) *widget.Animation {
 		return g.animation[emotion]
 	})
 	if animation == nil {
@@ -67,7 +68,7 @@ func (g *BattleEnemyGraphics) Draw(drawFunc frontend.DrawFunc) {
 	g.getCurrentAnimation().Draw(drawFunc)
 }
 
-func (g *BattleEnemyGraphics) SetEmotion(emotion BattleEmotionType) {
+func (g *BattleEnemyGraphics) SetEmotion(emotion battleemotion.BattleEmotionType) {
 	g.emotion.Enqueue(emotion)
 }
 
@@ -87,7 +88,7 @@ type NewBattleEnemyGraphicsFunc func(
 func NewBattleActorGraphics(
 	resource frontend.ResourceManagerInterface,
 	getEnemyGraphics GetEnemyGraphicsFunc,
-	newDisplayDamage NewDisplayDamageFunc,
+	newDisplayDamage component.NewDisplayDamageFunc,
 ) NewBattleEnemyGraphicsFunc {
 	return func(
 		relativePosition *frontend.Vector,
@@ -96,8 +97,8 @@ func NewBattleActorGraphics(
 		enemyId enemy.EnemyId,
 	) BattleEnemyGraphicsInterface {
 		enemyGraphicsData := getEnemyGraphics(enemyId)
-		animations := func() map[BattleEmotionType]*widget.Animation {
-			result := map[BattleEmotionType]*widget.Animation{}
+		animations := func() map[battleemotion.BattleEmotionType]*widget.Animation {
+			result := map[battleemotion.BattleEmotionType]*widget.Animation{}
 			for _, data := range enemyGraphicsData {
 				texture := resource.GetTexture(data.texture)
 				animation := resource.GetAnimationData(data.animation)
@@ -112,7 +113,7 @@ func NewBattleActorGraphics(
 			return result
 		}()
 		return &BattleEnemyGraphics{
-			emotion:          newQueuedEmotion(BattleEmotionNormal),
+			emotion:          battleemotion.NewQueued(battleemotion.BattleEmotionNormal),
 			animation:        animations,
 			shake:            frontend.NewShake(),
 			parentPosition:   frontend.VectorZero,
@@ -124,7 +125,7 @@ func NewBattleActorGraphics(
 }
 
 type BattleActorAnimationSet struct {
-	emotion   BattleEmotionType
+	emotion   battleemotion.BattleEmotionType
 	texture   frontend.TextureId
 	animation frontend.AnimationId
 }
@@ -135,12 +136,12 @@ func CreateGetEnemyGraphics() GetEnemyGraphicsFunc {
 	dict := map[enemy.EnemyId][]*BattleActorAnimationSet{
 		enemy.EnemyPunchingBagId: {
 			{
-				emotion:   BattleEmotionNormal,
+				emotion:   battleemotion.BattleEmotionNormal,
 				texture:   frontend.TextureMarshmallowNormal,
 				animation: frontend.AnimationMarshmallowNormal,
 			},
 			{
-				emotion:   BattleEmotionDamage,
+				emotion:   battleemotion.BattleEmotionDamage,
 				texture:   frontend.TextureMarshmallowDamage,
 				animation: frontend.AnimationMarshmallowDamage,
 			},

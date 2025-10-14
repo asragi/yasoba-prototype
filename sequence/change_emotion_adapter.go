@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/component"
+	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
 )
 
 // YAMLデータ構造体
@@ -37,20 +37,20 @@ func createChangeEmotionDataPortFromYAML(filePath string) changeEmotionDataPort 
 		eventId := eventId(emotion.EventID)
 
 		// emotion文字列をBattleEmotionTypeに変換
-		var emotionType component.BattleEmotionType
+		var emotionType battleemotion.BattleEmotionType
 		switch emotion.Emotion {
 		case "normal":
-			emotionType = component.BattleEmotionNormal
+			emotionType = battleemotion.BattleEmotionNormal
 		case "damage":
-			emotionType = component.BattleEmotionDamage
+			emotionType = battleemotion.BattleEmotionDamage
 		case "smile":
-			emotionType = component.BattleEmotionSmile
+			emotionType = battleemotion.BattleEmotionSmile
 		case "angry":
-			emotionType = component.BattleEmotionAngry
+			emotionType = battleemotion.BattleEmotionAngry
 		case "annoyed":
-			emotionType = component.BattleEmotionAnnoyed
+			emotionType = battleemotion.BattleEmotionAnnoyed
 		default:
-			emotionType = component.BattleEmotionNormal // デフォルト値
+			emotionType = battleemotion.BattleEmotionNormal // デフォルト値
 		}
 
 		emotionMap[eventId] = &ChangeEmotion{

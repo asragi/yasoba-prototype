@@ -1,14 +1,14 @@
-package battle_actor
+package actor
 
 import (
 	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/component"
+	battlehp "github.com/asragi/yasoba-prototype/component/battle/hp"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type BattleParameterDisplay struct {
-	hpDisplay *component.BattleHPDisplay
+	hpDisplay *battlehp.BattleHPDisplay
 	window    widget.WindowInterface
 }
 
@@ -30,7 +30,7 @@ type NewBattleParameterDisplayFunc func(actor.HP, *frontend.Pivot) *BattleParame
 
 func CreateNewBattleParameterDisplay(
 	newWindow widget.NewWindowFunc,
-	newBattleHPDisplay component.NewBattleHPDisplayFunc,
+	newBattleHPDisplay battlehp.NewBattleHPDisplayFunc,
 ) NewBattleParameterDisplayFunc {
 	const windowCornerSize = 3
 	const faceSize = 80

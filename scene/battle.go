@@ -6,7 +6,8 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
-	"github.com/asragi/yasoba-prototype/component"
+	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
+	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 	"github.com/asragi/yasoba-prototype/invoke"
@@ -16,7 +17,7 @@ import (
 
 type BattleScene struct {
 	ui                  battleUI
-	battleSequence      *component.BattleEventSequencer
+	battleSequence      *battleevent.BattleEventSequencer
 	enemyData           []*setup.EnemyIdPair
 	actorNames          map[actor.ActorId]text.TextId
 	endState            battle.BattleEndType
@@ -71,7 +72,7 @@ func (s *BattleScene) checkAndStartSequences(timing invoke.InvokeTiming) {
 	}
 }
 
-func advanceBattleSequence(sequence *component.BattleEventSequencer) bool {
+func advanceBattleSequence(sequence *battleevent.BattleEventSequencer) bool {
 	if !sequence.IsRun() {
 		return false
 	}
@@ -94,21 +95,21 @@ type playBattleSequenceFunc func([]*battleSkill.SkillApplyResult)
 
 // SkillApplyResultに基づいて戦闘の演出を行う
 func createPlayBattleSequence(
-	skillToSequence component.SkillToSequenceFunc,
-	newBattleSequence component.NewBattleSequenceFunc,
-	addBattleSequence func(component.BattleSequenceFunc),
+	skillToSequence battleevent.SkillToSequenceFunc,
+	newBattleSequence battleevent.NewBattleSequenceFunc,
+	addBattleSequence func(battleevent.BattleSequenceFunc),
 	actorIdToEnemy map[actor.ActorId]enemy.EnemyId,
-	serveEnemyView component.ServeEnemyViewData,
+	serveEnemyView battleenemy.ServeEnemyViewData,
 ) playBattleSequenceFunc {
 	return func(skillApplyResultSet []*battleSkill.SkillApplyResult) {
 		for _, skillApplyResult := range skillApplyResultSet {
 			skillId := skillApplyResult.SkillId
 			sequenceId := skillToSequence(skillId)
-			damageInformation := func() []*component.DamageInformation {
-				result := make([]*component.DamageInformation, 0)
+			damageInformation := func() []*battleevent.DamageInformation {
+				result := make([]*battleevent.DamageInformation, 0)
 				for _, row := range skillApplyResult.Rows {
 					result = append(
-						result, &component.DamageInformation{
+						result, &battleevent.DamageInformation{
 							Target:  row.TargetId,
 							Damage:  row.Damage,
 							AfterHP: row.AfterHp,
@@ -118,7 +119,7 @@ func createPlayBattleSequence(
 				return result
 			}()
 			sequence := newBattleSequence(
-				&component.EventSequenceArgs{
+				&battleevent.EventSequenceArgs{
 					SequenceId: sequenceId,
 					Actor:      skillApplyResult.Actor,
 					Target:     damageInformation,
@@ -135,10 +136,10 @@ func createPlayBattleSequence(
 					enemyId := actorIdToEnemy[actualTarget]
 					viewData := serveEnemyView(enemyId)
 					beatenSequence := newBattleSequence(
-						&component.EventSequenceArgs{
+						&battleevent.EventSequenceArgs{
 							SequenceId: viewData.BeatenSequenceId,
 							Actor:      actualTarget,
-							Target: []*component.DamageInformation{
+							Target: []*battleevent.DamageInformation{
 								{
 									Target: actualTarget,
 									Damage: 0,

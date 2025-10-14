@@ -1,17 +1,16 @@
-package component
+package window
 
 import (
 	"github.com/asragi/yasoba-prototype/battle"
+	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/text"
 )
 
-type BattleCommand int
-
 type BattleSelectWindow struct {
 	commands     []battle.PlayerCommand
 	onSubmit     func(battle.PlayerCommand)
-	selectWindow *SelectWindow
+	selectWindow *component.SelectWindow
 }
 
 func (w *BattleSelectWindow) OnInputSubmit() {
@@ -50,9 +49,6 @@ func (w *BattleSelectWindow) OnInputDown() {
 	w.selectWindow.OnInputDown()
 }
 
-func (w *BattleSelectWindow) OnSubmit() {
-}
-
 type NewBattleSelectWindowFunc func(
 	*frontend.Vector,
 	*frontend.Pivot,
@@ -62,7 +58,7 @@ type NewBattleSelectWindowFunc func(
 ) *BattleSelectWindow
 
 func StandByNewBattleSelectWindow(
-	newSelectWindow NewSelectWindowFunc,
+	newSelectWindow component.NewSelectWindowFunc,
 ) NewBattleSelectWindowFunc {
 	return func(
 		relativePosition *frontend.Vector,
