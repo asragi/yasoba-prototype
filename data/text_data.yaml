@@ -55,11 +55,7 @@ texts:
   # 戦闘ダイアログ
   - id: "battle_dialog_text"
     text: "かかってこい！"
-
+  
   # 主人公の体力低下時のテキスト
   - id: "lune_hp_low_dialogue"
     text: "大丈夫？\n無理しないで！"
-
-  # デバッグメニュー
-  - id: "debug_menu_battle"
-    text: "バトルをはじめる"

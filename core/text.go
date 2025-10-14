@@ -20,7 +20,6 @@ const (
 	TextIdBattleWin            TextId = "battle_win"
 	TextIdBattleLose           TextId = "battle_lose"
 	TextIdBattleDialogText     TextId = "battle_dialog_text"
-	TextIdDebugMenuBattle      TextId = "debug_menu_battle"
 )
 
 type ServeTextDataFunc func(id TextId) *TextData
