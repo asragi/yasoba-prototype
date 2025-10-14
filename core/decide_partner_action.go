@@ -1,10 +1,13 @@
 package core
 
-import "github.com/asragi/yasoba-prototype/util"
+import (
+	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/util"
+)
 
 type PartnerActionPlan struct {
 	SkillId        SkillId
-	SelectedTarget ActorId
+	SelectedTarget actor.ActorId
 }
 
 type decidePartnerPlanFunc func()
@@ -14,7 +17,7 @@ func createDecidePartnerAction(random util.EmitRandomFunc, state *BattleState) *
 		SkillIdSunnyKick,
 		SkillIdSunnyUppercut,
 	}
-	target := func(enemies []*Actor) ActorId {
+	target := func(enemies []*actor.Actor) actor.ActorId {
 		return enemies[0].Id
 	}
 	return func() *PartnerActionPlan {

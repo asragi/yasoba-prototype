@@ -1,16 +1,18 @@
 package core
 
+import "github.com/asragi/yasoba-prototype/actor"
+
 type CheckCombinationRequest struct {
 	MainActorSkillId SkillId
-	MainActorTarget  ActorId
+	MainActorTarget  actor.ActorId
 	SubActorSkillId  SkillId
-	SubActorTarget   ActorId
+	SubActorTarget   actor.ActorId
 }
 
 type CheckCombinationResponse struct {
 	IsCombination bool
 	SkillId       SkillId
-	TargetId      ActorId
+	TargetId      actor.ActorId
 }
 type CheckCombinationFunc func(request *CheckCombinationRequest) *CheckCombinationResponse
 

@@ -6,8 +6,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/component"
-	"github.com/asragi/yasoba-prototype/core"
 )
 
 // YAMLデータ構造体
@@ -54,7 +54,7 @@ func createChangeEmotionDataPortFromYAML(filePath string) changeEmotionDataPort 
 		}
 
 		emotionMap[eventId] = &ChangeEmotion{
-			actorId: core.ActorId(emotion.ActorID),
+			actorId: actor.ActorId(emotion.ActorID),
 			emotion: emotionType,
 		}
 	}

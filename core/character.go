@@ -1,6 +1,6 @@
 package core
 
-import "strconv"
+import "github.com/asragi/yasoba-prototype/actor"
 
 type CharacterId string
 
@@ -9,61 +9,6 @@ const (
 	CharacterLuneId  CharacterId = "lune"
 	CharacterSunnyId CharacterId = "sunny"
 )
-
-type MaxHP int
-
-func (h MaxHP) ToHP() HP {
-	return HP(h)
-}
-
-type HP int
-
-func (h HP) String() string {
-	return strconv.Itoa(int(h))
-}
-
-type HPRatio float64
-
-func (h HP) Ratio(max MaxHP) HPRatio {
-	if max <= 0 {
-		return 0
-	}
-	return HPRatio(float64(h) / float64(max))
-}
-
-func (r HPRatio) Float64() float64 {
-	return float64(r)
-}
-
-type ATK int
-
-func (a ATK) toAttackValue() attackerValue {
-	return attackerValue(a)
-}
-
-type MAG int
-
-func (m MAG) toAttackValue() attackerValue {
-	return attackerValue(m)
-}
-
-func (m MAG) toDefenceValue() defenceValue {
-	return defenceValue(m)
-}
-
-// attackerValue is common value for both physical and magical attack value
-type attackerValue float64
-
-type DEF int
-
-func (d DEF) toDefenceValue() defenceValue {
-	return defenceValue(d)
-}
-
-// defenderValue is common value for both physical and magical defence value
-type defenceValue float64
-
-type SPD int
 
 type ServeCharacterFunc func(CharacterId) *CharacterData
 
@@ -97,12 +42,12 @@ func CreateCharacterServer() ServeCharacterFunc {
 type CharacterData struct {
 	Id    CharacterId
 	Name  TextId
-	MaxHP MaxHP
-	HP    HP
-	ATK   ATK
-	MAG   MAG
-	DEF   DEF
-	SPD   SPD
+	MaxHP actor.MaxHP
+	HP    actor.HP
+	ATK   actor.ATK
+	MAG   actor.MAG
+	DEF   actor.DEF
+	SPD   actor.SPD
 }
 
 type InitialMP int

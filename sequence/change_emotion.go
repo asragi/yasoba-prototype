@@ -3,12 +3,12 @@ package sequence
 import (
 	"fmt"
 
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/component"
-	"github.com/asragi/yasoba-prototype/core"
 )
 
 type ChangeEmotion struct {
-	actorId core.ActorId
+	actorId actor.ActorId
 	emotion component.BattleEmotionType
 }
 
@@ -16,7 +16,7 @@ type changeEmotionDataPort func(eventId) *ChangeEmotion
 
 type createChangeEmotionEvent func(eventId) *eventUnit
 
-type SetEmotion func(core.ActorId, component.BattleEmotionType)
+type SetEmotion func(actor.ActorId, component.BattleEmotionType)
 
 func produceCreateChangeEmotionEventToUnit(
 	changeEmotionDataPort changeEmotionDataPort,

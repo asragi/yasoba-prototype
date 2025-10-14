@@ -1,5 +1,7 @@
 package core
 
+import "github.com/asragi/yasoba-prototype/actor"
+
 type EnemyId string
 
 const (
@@ -10,11 +12,11 @@ type ServeEnemyData func(id EnemyId) *EnemyData
 
 type EnemyData struct {
 	Id     EnemyId
-	MaxHP  MaxHP
-	Atk    ATK
-	Mag    MAG
-	Def    DEF
-	Spd    SPD
+	MaxHP  actor.MaxHP
+	Atk    actor.ATK
+	Mag    actor.MAG
+	Def    actor.DEF
+	Spd    actor.SPD
 	Skills []SkillId
 }
 

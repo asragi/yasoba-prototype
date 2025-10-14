@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"gopkg.in/yaml.v3"
@@ -46,7 +47,7 @@ func createConditionActorHpDataPortFromYAML(path string) conditionActorHpDataPor
 		for _, row := range yamlData.ConditionActorHps {
 			result = append(result, &conditionActorHp{
 				ownerId:        conditionId(row.OwnerId),
-				actorId:        core.ActorId(row.ActorId),
+				actorId:        actor.ActorId(row.ActorId),
 				thresholdRatio: row.ThresholdRatio,
 			})
 		}

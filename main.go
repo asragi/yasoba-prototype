@@ -4,6 +4,7 @@ import (
 	"log"
 	"math/rand"
 
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/debug"
@@ -34,7 +35,7 @@ func init() {
 		log.Fatal(err)
 	}
 	prepareProduceCreateSequence := sequence.InitializeProduceCreateSequence()
-	actorServer := core.NewInMemoryActorServer()
+	actorServer := actor.NewInMemoryActorServer()
 	textServer, err := core.LoadTextDataFromYaml("data/text_data.yaml")
 	if err != nil {
 		log.Fatal(err)

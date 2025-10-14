@@ -3,7 +3,7 @@ package component
 import (
 	"image/color"
 
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -20,18 +20,18 @@ func (d *BattleHPDisplay) Draw(drawFunc frontend.DrawFunc) {
 	d.text.Draw(drawFunc)
 }
 
-func (d *BattleHPDisplay) SetHP(afterHp core.HP) {
+func (d *BattleHPDisplay) SetHP(afterHp actor.HP) {
 	d.text.SetText(afterHp.String(), false)
 }
 
-type NewBattleHPDisplayFunc func(core.HP) *BattleHPDisplay
+type NewBattleHPDisplayFunc func(actor.HP) *BattleHPDisplay
 
 func CreateNewBattleHPDisplay(
 	font frontend.FontId,
 	newText widget.NewTextFunc,
 ) NewBattleHPDisplayFunc {
 	const margin float64 = 4
-	return func(initialHp core.HP) *BattleHPDisplay {
+	return func(initialHp actor.HP) *BattleHPDisplay {
 		text := newText(
 			&widget.TextOptionsNew{
 				RelativePosition: &frontend.Vector{X: -margin, Y: -margin},

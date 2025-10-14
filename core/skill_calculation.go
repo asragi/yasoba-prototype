@@ -4,36 +4,39 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/util"
 )
 
-func decideAttackValue(atk ATK, mag MAG, skillType SkillType) attackerValue {
+func decideAttackValue(atk actor.ATK, mag actor.MAG, skillType SkillType) attackValue {
 	if skillType == SkillTypePhysical {
-		return atk.toAttackValue()
+		return attackValue(atk)
 	}
-	return mag.toAttackValue()
+	return attackValue(mag)
 }
+
+type attackValue float64
 
 type SelectedAction struct {
 	Id       SkillId
-	Actor    ActorId
-	SubActor ActorId
-	Target   []ActorId
+	Actor    actor.ActorId
+	SubActor actor.ActorId
+	Target   []actor.ActorId
 }
 
 type SkillApplyResultRow struct {
-	ActorId        ActorId
-	TargetId       ActorId
-	TargetSide     ActorSide
+	ActorId        actor.ActorId
+	TargetId       actor.ActorId
+	TargetSide     actor.ActorSide
 	SkillId        SkillId
 	Damage         Damage
 	IsTargetBeaten bool
-	AfterHp        HP
+	AfterHp        actor.HP
 }
 
 type SkillApplyResult struct {
-	Actor    ActorId
-	SubActor ActorId
+	Actor    actor.ActorId
+	SubActor actor.ActorId
 	SkillId  SkillId
 	Rows     []*SkillApplyResultRow
 }
@@ -44,14 +47,14 @@ type SkillApplyFunc func(*SelectedAction) *SkillApplyResult
 
 func CreateSkillApply(
 	skillServer ServeSkillData,
-	supplyActor ActorSupplier,
-	updateActor UpdateActorFunc,
+	supplyActor actor.ActorSupplier,
+	updateActor actor.UpdateActorFunc,
 	random util.EmitRandomFunc,
 ) SkillApplyFunc {
 	applyAttack := func(
 		args *SelectedAction,
 		decidePower func(*SkillDataDetail) attackPower,
-		decideAttack func(*SkillDataDetail) attackerValue,
+		decideAttack func(*SkillDataDetail) attackValue,
 	) *SkillApplyResult {
 		result := make([]*SkillApplyResultRow, 0)
 		data := skillServer(args.Id)
@@ -99,7 +102,7 @@ func CreateSkillApply(
 				attack := decideAttackValue(actor.ATK, actor.MAG, row.Type)
 				return calculateNormalAttackPower(attack, row.Power)
 			},
-			func(row *SkillDataDetail) attackerValue {
+			func(row *SkillDataDetail) attackValue {
 				return decideAttackValue(actor.ATK, actor.MAG, row.Type)
 			},
 		)
@@ -123,7 +126,7 @@ func CreateSkillApply(
 					row.SubType,
 				)
 			},
-			func(row *SkillDataDetail) attackerValue {
+			func(row *SkillDataDetail) attackValue {
 				return decideAttackValue(mainActor.ATK, mainActor.MAG, row.Type)
 			},
 		)
@@ -144,14 +147,14 @@ func (d Damage) String() string {
 	return strconv.Itoa(int(d))
 }
 
-func (d Damage) Apply(hp HP) HP {
-	return HP(math.Max(0, float64(hp)-float64(d)))
+func (d Damage) Apply(hp actor.HP) actor.HP {
+	return actor.HP(math.Max(0, float64(hp)-float64(d)))
 }
 
 // randomDamage is a partial damage value that is calculated by random value.
 type randomDamage int
 
-func newRandomDamage(attack attackerValue, emitRandom util.EmitRandomFunc) randomDamage {
+func newRandomDamage(attack attackValue, emitRandom util.EmitRandomFunc) randomDamage {
 	randomValue := emitRandom()
 	return randomDamage(float64(attack) * randomValue)
 }
@@ -159,7 +162,7 @@ func newRandomDamage(attack attackerValue, emitRandom util.EmitRandomFunc) rando
 const attackPowerBase = 7.0
 
 func calculateNormalAttackPower(
-	attackValue attackerValue,
+	attackValue attackValue,
 	power SkillPower,
 ) attackPower {
 	return attackPower(
@@ -171,10 +174,10 @@ func calculateNormalAttackPower(
 }
 
 func calculateCombinationAttackPower(
-	attackerATK ATK,
-	attackerMAG MAG,
-	subAttackerATK ATK,
-	subAttackerMAG MAG,
+	attackerATK actor.ATK,
+	attackerMAG actor.MAG,
+	subAttackerATK actor.ATK,
+	subAttackerMAG actor.MAG,
 	power SkillPower,
 	subPower SkillPower,
 	attackType SkillType,
@@ -187,13 +190,13 @@ func calculateCombinationAttackPower(
 	return mainAttackPower + subAttackPower
 }
 
-// attackPower is calculated based on attackerValue
+// attackPower is calculated based on attackValue
 type attackPower float64
 
 func calculateNormalAttackDamage(
 	attackPower attackPower,
-	defenderDEF DEF,
-	defenderMAG MAG,
+	defenderDEF actor.DEF,
+	defenderMAG actor.MAG,
 	attackType SkillType,
 	randomDamage randomDamage,
 ) Damage {

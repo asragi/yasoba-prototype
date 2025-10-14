@@ -3,6 +3,7 @@ package component
 import (
 	"fmt"
 
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -19,12 +20,12 @@ type BattleTextDisplay interface {
 	SetText(text string, displayAll bool)
 }
 
-type ShakeActor func(core.ActorId)
-type ChangeEmotion func(core.ActorId, BattleEmotionType)
+type ShakeActor func(actor.ActorId)
+type ChangeEmotion func(actor.ActorId, BattleEmotionType)
 type ShakeScreen func()
-type DisplayDamageFunc func(core.ActorId, core.Damage, core.HP)
-type PlayEffect func(widget.EffectId, core.ActorId)
-type SetDisappear func(core.ActorId)
+type DisplayDamageFunc func(actor.ActorId, core.Damage, actor.HP)
+type PlayEffect func(widget.EffectId, actor.ActorId)
+type SetDisappear func(actor.ActorId)
 
 type SkillToSequenceFunc func(core.SkillId) EventSequenceId
 
@@ -144,14 +145,14 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 }
 
 type DamageInformation struct {
-	Target  core.ActorId
+	Target  actor.ActorId
 	Damage  core.Damage
-	AfterHP core.HP
+	AfterHP actor.HP
 }
 
 type EventSequenceArgs struct {
 	SequenceId EventSequenceId
-	Actor      core.ActorId
+	Actor      actor.ActorId
 	Target     []*DamageInformation
 }
 
@@ -202,8 +203,8 @@ func CreateExecBattleEventSequence(
 						target := args.Target[0]
 						shakeActor(target.Target)
 					case *DisplayDamageEvent:
-						damageMap := func() map[core.ActorId][]*DamageInformation {
-							result := map[core.ActorId][]*DamageInformation{}
+						damageMap := func() map[actor.ActorId][]*DamageInformation {
+							result := map[actor.ActorId][]*DamageInformation{}
 							for _, target := range args.Target {
 								result[target.Target] = append(result[target.Target], target)
 							}

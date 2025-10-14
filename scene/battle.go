@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
@@ -12,7 +13,7 @@ type BattleScene struct {
 	ui                  battleUI
 	battleSequence      *component.BattleEventSequencer
 	enemyData           []*core.EnemyIdPair
-	actorNames          map[core.ActorId]core.TextId
+	actorNames          map[actor.ActorId]core.TextId
 	endState            core.BattleEndType
 	createSequence      sequence.CreateSequence
 	sequences           *sequence.SequenceManager
@@ -91,7 +92,7 @@ func createPlayBattleSequence(
 	skillToSequence component.SkillToSequenceFunc,
 	newBattleSequence component.NewBattleSequenceFunc,
 	addBattleSequence func(component.BattleSequenceFunc),
-	actorIdToEnemy map[core.ActorId]core.EnemyId,
+	actorIdToEnemy map[actor.ActorId]core.EnemyId,
 	serveEnemyView component.ServeEnemyViewData,
 ) playBattleSequenceFunc {
 	return func(skillApplyResultSet []*core.SkillApplyResult) {
@@ -125,7 +126,7 @@ func createPlayBattleSequence(
 				}
 				actualTarget := row.TargetId
 				targetSide := row.TargetSide
-				if targetSide == core.ActorSideEnemy {
+				if targetSide == actor.ActorSideEnemy {
 					enemyId := actorIdToEnemy[actualTarget]
 					viewData := serveEnemyView(enemyId)
 					beatenSequence := newBattleSequence(
@@ -152,7 +153,7 @@ func createPlayBattleSequence(
 // TODO: View非依存のLogic部分だけ抽出してCoreに移動したい
 func createOnTargetSelect(
 	closeWindow func(),
-	indexToActor func(int) core.ActorId,
+	indexToActor func(int) actor.ActorId,
 	serveSelectedCommand func() core.PlayerCommand,
 	resetBattleSequence func(),
 	playSequence func([]*core.SkillApplyResult),
@@ -164,7 +165,7 @@ func createOnTargetSelect(
 		command := serveSelectedCommand()
 		response := processBattle(
 			&core.ProcessBattleRequest{
-				TargetId: []core.ActorId{target},
+				TargetId: []actor.ActorId{target},
 				Command:  command,
 			},
 		)

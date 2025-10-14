@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
@@ -23,7 +24,7 @@ func InitializeCreateBattleScene(
 	newBattleEnemyDisplay component.NewBattleEnemyDisplayFunc,
 	effectManager *widget.EffectManager,
 	serveEnemyView component.ServeEnemyViewData,
-	serveActor core.ActorSupplier,
+	serveActor actor.ActorSupplier,
 	newVariableMessageWindow component.NewVariableMessageWindowFunc,
 	newProcessBattle core.NewProcessBattleFunc,
 	produceCreateSequence sequence.ProduceCreateSequence,
@@ -53,8 +54,8 @@ func InitializeCreateBattleScene(
 		allActorId := createAllActorIdList(battleResponse)
 		allTextId := createAllTextIdList(allActorId, actorNames)
 
-		displayedHp := func() map[core.ActorId]core.HP {
-			hp := make(map[core.ActorId]core.HP, len(allActorId))
+		displayedHp := func() map[actor.ActorId]actor.HP {
+			hp := make(map[actor.ActorId]actor.HP, len(allActorId))
 			for _, id := range allActorId {
 				actor := serveActor(id)
 				if actor == nil {
@@ -147,7 +148,7 @@ func InitializeCreateBattleScene(
 		closeWindowOnTargetSelect := createOnSubmitTargetSelect(battleSelectWindow, input)
 		onTargetSelect := createOnTargetSelect(
 			closeWindowOnTargetSelect,
-			func(index int) core.ActorId { return allActorId[index] },
+			func(index int) actor.ActorId { return allActorId[index] },
 			func() core.PlayerCommand { return selectedCommand },
 			battleScene.battleSequence.Reset,
 			playSequence,
@@ -163,7 +164,7 @@ func InitializeCreateBattleScene(
 		)
 		battleScene.ui.targetSelectWindow = targetSelectWindow
 
-		getActorHpRatio := func(actorId core.ActorId) core.HPRatio {
+		getActorHpRatio := func(actorId actor.ActorId) actor.HPRatio {
 			actor := serveActor(actorId)
 			if actor == nil {
 				panic("actor not found: " + string(actorId))
@@ -190,37 +191,37 @@ func extractEnemyIds(battleSetting *core.BattleSetting) []core.EnemyId {
 	return ids
 }
 
-func createActorIdToEnemyMapping(enemyIds []*core.EnemyIdPair) map[core.ActorId]core.EnemyId {
-	result := make(map[core.ActorId]core.EnemyId)
+func createActorIdToEnemyMapping(enemyIds []*core.EnemyIdPair) map[actor.ActorId]core.EnemyId {
+	result := make(map[actor.ActorId]core.EnemyId)
 	for _, pair := range enemyIds {
 		result[pair.ActorId] = pair.EnemyId
 	}
 	return result
 }
 
-func createActorNamesMapping(enemyIds []*core.EnemyIdPair, serveEnemyName core.EnemyNameServer) map[core.ActorId]core.TextId {
-	names := make(map[core.ActorId]core.TextId)
-	names[core.ActorLuneId] = core.TextIdLuneName
-	names[core.ActorSunnyId] = core.TextIdSunnyName
+func createActorNamesMapping(enemyIds []*core.EnemyIdPair, serveEnemyName core.EnemyNameServer) map[actor.ActorId]core.TextId {
+	names := make(map[actor.ActorId]core.TextId)
+	names[actor.ActorLuneId] = core.TextIdLuneName
+	names[actor.ActorSunnyId] = core.TextIdSunnyName
 	for _, pair := range enemyIds {
 		names[pair.ActorId] = serveEnemyName(pair.EnemyId)
 	}
 	return names
 }
 
-func createAllActorIdList(battleResponse *core.InitializeBattleResponse) []core.ActorId {
-	ids := []core.ActorId{battleResponse.MainActorId}
-	if battleResponse.SubActorId != core.ActorEmptyId {
+func createAllActorIdList(battleResponse *core.InitializeBattleResponse) []actor.ActorId {
+	ids := []actor.ActorId{battleResponse.MainActorId}
+	if battleResponse.SubActorId != actor.ActorEmptyId {
 		ids = append(ids, battleResponse.SubActorId)
 	}
-	enemyActorIds := make([]core.ActorId, len(battleResponse.EnemyIds))
+	enemyActorIds := make([]actor.ActorId, len(battleResponse.EnemyIds))
 	for i, pair := range battleResponse.EnemyIds {
 		enemyActorIds[i] = pair.ActorId
 	}
 	return append(ids, enemyActorIds...)
 }
 
-func createAllTextIdList(allActorId []core.ActorId, actorNames map[core.ActorId]core.TextId) []core.TextId {
+func createAllTextIdList(allActorId []actor.ActorId, actorNames map[actor.ActorId]core.TextId) []core.TextId {
 	texts := make([]core.TextId, 0)
 	for _, id := range allActorId {
 		texts = append(texts, actorNames[id])
@@ -274,14 +275,14 @@ func createBattleSelectWindow(
 	return battleSelectWindow
 }
 
-func createPlayEffectFunction(serveActor core.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, actorDisplay *component.BattleActorDisplay, effectManager *widget.EffectManager) func(widget.EffectId, core.ActorId) {
-	return func(effectId widget.EffectId, target core.ActorId) {
-		actor := serveActor(target)
+func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, actorDisplay *component.BattleActorDisplay, effectManager *widget.EffectManager) func(widget.EffectId, actor.ActorId) {
+	return func(effectId widget.EffectId, target actor.ActorId) {
+		targetActor := serveActor(target)
 		position := func() *frontend.Vector {
-			if actor.Side == core.ActorSideEnemy {
+			if targetActor.Side == actor.ActorSideEnemy {
 				return battleEnemyDisplay.GetPosition(target)
 			}
-			if actor.Id == core.ActorSunnyId {
+			if targetActor.Id == actor.ActorSunnyId {
 				return subActorDisplay.GetCenterPosition()
 			}
 			return actorDisplay.GetMainCharacterPosition()
@@ -290,8 +291,8 @@ func createPlayEffectFunction(serveActor core.ActorSupplier, battleEnemyDisplay 
 	}
 }
 
-func createDoShakeFunction(serveActor core.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, shake *frontend.EmitShake) func(core.ActorId) {
-	return func(actorId core.ActorId) {
+func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, shake *frontend.EmitShake) func(actor.ActorId) {
+	return func(actorId actor.ActorId) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
 			battleEnemyDisplay.DoShake(actorId)
@@ -307,13 +308,13 @@ func createDoShakeFunction(serveActor core.ActorSupplier, battleEnemyDisplay *co
 }
 
 func createSetDamageFunction(
-	serveActor core.ActorSupplier,
+	serveActor actor.ActorSupplier,
 	battleEnemyDisplay *component.BattleEnemyDisplay,
 	subActorDisplay *component.BattleSubActorDisplay,
 	actorDisplay *component.BattleActorDisplay,
-	displayedHp map[core.ActorId]core.HP,
-) func(core.ActorId, core.Damage, core.HP) {
-	return func(actorId core.ActorId, damage core.Damage, afterHp core.HP) {
+	displayedHp map[actor.ActorId]actor.HP,
+) func(actor.ActorId, core.Damage, actor.HP) {
+	return func(actorId actor.ActorId, damage core.Damage, afterHp actor.HP) {
 		displayedHp[actorId] = afterHp
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -328,8 +329,8 @@ func createSetDamageFunction(
 	}
 }
 
-func createSetEmotionFunction(serveActor core.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, actorDisplay *component.BattleActorDisplay) func(core.ActorId, component.BattleEmotionType) {
-	return func(actorId core.ActorId, emotion component.BattleEmotionType) {
+func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *component.BattleEnemyDisplay, subActorDisplay *component.BattleSubActorDisplay, actorDisplay *component.BattleActorDisplay) func(actor.ActorId, component.BattleEmotionType) {
+	return func(actorId actor.ActorId, emotion component.BattleEmotionType) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
 			battleEnemyDisplay.SetEmotion(actorId, emotion)

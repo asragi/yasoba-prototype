@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/util"
 )
 
@@ -16,7 +17,7 @@ func EnemyIdToChoiceActionId(id EnemyId) ChoiceActionId {
 }
 
 type BattleState struct {
-	Actors []*Actor
+	Actors []*actor.Actor
 }
 
 type BattleEndType int
@@ -28,16 +29,16 @@ const (
 )
 
 func (s *BattleState) IsBattleShouldBeEnd() BattleEndType {
-	if s.IsAllBeaten(ActorSidePlayer) {
+	if s.IsAllBeaten(actor.ActorSidePlayer) {
 		return BattleEndTypeLose
 	}
-	if s.IsAllBeaten(ActorSideEnemy) {
+	if s.IsAllBeaten(actor.ActorSideEnemy) {
 		return BattleEndTypeWin
 	}
 	return BattleEndTypeNone
 }
 
-func (s *BattleState) IsAllBeaten(side ActorSide) bool {
+func (s *BattleState) IsAllBeaten(side actor.ActorSide) bool {
 	for _, actor := range s.Actors {
 		if actor.Side != side {
 			continue
@@ -49,9 +50,9 @@ func (s *BattleState) IsAllBeaten(side ActorSide) bool {
 	return true
 }
 
-func (s *BattleState) GetOtherSideActors(actionActor *Actor) []*Actor {
+func (s *BattleState) GetOtherSideActors(actionActor *actor.Actor) []*actor.Actor {
 	side := actionActor.Side
-	var result []*Actor
+	var result []*actor.Actor
 	for _, actor := range s.Actors {
 		if actor.Side == side {
 			continue
@@ -61,7 +62,7 @@ func (s *BattleState) GetOtherSideActors(actionActor *Actor) []*Actor {
 	return result
 }
 
-func (s *BattleState) GetMainActor() *Actor {
+func (s *BattleState) GetMainActor() *actor.Actor {
 	for _, actor := range s.Actors {
 		if actor.IsMainActor() {
 			return actor
@@ -70,7 +71,7 @@ func (s *BattleState) GetMainActor() *Actor {
 	return nil
 }
 
-func (s *BattleState) GetSubActor() *Actor {
+func (s *BattleState) GetSubActor() *actor.Actor {
 	for _, actor := range s.Actors {
 		if actor.IsSubActor() {
 			return actor
@@ -81,7 +82,7 @@ func (s *BattleState) GetSubActor() *Actor {
 
 type BattleAction struct {
 	SelectedSkill  SkillId
-	TargetActorIds []ActorId
+	TargetActorIds []actor.ActorId
 }
 
 type ServeBattleState func() *BattleState
@@ -95,7 +96,7 @@ func CreateServeBattleState(supplyActor AllActorServer) ServeBattleState {
 	}
 }
 
-type DecideActionFunc func(*Actor, *BattleState) *BattleAction
+type DecideActionFunc func(*actor.Actor, *BattleState) *BattleAction
 type NewChoiceRandomActionFunc func([]SkillId) DecideActionFunc
 
 func StandByCreateRandomAction(
@@ -111,7 +112,7 @@ func StandByCreateRandomAction(
 			}
 			return result
 		}()
-		return func(actor *Actor, state *BattleState) *BattleAction {
+		return func(actor *actor.Actor, state *BattleState) *BattleAction {
 			random := getRandom()
 			skillIndex := int(random * float64(len(skills)))
 			skill := skills[skillIndex]
@@ -126,16 +127,16 @@ func StandByCreateRandomAction(
 
 type ChoiceSkillTargetFunc func(
 	skill *SkillData,
-	actor *Actor,
+	actor *actor.Actor,
 	actors *BattleState,
-) []ActorId
+) []actor.ActorId
 
 func CreateChoiceSkillTarget(getRandom util.EmitRandomFunc) ChoiceSkillTargetFunc {
-	choiceSingleTarget := func(actionActor *Actor, state *BattleState) *Actor {
+	choiceSingleTarget := func(actionActor *actor.Actor, state *BattleState) *actor.Actor {
 		random := getRandom()
 		otherSideActors := state.GetOtherSideActors(actionActor)
-		possibleActors := func() []*Actor {
-			var result []*Actor
+		possibleActors := func() []*actor.Actor {
+			var result []*actor.Actor
 			for _, actor := range otherSideActors {
 				if actor.IsBeaten() {
 					continue
@@ -149,12 +150,12 @@ func CreateChoiceSkillTarget(getRandom util.EmitRandomFunc) ChoiceSkillTargetFun
 	}
 	return func(
 		skill *SkillData,
-		actor *Actor,
+		actionActor *actor.Actor,
 		state *BattleState,
-	) []ActorId {
+	) []actor.ActorId {
 		if skill.TargetType == SkillTargetTypeSingleOther {
-			target := choiceSingleTarget(actor, state)
-			return []ActorId{target.Id}
+			target := choiceSingleTarget(actionActor, state)
+			return []actor.ActorId{target.Id}
 		}
 		panic("Not implemented")
 	}

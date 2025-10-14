@@ -1,6 +1,7 @@
 package component
 
 import (
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -12,7 +13,7 @@ type BattleActorDisplay struct {
 	parameterDisplay *BattleParameterDisplay
 }
 
-func (d *BattleActorDisplay) SetDamage(damage core.Damage, afterHP core.HP) {
+func (d *BattleActorDisplay) SetDamage(damage core.Damage, afterHP actor.HP) {
 	d.displayDamage.DisplayDamage(damage)
 	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }
@@ -45,14 +46,14 @@ func (d *BattleActorDisplay) SetEmotion(emotion BattleEmotionType) {
 	d.faceWindow.SetEmotion(emotion)
 }
 
-type NewBattleActorDisplayFunc func(*core.Actor) *BattleActorDisplay
+type NewBattleActorDisplayFunc func(*actor.Actor) *BattleActorDisplay
 
 func CreateNewBattleActorDisplay(
 	newFaceWindow NewFaceWindowFunc,
 	newDisplayDamage NewDisplayDamageFunc,
 	newParameterDisplay NewBattleParameterDisplayFunc,
 ) NewBattleActorDisplayFunc {
-	return func(actor *core.Actor) *BattleActorDisplay {
+	return func(actor *actor.Actor) *BattleActorDisplay {
 		initialHp := actor.HP
 		parameter := newParameterDisplay(initialHp, frontend.PivotBottomLeft)
 
@@ -76,14 +77,14 @@ type BattleSubActorDisplay struct {
 	shake            *frontend.EmitShake
 }
 
-type NewBattleSubActorDisplayFunc func(*core.Actor) *BattleSubActorDisplay
+type NewBattleSubActorDisplayFunc func(*actor.Actor) *BattleSubActorDisplay
 
 func CreateNewBattleSubActorDisplay(
 	newFaceWindow NewFaceWindowFunc,
 	newDisplayDamage NewDisplayDamageFunc,
 	newParameterDisplay NewBattleParameterDisplayFunc,
 ) NewBattleSubActorDisplayFunc {
-	return func(actor *core.Actor) *BattleSubActorDisplay {
+	return func(actor *actor.Actor) *BattleSubActorDisplay {
 		parameterDisplay := newParameterDisplay(actor.HP, frontend.PivotBottomRight)
 		height := parameterDisplay.GetHeight()
 		return &BattleSubActorDisplay{
@@ -100,7 +101,7 @@ func CreateNewBattleSubActorDisplay(
 	}
 }
 
-func (d *BattleSubActorDisplay) SetDamage(damage core.Damage, afterHP core.HP) {
+func (d *BattleSubActorDisplay) SetDamage(damage core.Damage, afterHP actor.HP) {
 	d.displayDamage.DisplayDamage(damage)
 	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }
@@ -165,7 +166,7 @@ func (d *BattleParameterDisplay) Draw(
 	d.hpDisplay.Draw(drawFunc)
 }
 
-type NewBattleParameterDisplayFunc func(core.HP, *frontend.Pivot) *BattleParameterDisplay
+type NewBattleParameterDisplayFunc func(actor.HP, *frontend.Pivot) *BattleParameterDisplay
 
 func CreateNewBattleParameterDisplay(
 	newWindow widget.NewWindowFunc,
@@ -174,7 +175,7 @@ func CreateNewBattleParameterDisplay(
 	const windowCornerSize = 3
 	const faceSize = 80
 	height := windowCornerSize*2 + 13.0
-	return func(initialHp core.HP, pivot *frontend.Pivot) *BattleParameterDisplay {
+	return func(initialHp actor.HP, pivot *frontend.Pivot) *BattleParameterDisplay {
 		return &BattleParameterDisplay{
 			hpDisplay: newBattleHPDisplay(initialHp),
 			window: newWindow(

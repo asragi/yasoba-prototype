@@ -3,19 +3,19 @@ package invoke
 import (
 	"fmt"
 
-	"github.com/asragi/yasoba-prototype/core"
+	"github.com/asragi/yasoba-prototype/actor"
 )
 
 type conditionActorHp struct {
 	ownerId        conditionId
-	actorId        core.ActorId
+	actorId        actor.ActorId
 	thresholdRatio float64
 }
 
 type conditionActorHpDataPort func() []*conditionActorHp
 
 type checkActorCondition func(conditionId) bool
-type getActorHpRatio func(core.ActorId) core.HPRatio
+type getActorHpRatio func(actor.ActorId) actor.HPRatio
 
 type produceCheckActorCondition func(getActorHpRatio) checkActorCondition
 

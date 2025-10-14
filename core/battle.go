@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/util"
 )
 
@@ -52,13 +53,13 @@ type BattlePlayerCommandResult struct {
 
 type ProcessPlayerCommandFunc func(*PostCommandRequest) *BattlePlayerCommandResult
 
-func CreateProcessPlayerCommand(supplyActor ActorSupplier) ProcessPlayerCommandFunc {
-	isToEnemy := func(targets []ActorId) bool {
+func CreateProcessPlayerCommand(supplyActor actor.ActorSupplier) ProcessPlayerCommandFunc {
+	isToEnemy := func(targets []actor.ActorId) bool {
 		if len(targets) == 0 {
 			return false
 		}
 		target := supplyActor(targets[0])
-		return target.Side == ActorSideEnemy
+		return target.Side == actor.ActorSideEnemy
 	}
 	return func(command *PostCommandRequest) *BattlePlayerCommandResult {
 		decidedSkillId := func() SkillId {
@@ -79,30 +80,30 @@ func CreateProcessPlayerCommand(supplyActor ActorSupplier) ProcessPlayerCommandF
 			SkillApplyArgs: &SelectedAction{
 				Id:       decidedSkillId,
 				Actor:    command.ActorId,
-				SubActor: ActorEmptyId,
+				SubActor: actor.ActorEmptyId,
 				Target:   command.TargetId,
 			},
 		}
 	}
 }
 
-type DecideActionOrderFunc func() []ActorId
+type DecideActionOrderFunc func() []actor.ActorId
 
 type AllActorServer interface {
-	GetAllActor() []*Actor
+	GetAllActor() []*actor.Actor
 }
 
 func CreateDecideActionOrder(actorServer AllActorServer) DecideActionOrderFunc {
-	return func() []ActorId {
-		var result []ActorId
+	return func() []actor.ActorId {
+		result := make([]actor.ActorId, 0)
 		actors := actorServer.GetAllActor()
 		actorSet := util.NewSet(actors)
-		subActor, err := actorSet.Find(func(a *Actor) bool { return a.IsSubActor() })
+		subActor, err := actorSet.Find(func(a *actor.Actor) bool { return a.IsSubActor() })
 		if err == nil {
 			result = append(result, subActor.Id)
 		}
-		enemies := actorSet.Filter(func(a *Actor) bool { return a.Side == ActorSideEnemy })
-		enemyIds := util.SetSelect(enemies, func(a *Actor) ActorId { return a.Id })
+		enemies := actorSet.Filter(func(a *actor.Actor) bool { return a.Side == actor.ActorSideEnemy })
+		enemyIds := util.SetSelect(enemies, func(a *actor.Actor) actor.ActorId { return a.Id })
 		result = append(result, enemyIds.ToArray()...)
 		return result
 	}
@@ -115,8 +116,8 @@ type InitializeBattleRequest struct {
 }
 
 type InitializeBattleResponse struct {
-	MainActorId ActorId
-	SubActorId  ActorId
+	MainActorId actor.ActorId
+	SubActorId  actor.ActorId
 	EnemyIds    []*EnemyIdPair
 }
 
@@ -144,13 +145,13 @@ func CreateInitializeBattle(
 }
 
 type PostCommandRequest struct {
-	ActorId  ActorId
-	TargetId []ActorId
+	ActorId  actor.ActorId
+	TargetId []actor.ActorId
 	Command  PlayerCommand
 }
 
 type ProcessBattleRequest struct {
-	TargetId []ActorId
+	TargetId []actor.ActorId
 	Command  PlayerCommand
 }
 
@@ -162,7 +163,7 @@ type ProcessBattleFunc func(*ProcessBattleRequest) *ProcessBattleResponse
 type NewProcessBattleFunc func(res *InitializeBattleResponse, onBattleEnd func(BattleEndType)) ProcessBattleFunc
 
 func StandByCreateProcessBattle(
-	getActor ActorSupplier,
+	getActor actor.ActorSupplier,
 	getState ServeBattleState,
 	processPlayerCommand ProcessPlayerCommandFunc,
 	getPartnerPlan GetPartnerPlanFunc,
@@ -173,10 +174,10 @@ func StandByCreateProcessBattle(
 ) NewProcessBattleFunc {
 	checkBattleShouldEnd := func() (b BattleEndType, shouldEnd bool) {
 		state := getState()
-		if state.IsAllBeaten(ActorSidePlayer) {
+		if state.IsAllBeaten(actor.ActorSidePlayer) {
 			return BattleEndTypeLose, true
 		}
-		if state.IsAllBeaten(ActorSideEnemy) {
+		if state.IsAllBeaten(actor.ActorSideEnemy) {
 			return BattleEndTypeWin, true
 		}
 		return BattleEndTypeNone, false
@@ -194,15 +195,15 @@ func StandByCreateProcessBattle(
 		}
 		mainActorId := initializeBattleResponse.MainActorId
 		subActorId := initializeBattleResponse.SubActorId
-		actorIdToEnemy := func() map[ActorId]EnemyId {
-			result := make(map[ActorId]EnemyId)
+		actorIdToEnemy := func() map[actor.ActorId]EnemyId {
+			result := make(map[actor.ActorId]EnemyId)
 			for _, pair := range initializeBattleResponse.EnemyIds {
 				result[pair.ActorId] = pair.EnemyId
 			}
 			return result
 		}()
-		choiceActionList := func() map[ActorId]DecideActionFunc {
-			result := make(map[ActorId]DecideActionFunc)
+		choiceActionList := func() map[actor.ActorId]DecideActionFunc {
+			result := make(map[actor.ActorId]DecideActionFunc)
 			for key, value := range actorIdToEnemy {
 				result[key] = newChoiceAction(EnemyIdToChoiceActionId(value))
 			}
@@ -235,7 +236,7 @@ func StandByCreateProcessBattle(
 						Id:       combinationResult.SkillId,
 						Actor:    selectedAction.Actor,
 						SubActor: subActorId,
-						Target:   []ActorId{combinationResult.TargetId},
+						Target:   []actor.ActorId{combinationResult.TargetId},
 					}
 				}
 				return selectedAction
@@ -249,18 +250,18 @@ func StandByCreateProcessBattle(
 
 			actionOrder := decideActionOrder()
 			for _, actorId := range actionOrder {
-				actor := getActor(actorId)
-				if actor.IsBeaten() {
+				actionActor := getActor(actorId)
+				if actionActor.IsBeaten() {
 					continue
 				}
 				state := getState()
 				decideActionFunction := choiceActionList[actorId]
-				decidedAction := decideActionFunction(actor, state)
+				decidedAction := decideActionFunction(actionActor, state)
 				applyResult := skillApply(
 					&SelectedAction{
 						Id:       decidedAction.SelectedSkill,
 						Actor:    actorId,
-						SubActor: ActorEmptyId,
+						SubActor: actor.ActorEmptyId,
 						Target:   decidedAction.TargetActorIds,
 					},
 				)

@@ -1,17 +1,18 @@
 package component
 
 import (
+	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/core"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
 
 // BattleEnemyDisplay is a component that displays battle enemies.
 type BattleEnemyDisplay struct {
-	actorIds      []core.ActorId
-	actorGraphics map[core.ActorId]BattleEnemyGraphicsInterface
+	actorIds      []actor.ActorId
+	actorGraphics map[actor.ActorId]BattleEnemyGraphicsInterface
 }
 
-func (d *BattleEnemyDisplay) SetDisappear(actorId core.ActorId) {
+func (d *BattleEnemyDisplay) SetDisappear(actorId actor.ActorId) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
 		return
@@ -19,7 +20,7 @@ func (d *BattleEnemyDisplay) SetDisappear(actorId core.ActorId) {
 	graphics.SetDisappear()
 }
 
-func (d *BattleEnemyDisplay) SetDamage(actorId core.ActorId, damage core.Damage) {
+func (d *BattleEnemyDisplay) SetDamage(actorId actor.ActorId, damage core.Damage) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
 		return
@@ -27,7 +28,7 @@ func (d *BattleEnemyDisplay) SetDamage(actorId core.ActorId, damage core.Damage)
 	graphics.SetDamage(damage)
 }
 
-func (d *BattleEnemyDisplay) DoShake(actorId core.ActorId) {
+func (d *BattleEnemyDisplay) DoShake(actorId actor.ActorId) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
 		return
@@ -35,7 +36,7 @@ func (d *BattleEnemyDisplay) DoShake(actorId core.ActorId) {
 	graphics.DoShake()
 }
 
-func (d *BattleEnemyDisplay) SetEmotion(actorId core.ActorId, emotion BattleEmotionType) {
+func (d *BattleEnemyDisplay) SetEmotion(actorId actor.ActorId, emotion BattleEmotionType) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
 		return
@@ -43,7 +44,7 @@ func (d *BattleEnemyDisplay) SetEmotion(actorId core.ActorId, emotion BattleEmot
 	graphics.SetEmotion(emotion)
 }
 
-func (d *BattleEnemyDisplay) GetPosition(id core.ActorId) *frontend.Vector {
+func (d *BattleEnemyDisplay) GetPosition(id actor.ActorId) *frontend.Vector {
 	graphics, ok := d.actorGraphics[id]
 	if !ok {
 		return nil
@@ -66,7 +67,7 @@ func (d *BattleEnemyDisplay) Draw(drawFunc frontend.DrawFunc) {
 }
 
 type BattleDisplayArgs struct {
-	ActorId  core.ActorId
+	ActorId  actor.ActorId
 	EnemyId  core.EnemyId
 	Position *frontend.Vector
 }
@@ -114,8 +115,8 @@ func CreateNewBattleEnemyDisplay(
 		enemies []*BattleDisplayArgs,
 		depth frontend.Depth,
 	) *BattleEnemyDisplay {
-		actorIds := make([]core.ActorId, len(enemies))
-		actorGraphics := map[core.ActorId]BattleEnemyGraphicsInterface{}
+		actorIds := make([]actor.ActorId, len(enemies))
+		actorGraphics := map[actor.ActorId]BattleEnemyGraphicsInterface{}
 		for i, enemy := range enemies {
 			graphics := newBattleActorGraphics(
 				enemy.Position,
