@@ -16,10 +16,10 @@ func InitializeApp(cfg Config) (*App, error) {
 	return initializeApp(cfg)
 }
 
-func buildApp(drawing *frontend.Drawing, result *battleSceneResult, debug *debug.Debug) *App {
+func buildApp(drawing *frontend.Drawing, battleScene *scene.BattleScene, debug *debug.Debug) *App {
 	return &App{
 		Drawing:     drawing,
-		BattleScene: result.BattleScene,
+		BattleScene: battleScene,
 		Debug:       debug,
 	}
 }
