@@ -41,6 +41,7 @@ func initializeApp(cfg Config) (*App, error) {
 		frontend.NewDrawing,
 		debug.CreateDrawParameters,
 		makeBattleScene,
+		makeDebugScene,
 		buildApp,
 
 		frontend.CreateResourceManager,
@@ -97,6 +98,7 @@ func initializeApp(cfg Config) (*App, error) {
 		wire.Value(battleevent.SkillToSequenceFunc(battleevent.ToEventSequenceId)),
 		config.NewServer,
 		scene.InitializeCreateBattleScene,
+		scene.InitializeCreateDebugScene,
 
 		wire.Value(frontend.MaruMinya),
 		wire.Bind(new(frontend.ResourceManagerInterface), new(*frontend.ResourceManager)),
@@ -166,6 +168,10 @@ func makeProcessBattle(
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
 	return widget.CreateNewWindow(resource, cfg.GameWidth, cfg.GameHeight)
+}
+
+func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {
+	return create()
 }
 
 func makeBattleScene(cfg Config, create scene.CreateBattleScene) *scene.BattleScene {

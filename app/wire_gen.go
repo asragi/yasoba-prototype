@@ -51,6 +51,7 @@ func initializeApp(cfg Config) (*App, error) {
 		return nil, err
 	}
 	newSelectWindowFunc := component.StandByNewSelectWindow(resourceManager, newTextFunc, serveTextDataFunc)
+	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
 	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc)
 	newFaceWindowFunc := actor.StandByNewFaceWindow(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := component.CreateNewDisplayDamage(newTextFunc)
@@ -96,8 +97,9 @@ func initializeApp(cfg Config) (*App, error) {
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
 	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newVariableMessageWindowFunc, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
 	battleScene := makeBattleScene(cfg, createBattleScene)
+	debugScene := makeDebugScene(createDebugScene)
 	debugDebug := debug.CreateDrawParameters(newTextFunc)
-	app := buildApp(drawing, battleScene, debugDebug)
+	app := buildApp(drawing, battleScene, debugScene, debugDebug)
 	return app, nil
 }
 
@@ -169,6 +171,10 @@ func makeProcessBattle(
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
 	return widget.CreateNewWindow(resource, cfg.GameWidth, cfg.GameHeight)
+}
+
+func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {
+	return create()
 }
 
 func makeBattleScene(cfg Config, create scene.CreateBattleScene) *scene.BattleScene {

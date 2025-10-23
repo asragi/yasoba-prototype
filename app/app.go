@@ -7,19 +7,26 @@ import (
 )
 
 type App struct {
-	Drawing     *frontend.Drawing
-	BattleScene *scene.BattleScene
-	Debug       *debug.Debug
+	Drawing      *frontend.Drawing
+	BattleScene  *scene.BattleScene
+	DebugScene   *scene.DebugScene
+	DebugOverlay *debug.Debug
 }
 
 func InitializeApp(cfg Config) (*App, error) {
 	return initializeApp(cfg)
 }
 
-func buildApp(drawing *frontend.Drawing, battleScene *scene.BattleScene, debug *debug.Debug) *App {
+func buildApp(
+	drawing *frontend.Drawing,
+	battleScene *scene.BattleScene,
+	debugScene *scene.DebugScene,
+	debugOverlay *debug.Debug,
+) *App {
 	return &App{
-		Drawing:     drawing,
-		BattleScene: battleScene,
-		Debug:       debug,
+		Drawing:      drawing,
+		BattleScene:  battleScene,
+		DebugScene:   debugScene,
+		DebugOverlay: debugOverlay,
 	}
 }

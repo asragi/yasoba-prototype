@@ -21,6 +21,9 @@ const (
 	TextIdBattleWin            TextId = "battle_win"
 	TextIdBattleLose           TextId = "battle_lose"
 	TextIdBattleDialogText     TextId = "battle_dialog_text"
+	TextIdDebugMenuBattle      TextId = "debug_menu_battle"
+	TextIdDebugMenuSequence    TextId = "debug_menu_sequence"
+	TextIdDebugMenuEffect      TextId = "debug_menu_effect"
 )
 
 // ServeTextDataFunc loads text data by ID.

@@ -13,32 +13,32 @@ import (
 const DrawRate = 1
 
 type Game struct {
-	battleScene *scene.BattleScene
-	debug       *debug.Debug
-	drawing     *frontend.Drawing
-	width       int
-	height      int
+	activeScene  scene.Scene
+	debugOverlay *debug.Debug
+	drawing      *frontend.Drawing
+	width        int
+	height       int
 }
 
 func NewGame(app *app.App, cfg app.Config) *Game {
 	return &Game{
-		battleScene: app.BattleScene,
-		debug:       app.Debug,
-		drawing:     app.Drawing,
-		width:       cfg.GameWidth,
-		height:      cfg.GameHeight,
+		activeScene:  app.BattleScene,
+		debugOverlay: app.DebugOverlay,
+		drawing:      app.Drawing,
+		width:        cfg.GameWidth,
+		height:       cfg.GameHeight,
 	}
 }
 
 func (g *Game) Update() error {
-	g.battleScene.Update()
-	g.debug.Update()
+	g.activeScene.Update()
+	g.debugOverlay.Update()
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.debug.Draw(g.drawing.Draw)
-	g.battleScene.Draw(g.drawing.Draw)
+	g.activeScene.Draw(g.drawing.Draw)
+	g.debugOverlay.Draw(g.drawing.Draw)
 	g.drawing.DrawEnd(screen)
 }
 
