@@ -14,6 +14,7 @@ const DrawRate = 1
 
 type Game struct {
 	activeScene  scene.Scene
+	battleScene  *scene.BattleScene
 	debugOverlay *debug.Debug
 	drawing      *frontend.Drawing
 	width        int
@@ -21,13 +22,16 @@ type Game struct {
 }
 
 func NewGame(app *app.App, cfg app.Config) *Game {
-	return &Game{
-		activeScene:  app.BattleScene,
+	game := &Game{
+		activeScene:  app.DebugScene,
+		battleScene:  app.BattleScene,
 		debugOverlay: app.DebugOverlay,
 		drawing:      app.Drawing,
 		width:        cfg.GameWidth,
 		height:       cfg.GameHeight,
 	}
+	app.DebugScene.SetOnSelectBattle(game.activateBattleScene)
+	return game
 }
 
 func (g *Game) Update() error {
@@ -44,6 +48,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return g.width, g.height
+}
+
+func (g *Game) activateBattleScene() {
+	g.activeScene = g.battleScene
 }
 
 func main() {

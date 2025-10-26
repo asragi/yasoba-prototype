@@ -1,12 +1,12 @@
 package scene
 
 import (
-	"github.com/asragi/yasoba-prototype/component"
+	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
 
 type debugUI struct {
-	selectWindow *component.SelectWindow
+	selectWindow *selection.SelectWindow
 	input        frontend.InputManager
 	anchor       frontend.Vector
 	layout       debugUILayout

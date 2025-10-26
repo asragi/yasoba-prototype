@@ -21,6 +21,7 @@ import (
 	"github.com/asragi/yasoba-prototype/component/battle/event"
 	"github.com/asragi/yasoba-prototype/component/battle/hp"
 	"github.com/asragi/yasoba-prototype/component/battle/window"
+	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
@@ -46,12 +47,12 @@ func initializeApp(cfg Config) (*App, error) {
 	newTextFunc := widget.CreateNewText(resourceManager)
 	newWindowFunc := makeWindowFunc(resourceManager, cfg)
 	newMessageWindowFunc := component.StandByNewMessageWindow(newTextFunc, newWindowFunc)
+	newCursor := makeSelectCursor(resourceManager)
 	serveTextDataFunc, err := loadTextServer(cfg)
 	if err != nil {
 		return nil, err
 	}
-	newSelectWindowFunc := component.StandByNewSelectWindow(resourceManager, newTextFunc, serveTextDataFunc)
-	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
+	newSelectWindowFunc := selection.StandByNewSelectWindow(newCursor, newTextFunc, serveTextDataFunc)
 	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc)
 	newFaceWindowFunc := actor.StandByNewFaceWindow(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := component.CreateNewDisplayDamage(newTextFunc)
@@ -97,6 +98,7 @@ func initializeApp(cfg Config) (*App, error) {
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
 	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newVariableMessageWindowFunc, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
 	battleScene := makeBattleScene(cfg, createBattleScene)
+	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
 	debugScene := makeDebugScene(createDebugScene)
 	debugDebug := debug.CreateDrawParameters(newTextFunc)
 	app := buildApp(drawing, battleScene, debugScene, debugDebug)
@@ -171,6 +173,21 @@ func makeProcessBattle(
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
 	return widget.CreateNewWindow(resource, cfg.GameWidth, cfg.GameHeight)
+}
+
+func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
+	return func(
+		relativePosition *frontend.Vector,
+		pivot *frontend.Pivot,
+		depth frontend.Depth,
+	) selection.Cursor {
+		return widget.NewImage(
+			relativePosition,
+			pivot,
+			depth,
+			resource.GetTexture(frontend.TextureCursor),
+		)
+	}
 }
 
 func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {

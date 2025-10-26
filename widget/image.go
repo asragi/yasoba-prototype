@@ -6,11 +6,49 @@ import (
 	"image"
 )
 
+type texture interface {
+	Bounds() image.Rectangle
+	SubImage(image.Rectangle) texture
+	Draw(*ebiten.Image, *ebiten.DrawImageOptions)
+	AsImage() *ebiten.Image
+}
+
+type ebitenTexture struct {
+	img *ebiten.Image
+}
+
+func newEbitenTexture(img *ebiten.Image) texture {
+	if img == nil {
+		panic("ebiten texture must not be nil")
+	}
+	return &ebitenTexture{img: img}
+}
+
+func newEmptyEbitenTexture(width, height int) texture {
+	return newEbitenTexture(ebiten.NewImage(width, height))
+}
+
+func (t *ebitenTexture) Bounds() image.Rectangle {
+	return t.img.Bounds()
+}
+
+func (t *ebitenTexture) SubImage(rect image.Rectangle) texture {
+	return newEbitenTexture(t.img.SubImage(rect).(*ebiten.Image))
+}
+
+func (t *ebitenTexture) Draw(target *ebiten.Image, op *ebiten.DrawImageOptions) {
+	target.DrawImage(t.img, op)
+}
+
+func (t *ebitenTexture) AsImage() *ebiten.Image {
+	return t.img
+}
+
 type Image struct {
 	relativePosition *frontend.Vector
 	parentPosition   *frontend.Vector
 	pivot            *frontend.Pivot
-	image            *ebiten.Image
+	image            texture
 	depth            frontend.Depth
 	scale            *frontend.Vector
 	rect             *image.Rectangle
@@ -39,19 +77,19 @@ func (i *Image) Draw(drawFunc frontend.DrawFunc) {
 		i.parentPosition.X+i.relativePosition.X-pivotModification.X,
 		i.parentPosition.Y+i.relativePosition.Y-pivotModification.Y,
 	)
-	imageToDraw := i.image.SubImage(*i.rect).(*ebiten.Image)
+	imageToDraw := i.image.SubImage(*i.rect)
 
 	drawFunc(
 		func(screen *ebiten.Image) {
 			if i.shader == nil {
-				screen.DrawImage(imageToDraw, op)
+				imageToDraw.Draw(screen, op)
 				return
 			}
 			w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
-			img := ebiten.NewImage(w, h)
-			img.DrawImage(imageToDraw, op)
+			renderTarget := newEmptyEbitenTexture(w, h)
+			imageToDraw.Draw(renderTarget.AsImage(), op)
 			shaderOption := &ebiten.DrawRectShaderOptions{}
-			shaderOption.Images[0] = img
+			shaderOption.Images[0] = renderTarget.AsImage()
 			shaderOption.Uniforms = i.shader.GetUniforms()
 			screen.DrawRectShader(w, h, i.shader.GetShader(), shaderOption)
 		}, i.depth,
@@ -104,7 +142,7 @@ type CustomDrawArgs struct {
 	relativePosition *frontend.Vector
 	parentPosition   *frontend.Vector
 	pivot            *frontend.Pivot
-	image            *ebiten.Image
+	image            texture
 	depth            frontend.Depth
 	scale            *frontend.Vector
 	rect             *image.Rectangle
@@ -124,7 +162,7 @@ func NewImage(
 	return &Image{
 		relativePosition: relativePosition,
 		pivot:            pivot,
-		image:            imageData,
+		image:            newEbitenTexture(imageData),
 		depth:            depth,
 		scale:            &frontend.Vector{X: 1, Y: 1},
 		rect:             &rect,

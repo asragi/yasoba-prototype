@@ -13,6 +13,7 @@ import (
 	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
 	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
 	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
+	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
@@ -24,7 +25,7 @@ import (
 
 func InitializeCreateBattleScene(
 	newMessageWindow component.NewMessageWindowFunc,
-	newSelectWindow component.NewSelectWindowFunc,
+	newSelectWindow selection.NewSelectWindowFunc,
 	newBattleSelectWindow battleselect.NewBattleSelectWindowFunc,
 	newBattleActorDisplay battleactor.NewBattleActorDisplayFunc,
 	newBattleSubActorDisplay battleactor.NewBattleSubActorDisplayFunc,
@@ -85,7 +86,7 @@ func InitializeCreateBattleScene(
 		// バトル選択ウィンドウの設定
 		input := &frontend.KeyBoardInput{}
 		var selectedCommand battle.PlayerCommand
-		var targetSelectWindow *component.SelectWindow
+		var targetSelectWindow *selection.SelectWindow
 		onSubmit := func(command battle.PlayerCommand) {
 			selectedCommand = command
 			targetSelectWindow.Open()

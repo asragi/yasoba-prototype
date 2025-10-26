@@ -6,6 +6,7 @@ import (
 	battledialogue "github.com/asragi/yasoba-prototype/component/battle/dialogue"
 	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
 	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
+	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -16,7 +17,7 @@ type battleUI struct {
 	actorDisplay       *battleactor.BattleActorDisplay
 	subActorDisplay    *battleactor.BattleSubActorDisplay
 	subActorDialog     *battledialogue.BattlePartnerDialogue
-	targetSelectWindow *component.SelectWindow
+	targetSelectWindow *selection.SelectWindow
 	input              frontend.InputManager
 	battleEnemyDisplay *battleenemy.BattleEnemyDisplay
 	effectManager      *widget.EffectManager

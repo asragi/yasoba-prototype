@@ -22,6 +22,7 @@ import (
 	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
 	battlehp "github.com/asragi/yasoba-prototype/component/battle/hp"
 	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
+	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
@@ -47,7 +48,8 @@ func initializeApp(cfg Config) (*App, error) {
 		frontend.CreateResourceManager,
 		widget.CreateNewText,
 		component.StandByNewMessageWindow,
-		component.StandByNewSelectWindow,
+		makeSelectCursor,
+		selection.StandByNewSelectWindow,
 		battleselect.StandByNewBattleSelectWindow,
 		battleactor.StandByNewFaceWindow,
 		battlehp.CreateNewBattleHPDisplay,
@@ -168,6 +170,21 @@ func makeProcessBattle(
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
 	return widget.CreateNewWindow(resource, cfg.GameWidth, cfg.GameHeight)
+}
+
+func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
+	return func(
+		relativePosition *frontend.Vector,
+		pivot *frontend.Pivot,
+		depth frontend.Depth,
+	) selection.Cursor {
+		return widget.NewImage(
+			relativePosition,
+			pivot,
+			depth,
+			resource.GetTexture(frontend.TextureCursor),
+		)
+	}
 }
 
 func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {

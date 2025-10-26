@@ -1,84 +1,10 @@
-package component
+package selection
 
 import (
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
-
-type SelectWindow struct {
-	texts           []widget.TextInterface
-	cursor          *widget.Image
-	cursorPositions []*frontend.Vector
-	index           int
-	isActive        bool
-	isOpen          bool
-	onSubmit        func(int)
-	closeOnSubmit   bool
-	smoother        *frontend.InputSmoother
-}
-
-func (w *SelectWindow) OnInputCancel() {}
-
-func (w *SelectWindow) OnInputSubButton() {}
-
-func (w *SelectWindow) OnInputLeft() {}
-
-func (w *SelectWindow) OnInputRight() {}
-
-func (w *SelectWindow) Open() {
-	w.isOpen = true
-}
-
-func (w *SelectWindow) Close() {
-	w.isOpen = false
-}
-
-func (w *SelectWindow) Update(parentPosition *frontend.Vector) {
-	w.smoother.Update()
-	for _, text := range w.texts {
-		text.Update(parentPosition)
-	}
-	w.cursor.Update(parentPosition)
-}
-
-func (w *SelectWindow) Draw(drawFunc frontend.DrawFunc) {
-	if !w.isOpen {
-		return
-	}
-	w.cursor.Draw(drawFunc)
-	for _, text := range w.texts {
-		text.Draw(drawFunc)
-	}
-}
-
-func (w *SelectWindow) calculateCursorPosition() *frontend.Vector {
-	return w.cursorPositions[w.index]
-}
-
-func (w *SelectWindow) OnInputUp() {
-	if !w.smoother.Do(frontend.SmoothKeyUp) {
-		return
-	}
-	w.index = (w.index - 1 + len(w.texts)) % len(w.texts)
-	w.cursor.SetRelativePosition(w.calculateCursorPosition())
-}
-
-func (w *SelectWindow) OnInputDown() {
-	if !w.smoother.Do(frontend.SmoothKeyDown) {
-		return
-	}
-	w.index = (w.index + 1) % len(w.texts)
-	w.cursor.SetRelativePosition(w.calculateCursorPosition())
-}
-
-func (w *SelectWindow) OnInputSubmit() {
-	w.onSubmit(w.index)
-	if !w.closeOnSubmit {
-		return
-	}
-	w.Close()
-}
 
 type NewSelectWindowFunc func(
 	*frontend.Vector,
@@ -89,8 +15,14 @@ type NewSelectWindowFunc func(
 	bool,
 ) *SelectWindow
 
+type NewCursor func(
+	relativePosition *frontend.Vector,
+	pivot *frontend.Pivot,
+	depth frontend.Depth,
+) Cursor
+
 func StandByNewSelectWindow(
-	resource *frontend.ResourceManager,
+	newCursor NewCursor,
 	newText widget.NewTextFunc,
 	textServer text.ServeTextDataFunc,
 ) NewSelectWindowFunc {
@@ -120,14 +52,13 @@ func StandByNewSelectWindow(
 			}
 			return positions
 		}()
-		cursor := widget.NewImage(
+		cursor := newCursor(
 			cursorPositions[0],
 			frontend.PivotTopLeft,
 			depth,
-			resource.GetTexture(frontend.TextureCursor),
 		)
 		cursorWidth := cursor.Size().X
-		texts := func() []widget.TextInterface {
+		texts := func() []textInterface {
 			relativePositions := func() []*frontend.Vector {
 				var positions []*frontend.Vector
 				for i := 0; i < count; i++ {
@@ -140,7 +71,7 @@ func StandByNewSelectWindow(
 				}
 				return positions
 			}()
-			var texts []widget.TextInterface
+			var texts []textInterface
 			for i, command := range commands {
 				text := newText(
 					&widget.TextOptionsNew{
@@ -157,9 +88,10 @@ func StandByNewSelectWindow(
 			return texts
 		}()
 
+		view := newSelectWindowView(texts, cursor)
+		view.setCursorRelativePosition(cursorPositions[0])
+
 		return &SelectWindow{
-			texts:           texts,
-			cursor:          cursor,
 			cursorPositions: cursorPositions,
 			index:           0,
 			isActive:        false,
@@ -167,6 +99,7 @@ func StandByNewSelectWindow(
 			onSubmit:        onSubmit,
 			smoother:        frontend.NewInputSmoother(),
 			closeOnSubmit:   closeOnSubmit,
+			view:            view,
 		}
 	}
 }

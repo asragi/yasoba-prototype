@@ -1,13 +1,14 @@
 package scene
 
 import (
-	"github.com/asragi/yasoba-prototype/component"
+	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/text"
 )
 
-func InitializeCreateDebugScene(newSelectWindow component.NewSelectWindowFunc) CreateDebugScene {
+func InitializeCreateDebugScene(newSelectWindow selection.NewSelectWindowFunc) CreateDebugScene {
 	return func() *DebugScene {
+		scene := &DebugScene{}
 		anchor := frontend.Vector{X: 48, Y: 48}
 		selectWindow := newSelectWindow(
 			&anchor,
@@ -18,7 +19,7 @@ func InitializeCreateDebugScene(newSelectWindow component.NewSelectWindowFunc) C
 				text.TextIdDebugMenuSequence,
 				text.TextIdDebugMenuEffect,
 			},
-			func(int) {},
+			scene.handleSelect,
 			false,
 		)
 		selectWindow.Open()
@@ -26,12 +27,11 @@ func InitializeCreateDebugScene(newSelectWindow component.NewSelectWindowFunc) C
 		input := &frontend.KeyBoardInput{}
 		input.Set(selectWindow)
 
-		return &DebugScene{
-			ui: debugUI{
-				selectWindow: selectWindow,
-				input:        input,
-				anchor:       anchor,
-			},
+		scene.ui = debugUI{
+			selectWindow: selectWindow,
+			input:        input,
+			anchor:       anchor,
 		}
+		return scene
 	}
 }
