@@ -74,6 +74,10 @@ type Text struct {
 	parentPosition *frontend.Vector
 }
 
+type FontProvider interface {
+	GetFont(frontend.FontId) *text.GoTextFace
+}
+
 func (t *Text) ForceComplete() {
 	t.currentIndex = t.textSize
 }
@@ -115,6 +119,9 @@ func (t *Text) Update(parentPosition *frontend.Vector) {
 }
 
 func (t *Text) Draw(drawFunc frontend.DrawFunc) {
+	if t.parentPosition == nil {
+		return
+	}
 	for i := 0; i < len(t.characterSet); i++ {
 		tmpCurrentIndex := t.currentIndex
 		for j := 0; j < i; j++ {
@@ -232,7 +239,7 @@ type TextOptionsNew struct {
 type NewTextFunc func(*TextOptionsNew) TextInterface
 
 func CreateNewText(
-	resource *frontend.ResourceManager,
+	resource FontProvider,
 ) NewTextFunc {
 	return func(options *TextOptionsNew) TextInterface {
 		if options.Color == nil {

@@ -168,3 +168,59 @@ func TestText_getLineSpacing(t *testing.T) {
 		})
 	}
 }
+
+func TestText_DrawBeforeUpdateSkipsRendering(t *testing.T) {
+	resource, err := frontend.CreateResourceManager()
+	if err != nil {
+		t.Fatalf("failed to create resource manager: %v", err)
+	}
+
+	newText := CreateNewText(resource)
+	text := newText(&TextOptionsNew{
+		RelativePosition: frontend.VectorZero,
+		Pivot:            frontend.PivotTopLeft,
+		Font:             frontend.MaruMinya,
+		Speed:            1,
+		Depth:            frontend.DepthWindow,
+	})
+	text.SetText("dummy", true)
+
+	drawCalled := false
+
+	text.Draw(func(frontend.DrawArgFunc, frontend.Depth) {
+		drawCalled = true
+	})
+
+	if drawCalled {
+		t.Fatalf("expected Draw to skip rendering when parentPosition is nil")
+	}
+}
+
+func TestText_DrawAfterUpdateRenders(t *testing.T) {
+	resource, err := frontend.CreateResourceManager()
+	if err != nil {
+		t.Fatalf("failed to create resource manager: %v", err)
+	}
+
+	newText := CreateNewText(resource)
+	textInterface := newText(&TextOptionsNew{
+		RelativePosition: frontend.VectorZero,
+		Pivot:            frontend.PivotTopLeft,
+		Font:             frontend.MaruMinya,
+		Speed:            1,
+		Depth:            frontend.DepthWindow,
+	})
+	textInterface.SetText("dummy", true)
+
+	position := &frontend.Vector{X: 10, Y: 20}
+	textInterface.Update(position)
+
+	drawCalled := false
+	textInterface.Draw(func(frontend.DrawArgFunc, frontend.Depth) {
+		drawCalled = true
+	})
+
+	if !drawCalled {
+		t.Fatalf("expected Draw to render after Update sets parentPosition")
+	}
+}

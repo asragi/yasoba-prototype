@@ -1,8 +1,6 @@
 package selection
 
 import (
-	"fmt"
-
 	"github.com/asragi/yasoba-prototype/frontend"
 )
 
@@ -27,7 +25,6 @@ func (w *selectWindowView) update(parentPosition *frontend.Vector) {
 
 func (w *selectWindowView) draw(drawFunc frontend.DrawFunc) {
 	w.cursor.Draw(drawFunc)
-	fmt.Printf("text: %+v\n", w.texts)
 	for _, text := range w.texts {
 		text.Draw(drawFunc)
 	}

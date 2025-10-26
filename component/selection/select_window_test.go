@@ -1,6 +1,7 @@
 package selection
 
 import (
+	"image/color"
 	"testing"
 
 	"github.com/asragi/yasoba-prototype/frontend"
@@ -34,6 +35,33 @@ func (c *dummyCursor) Size() *frontend.Vector {
 	return c.size
 }
 
+type mockText struct {
+	updateCalls []*frontend.Vector
+	drawCount   int
+}
+
+func (m *mockText) Update(parentPosition *frontend.Vector) {
+	m.updateCalls = append(m.updateCalls, parentPosition)
+}
+
+func (m *mockText) Draw(frontend.DrawFunc) {
+	m.drawCount++
+}
+
+func (m *mockText) ForceComplete() {}
+
+func (m *mockText) SetText(string, bool) {}
+
+func (m *mockText) Size() *frontend.Vector {
+	return frontend.VectorZero
+}
+
+func (m *mockText) CheckIsEnd() bool {
+	return true
+}
+
+func (m *mockText) SetTextColor(color.Color) {}
+
 func newDummyTextServer() text.ServeTextDataFunc {
 	return func(id text.TextId) *text.Data {
 		return &text.Data{
@@ -43,19 +71,17 @@ func newDummyTextServer() text.ServeTextDataFunc {
 	}
 }
 
-func newNoopDrawFunc() frontend.DrawFunc {
-	return func(fn frontend.DrawArgFunc, depth frontend.Depth) {}
-}
-
 func TestSelectWindow_DrawBeforeUpdate(t *testing.T) {
-	resourceManager, err := frontend.CreateResourceManager()
-	if err != nil {
-		t.Fatalf("failed to create resource manager: %v", err)
+	var createdTexts []*mockText
+	mockTextFactory := func(*widget.TextOptionsNew) widget.TextInterface {
+		text := &mockText{}
+		createdTexts = append(createdTexts, text)
+		return text
 	}
-	newText := widget.CreateNewText(resourceManager)
+
 	newSelectWindow := StandByNewSelectWindow(
 		newDummyCursor(frontend.VectorZero),
-		newText,
+		mockTextFactory,
 		newDummyTextServer(),
 	)
 	selectWindow := newSelectWindow(
@@ -68,5 +94,15 @@ func TestSelectWindow_DrawBeforeUpdate(t *testing.T) {
 	)
 	selectWindow.Open()
 
-	selectWindow.Draw(newNoopDrawFunc())
+	selectWindow.Draw(func(frontend.DrawArgFunc, frontend.Depth) {})
+
+	if len(createdTexts) == 0 {
+		t.Fatalf("expected mock text to be created")
+	}
+	if createdTexts[0].drawCount == 0 {
+		t.Errorf("expected mock text Draw to be called at least once")
+	}
+	if len(createdTexts[0].updateCalls) != 0 {
+		t.Errorf("expected Update not to be called before Draw, got %d calls", len(createdTexts[0].updateCalls))
+	}
 }
