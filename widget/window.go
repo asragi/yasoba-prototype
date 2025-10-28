@@ -5,8 +5,8 @@ import (
 	"image"
 	"math"
 
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
-	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type windowRect struct {
@@ -31,7 +31,7 @@ type WindowInterface interface {
 type Window struct {
 	screenWidth      int
 	screenHeight     int
-	image            *ebiten.Image
+	image            drawing.Image
 	relativePosition *frontend.Vector
 	parentPosition   *frontend.Vector
 	size             *frontend.Vector
@@ -42,7 +42,7 @@ type Window struct {
 	sidePosition     []*frontend.Vector
 	sideScale        []*frontend.Vector
 	cornerSize       int
-	depth            frontend.Depth
+	depth            drawing.Depth
 	padding          *frontend.Vector
 }
 
@@ -106,43 +106,43 @@ func (w *Window) Update(passedPosition *frontend.Vector) {
 	w.parentPosition = passedPosition.Sub(inWindowPosition)
 }
 
-func (w *Window) Draw(drawFunc frontend.DrawFunc) {
+func (w *Window) Draw(drawFunc drawing.DrawFunc) {
 	pivotDiff := w.pivot.ApplyToSize(w.size)
 	textureWidth := w.image.Bounds().Dx()
 	textureHeight := w.image.Bounds().Dy()
 	targetXSize := w.size.X - float64(w.cornerSize*2)
 	targetYSize := w.size.Y - float64(w.cornerSize*2)
 	for i, v := range w.corners {
-		op := &ebiten.DrawImageOptions{}
+		op := &drawing.DrawOptions{}
 		x := w.cornerPosition[i].X + w.relativePosition.X - pivotDiff.X + w.parentPosition.X
 		y := w.cornerPosition[i].Y + w.relativePosition.Y - pivotDiff.Y + w.parentPosition.Y
-		op.GeoM.Translate(x, y)
-		subImage := w.image.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
+		op.Translate(x, y)
+		subImage := w.image.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1))
 		drawFunc(
-			func(screen *ebiten.Image) {
+			func(screen drawing.Image) {
 				screen.DrawImage(subImage, op)
 			}, w.depth,
 		)
 	}
 	for i, v := range w.sides {
-		op := &ebiten.DrawImageOptions{}
+		op := drawing.NewDrawOptions()
 		x := w.sidePosition[i].X + w.relativePosition.X - pivotDiff.X + w.parentPosition.X
 		y := w.sidePosition[i].Y + w.relativePosition.Y - pivotDiff.Y + w.parentPosition.Y
-		op.GeoM.Scale(w.sideScale[i].X, w.sideScale[i].Y)
-		op.GeoM.Translate(x, y)
-		subImage := w.image.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1)).(*ebiten.Image)
+		op.SetScale(w.sideScale[i].X, w.sideScale[i].Y)
+		op.Translate(x, y)
+		subImage := w.image.SubImage(image.Rect(v.x0, v.y0, v.x1, v.y1))
 		drawFunc(
-			func(screen *ebiten.Image) {
+			func(screen drawing.Image) {
 				screen.DrawImage(subImage, op)
 			}, w.depth,
 		)
 	}
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(
+	op := drawing.NewDrawOptions()
+	op.SetScale(
 		targetXSize/float64(textureWidth-w.cornerSize*2),
 		targetYSize/float64(textureHeight-w.cornerSize*2),
 	)
-	op.GeoM.Translate(
+	op.Translate(
 		w.relativePosition.X-pivotDiff.X+w.parentPosition.X+float64(w.cornerSize),
 		w.relativePosition.Y-pivotDiff.Y+w.parentPosition.Y+float64(w.cornerSize),
 	)
@@ -153,9 +153,9 @@ func (w *Window) Draw(drawFunc frontend.DrawFunc) {
 			textureWidth-w.cornerSize,
 			textureHeight-w.cornerSize,
 		),
-	).(*ebiten.Image)
+	)
 	drawFunc(
-		func(screen *ebiten.Image) {
+		func(screen drawing.Image) {
 			screen.DrawImage(subImage, op)
 		}, w.depth,
 	)
@@ -212,7 +212,7 @@ type WindowOption struct {
 	CornerSize       int
 	RelativePosition *frontend.Vector
 	Size             *frontend.Vector
-	Depth            frontend.Depth
+	Depth            drawing.Depth
 	Pivot            *frontend.Pivot
 	Padding          *frontend.Vector
 }
@@ -226,14 +226,16 @@ func (o *WindowOption) Validation() error {
 	if o.Size == nil {
 		return errors.New("size is required")
 	}
-	if o.Depth == frontend.Zero {
+	if o.Depth == drawing.Zero {
 		return errors.New("depth is required")
 	}
 	return nil
 }
 
+type GetImageFunc func(frontend.TextureId) drawing.Image
+
 func CreateNewWindow(
-	resource *frontend.ResourceManager,
+	getImage GetImageFunc,
 	screenWidth, screenHeight int,
 ) NewWindowFunc {
 	return func(option *WindowOption) WindowInterface {
@@ -243,7 +245,7 @@ func CreateNewWindow(
 		if err := option.Validation(); err != nil {
 			panic(err)
 		}
-		img := resource.GetTexture(option.Texture)
+		img := getImage(option.Texture)
 		textureWidth := img.Bounds().Dx()
 		textureHeight := img.Bounds().Dy()
 		corners := []*windowRect{
