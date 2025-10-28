@@ -1,9 +1,13 @@
 package frontend
 
-import "math"
+import (
+	"math"
+
+	"github.com/asragi/yasoba-prototype/drawing"
+)
 
 type PositionDelta interface {
-	Delta() *Vector
+	Delta() *drawing.Vector
 }
 
 type EmitShake struct {
@@ -25,13 +29,13 @@ func NewShake() *EmitShake {
 	}
 }
 
-func (e *EmitShake) Delta() *Vector {
+func (e *EmitShake) Delta() *drawing.Vector {
 	if e.frame > e.period {
-		return VectorZero
+		return drawing.VectorZero
 	}
 	x := e.amplitude * math.Cos(float64(e.frame)*2.1)
 	y := e.amplitude * math.Sin(float64(e.frame))
-	return &Vector{X: x, Y: y}
+	return &drawing.Vector{X: x, Y: y}
 }
 
 func (e *EmitShake) Shake(amplitude float64, period int) {

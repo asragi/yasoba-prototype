@@ -1,4 +1,4 @@
-package frontend
+package drawing
 
 import "fmt"
 
@@ -10,6 +10,10 @@ var (
 	VectorZero = &Vector{0, 0}
 	VectorOne  = &Vector{1, 1}
 )
+
+func NewVector(x, y float64) *Vector {
+	return &Vector{X: x, Y: y}
+}
 
 func (v *Vector) Add(v2 *Vector) *Vector {
 	return &Vector{
@@ -34,10 +38,6 @@ func (v *Vector) Multiply(scale float64) *Vector {
 
 func (v *Vector) String() string {
 	return fmt.Sprintf("{X: %f, Y: %f}", v.X, v.Y)
-}
-
-func NewVectorShort(v float64) *Vector {
-	return &Vector{v, v}
 }
 
 type Pivot struct {

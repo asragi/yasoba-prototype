@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"image"
 
+	"github.com/asragi/yasoba-prototype/drawing"
+	"github.com/asragi/yasoba-prototype/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/font"
 	load "github.com/asragi/yasoba-prototype/image"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -57,22 +59,22 @@ type ResourceManager struct {
 	textureDict   map[TextureId]*ebiten.Image
 	fontDict      map[FontId]*text.GoTextFace
 	animationDict map[AnimationId]*AnimationData
-	shaderDict    map[ShaderId]*ebiten.Shader
+	shaderDict    map[drawing.ShaderId]*ebiten.Shader
 }
 
 type ResourceManagerInterface interface {
-	GetTexture(id TextureId) *ebiten.Image
+	GetTexture(id TextureId) drawing.Image
 	GetFont(id FontId) *text.GoTextFace
 	GetAnimationData(id AnimationId) *AnimationData
-	GetShader(id ShaderId) *Shader
+	GetShader(id drawing.ShaderId) *drawing.Shader
 }
 
-func (r *ResourceManager) GetTexture(id TextureId) *ebiten.Image {
+func (r *ResourceManager) GetTexture(id TextureId) *adapter.EbitenImage {
 	t, ok := r.textureDict[id]
 	if !ok {
 		panic(fmt.Sprintf("texture not found: %d", id))
 	}
-	return t
+	return adapter.NewEbitenImage(t)
 }
 
 func (r *ResourceManager) GetFont(id FontId) *text.GoTextFace {
@@ -87,12 +89,12 @@ func (r *ResourceManager) GetAnimationData(id AnimationId) *AnimationData {
 	return data
 }
 
-func (r *ResourceManager) GetShader(id ShaderId) *Shader {
+func (r *ResourceManager) GetShader(id drawing.ShaderId) *drawing.Shader {
 	s, ok := r.shaderDict[id]
 	if !ok {
 		panic(fmt.Sprintf("shader not found: %d", id))
 	}
-	return NewShader(s)
+	return drawing.NewShader(s)
 }
 
 func CreateResourceManager() (*ResourceManager, error) {
@@ -108,8 +110,8 @@ func CreateResourceManager() (*ResourceManager, error) {
 		textureDict[id] = ebiten.NewImageFromImage(img)
 		return nil
 	}
-	shaderDict := map[ShaderId]*ebiten.Shader{}
-	loadShader := func(data []byte, id ShaderId) error {
+	shaderDict := map[drawing.ShaderId]*ebiten.Shader{}
+	loadShader := func(data []byte, id drawing.ShaderId) error {
 		shader, err := ebiten.NewShader(data)
 		if err != nil {
 			return err
@@ -247,7 +249,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         false,
 		},
 	}
-	if err = loadShader(load.DisappearShader, ShaderDisappear); err != nil {
+	if err = loadShader(load.DisappearShader, drawing.ShaderDisappear); err != nil {
 		return handleError(err)
 	}
 	return &ResourceManager{

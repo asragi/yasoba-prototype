@@ -2,10 +2,6 @@ package drawing
 
 import "fmt"
 
-type Surface interface{}
-type DrawArgFunc func(Surface)
-type DrawFunc func(DrawArgFunc, int)
-
 type Manager struct {
 	depthOrder []int
 	drawIndex  map[int]int
@@ -43,11 +39,11 @@ func (m *Manager) Draw(fn DrawArgFunc, depth int) {
 	m.drawIndex[depth]++
 }
 
-func (m *Manager) DrawEnd(surface Surface) {
+func (m *Manager) DrawEnd(screen Image) {
 	for _, depth := range m.depthOrder {
 		callbacks := m.drawMap[depth]
 		for i := 0; i < m.drawIndex[depth]; i++ {
-			callbacks[i](surface)
+			callbacks[i](screen)
 			callbacks[i] = nil
 		}
 		m.drawIndex[depth] = 0
