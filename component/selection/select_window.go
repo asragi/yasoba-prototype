@@ -1,11 +1,14 @@
 package selection
 
-import "github.com/asragi/yasoba-prototype/frontend"
+import (
+	"github.com/asragi/yasoba-prototype/drawing"
+	"github.com/asragi/yasoba-prototype/frontend"
+)
 
 type selectWindowViewInterface interface {
-	update(*frontend.Vector)
-	draw(frontend.DrawFunc)
-	setCursorRelativePosition(*frontend.Vector)
+	update(*drawing.Vector)
+	draw(drawing.DrawFunc)
+	setCursorRelativePosition(*drawing.Vector)
 }
 
 type smoother interface {
@@ -14,19 +17,19 @@ type smoother interface {
 }
 
 type textInterface interface {
-	Update(*frontend.Vector)
-	Draw(frontend.DrawFunc)
+	Update(*drawing.Vector)
+	Draw(drawing.DrawFunc)
 }
 
 type Cursor interface {
-	Update(*frontend.Vector)
-	Draw(frontend.DrawFunc)
-	SetRelativePosition(*frontend.Vector)
-	Size() *frontend.Vector
+	Update(*drawing.Vector)
+	Draw(drawing.DrawFunc)
+	SetRelativePosition(*drawing.Vector)
+	Size() *drawing.Vector
 }
 
 type SelectWindow struct {
-	cursorPositions []*frontend.Vector
+	cursorPositions []*drawing.Vector
 	index           int
 	isActive        bool
 	isOpen          bool
@@ -52,19 +55,19 @@ func (w *SelectWindow) Close() {
 	w.isOpen = false
 }
 
-func (w *SelectWindow) Update(parentPosition *frontend.Vector) {
+func (w *SelectWindow) Update(parentPosition *drawing.Vector) {
 	w.smoother.Update()
 	w.view.update(parentPosition)
 }
 
-func (w *SelectWindow) Draw(drawFunc frontend.DrawFunc) {
+func (w *SelectWindow) Draw(drawFunc drawing.DrawFunc) {
 	if !w.isOpen {
 		return
 	}
 	w.view.draw(drawFunc)
 }
 
-func (w *SelectWindow) calculateCursorPosition() *frontend.Vector {
+func (w *SelectWindow) calculateCursorPosition() *drawing.Vector {
 	return w.cursorPositions[w.index]
 }
 

@@ -4,17 +4,17 @@ import (
 	"math"
 	"testing"
 
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 )
 
 func TestTransitionUpdateAndDraw(t *testing.T) {
 	const maxFrame = 4
 
 	rates := make([]float64, 0, maxFrame+1)
-	tr := New(maxFrame, func(drawFunc frontend.DrawFunc, rate float64) {
+	tr := New(maxFrame, func(drawFunc drawing.DrawFunc, rate float64) {
 		rates = append(rates, rate)
 	})
-	drawFunc := func(fn frontend.DrawArgFunc, depth frontend.Depth) {}
+	drawFunc := func(fn drawing.DrawArgFunc, depth drawing.Depth) {}
 
 	tr.FadeOut()
 	rates = rates[:0]

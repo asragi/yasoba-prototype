@@ -4,6 +4,7 @@ import (
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
 	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -14,9 +15,9 @@ type BattleEnemyGraphics struct {
 	animation        map[battleemotion.BattleEmotionType]*widget.Animation
 	displayDamage    *component.DisplayDamage
 	shake            *frontend.EmitShake
-	disappearShader  *frontend.Shader
-	parentPosition   *frontend.Vector
-	relativePosition *frontend.Vector
+	disappearShader  *drawing.Shader
+	parentPosition   *drawing.Vector
+	relativePosition *drawing.Vector
 }
 
 type BattleEnemyGraphicsInterface interface {
@@ -26,10 +27,10 @@ type BattleEnemyGraphicsInterface interface {
 	widget.Drawer
 	SetEmotion(battleemotion.BattleEmotionType)
 	SetDisappear()
-	GetDefinitivePosition() *frontend.Vector
+	GetDefinitivePosition() *drawing.Vector
 }
 
-func (g *BattleEnemyGraphics) GetDefinitivePosition() *frontend.Vector {
+func (g *BattleEnemyGraphics) GetDefinitivePosition() *drawing.Vector {
 	return g.parentPosition.Add(g.relativePosition)
 }
 
@@ -49,7 +50,7 @@ func (g *BattleEnemyGraphics) DoShake() {
 	g.shake.Shake(frontend.ShakeDefaultAmplitude, frontend.ShakeDefaultPeriod)
 }
 
-func (g *BattleEnemyGraphics) Update(parentCenterPosition *frontend.Vector) {
+func (g *BattleEnemyGraphics) Update(parentCenterPosition *drawing.Vector) {
 	g.shake.Update()
 	g.displayDamage.Update(parentCenterPosition.Add(g.relativePosition))
 	g.parentPosition = parentCenterPosition
@@ -63,7 +64,7 @@ func (g *BattleEnemyGraphics) Update(parentCenterPosition *frontend.Vector) {
 	animation.Update(position)
 }
 
-func (g *BattleEnemyGraphics) Draw(drawFunc frontend.DrawFunc) {
+func (g *BattleEnemyGraphics) Draw(drawFunc drawing.DrawFunc) {
 	g.displayDamage.Draw(drawFunc)
 	g.getCurrentAnimation().Draw(drawFunc)
 }
@@ -79,9 +80,9 @@ func (g *BattleEnemyGraphics) SetDisappear() {
 }
 
 type NewBattleEnemyGraphicsFunc func(
-	*frontend.Vector,
-	*frontend.Pivot,
-	frontend.Depth,
+	*drawing.Vector,
+	*drawing.Pivot,
+	drawing.Depth,
 	enemy.EnemyId,
 ) BattleEnemyGraphicsInterface
 
@@ -91,9 +92,9 @@ func NewBattleActorGraphics(
 	newDisplayDamage component.NewDisplayDamageFunc,
 ) NewBattleEnemyGraphicsFunc {
 	return func(
-		relativePosition *frontend.Vector,
-		pivot *frontend.Pivot,
-		depth frontend.Depth,
+		relativePosition *drawing.Vector,
+		pivot *drawing.Pivot,
+		depth drawing.Depth,
 		enemyId enemy.EnemyId,
 	) BattleEnemyGraphicsInterface {
 		enemyGraphicsData := getEnemyGraphics(enemyId)
@@ -116,10 +117,10 @@ func NewBattleActorGraphics(
 			emotion:          battleemotion.NewQueued(battleemotion.BattleEmotionNormal),
 			animation:        animations,
 			shake:            frontend.NewShake(),
-			parentPosition:   frontend.VectorZero,
+			parentPosition:   drawing.VectorZero,
 			relativePosition: relativePosition,
 			displayDamage:    newDisplayDamage(),
-			disappearShader:  resource.GetShader(frontend.ShaderDisappear),
+			disappearShader:  resource.GetShader(drawing.ShaderDisappear),
 		}
 	}
 }

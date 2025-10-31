@@ -2,6 +2,7 @@ package scene
 
 import (
 	"github.com/asragi/yasoba-prototype/component/selection"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/text"
 )
@@ -9,11 +10,11 @@ import (
 func InitializeCreateDebugScene(newSelectWindow selection.NewSelectWindowFunc) CreateDebugScene {
 	return func() *DebugScene {
 		scene := &DebugScene{}
-		anchor := frontend.Vector{X: 48, Y: 48}
+		anchor := drawing.Vector{X: 48, Y: 48}
 		selectWindow := newSelectWindow(
 			&anchor,
-			frontend.PivotTopLeft,
-			frontend.DepthWindow,
+			drawing.PivotTopLeft,
+			drawing.DepthWindow,
 			[]text.TextId{
 				text.TextIdDebugMenuBattle,
 				text.TextIdDebugMenuSequence,

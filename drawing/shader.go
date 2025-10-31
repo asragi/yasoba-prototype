@@ -1,5 +1,6 @@
 package drawing
 
+// TODO: remove ebiten dependency from drawing package
 import "github.com/hajimehoshi/ebiten/v2"
 
 type ShaderId int

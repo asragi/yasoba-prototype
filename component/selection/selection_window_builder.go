@@ -1,24 +1,25 @@
 package selection
 
 import (
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type NewSelectWindowFunc func(
-	*frontend.Vector,
-	*frontend.Pivot,
-	frontend.Depth,
+	*drawing.Vector,
+	*drawing.Pivot,
+	drawing.Depth,
 	[]text.TextId,
 	func(int),
 	bool,
 ) *SelectWindow
 
 type NewCursor func(
-	relativePosition *frontend.Vector,
-	pivot *frontend.Pivot,
-	depth frontend.Depth,
+	relativePosition *drawing.Vector,
+	pivot *drawing.Pivot,
+	depth drawing.Depth,
 ) Cursor
 
 func StandByNewSelectWindow(
@@ -27,9 +28,9 @@ func StandByNewSelectWindow(
 	textServer text.ServeTextDataFunc,
 ) NewSelectWindowFunc {
 	return func(
-		relativePosition *frontend.Vector,
-		pivot *frontend.Pivot,
-		depth frontend.Depth,
+		relativePosition *drawing.Vector,
+		pivot *drawing.Pivot,
+		depth drawing.Depth,
 		commands []text.TextId,
 		onSubmit func(int),
 		closeOnSubmit bool,
@@ -40,12 +41,12 @@ func StandByNewSelectWindow(
 		const marginX = 4
 		const offsetY = -1
 		count := len(commands)
-		size := &frontend.Vector{X: width, Y: float64(lineHeight * count)}
+		size := &drawing.Vector{X: width, Y: float64(lineHeight * count)}
 		pivotModification := pivot.ApplyToSize(size)
-		cursorPositions := func() []*frontend.Vector {
-			positions := make([]*frontend.Vector, len(commands))
+		cursorPositions := func() []*drawing.Vector {
+			positions := make([]*drawing.Vector, len(commands))
 			for i := 0; i < count; i++ {
-				positions[i] = &frontend.Vector{
+				positions[i] = &drawing.Vector{
 					X: relativePosition.X - pivotModification.X,
 					Y: relativePosition.Y - pivotModification.Y + float64(lineHeight*i),
 				}
@@ -54,16 +55,16 @@ func StandByNewSelectWindow(
 		}()
 		cursor := newCursor(
 			cursorPositions[0],
-			frontend.PivotTopLeft,
+			drawing.PivotTopLeft,
 			depth,
 		)
 		cursorWidth := cursor.Size().X
 		texts := func() []textInterface {
-			relativePositions := func() []*frontend.Vector {
-				var positions []*frontend.Vector
+			relativePositions := func() []*drawing.Vector {
+				var positions []*drawing.Vector
 				for i := 0; i < count; i++ {
 					positions = append(
-						positions, &frontend.Vector{
+						positions, &drawing.Vector{
 							X: relativePosition.X - pivotModification.X + cursorWidth + marginX,
 							Y: relativePosition.Y - pivotModification.Y + float64(lineHeight*i) + offsetY,
 						},
@@ -76,7 +77,7 @@ func StandByNewSelectWindow(
 				text := newText(
 					&widget.TextOptionsNew{
 						RelativePosition: relativePositions[i],
-						Pivot:            frontend.PivotTopLeft,
+						Pivot:            drawing.PivotTopLeft,
 						Font:             frontend.MaruMinya,
 						Speed:            1,
 						Depth:            depth,

@@ -5,7 +5,7 @@ import (
 
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/setup"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
@@ -36,32 +36,32 @@ func TestToDisplayArgs(t *testing.T) {
 			enemySettings: []*config.EnemySetting{
 				{
 					EnemyId:  enemyId,
-					Position: &frontend.Vector{X: 1, Y: 2},
+					Position: &drawing.Vector{X: 1, Y: 2},
 				},
 				{
 					EnemyId:  enemyId,
-					Position: &frontend.Vector{X: 3, Y: 4},
+					Position: &drawing.Vector{X: 3, Y: 4},
 				},
 				{
 					EnemyId:  anotherEnemyId,
-					Position: &frontend.Vector{X: 5, Y: 6},
+					Position: &drawing.Vector{X: 5, Y: 6},
 				},
 			},
 			expect: []*BattleDisplayArgs{
 				{
 					EnemyId:  enemyId,
 					ActorId:  "actor1",
-					Position: &frontend.Vector{X: 1, Y: 2},
+					Position: &drawing.Vector{X: 1, Y: 2},
 				},
 				{
 					EnemyId:  enemyId,
 					ActorId:  "actor2",
-					Position: &frontend.Vector{X: 3, Y: 4},
+					Position: &drawing.Vector{X: 3, Y: 4},
 				},
 				{
 					EnemyId:  anotherEnemyId,
 					ActorId:  "actor3",
-					Position: &frontend.Vector{X: 5, Y: 6},
+					Position: &drawing.Vector{X: 5, Y: 6},
 				},
 			},
 		},

@@ -14,6 +14,7 @@ import (
 	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
 	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
 	"github.com/asragi/yasoba-prototype/component/selection"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
@@ -168,9 +169,9 @@ func InitializeCreateBattleScene(
 			processBattle,
 		)
 		targetSelectWindow = newSelectWindow(
-			&frontend.Vector{X: 80, Y: 0},
-			frontend.PivotBottomLeft,
-			frontend.DepthWindow,
+			&drawing.Vector{X: 80, Y: 0},
+			drawing.PivotBottomLeft,
+			drawing.DepthWindow,
 			allTextId,
 			onTargetSelect,
 			true,
@@ -244,10 +245,10 @@ func createAllTextIdList(allActorId []actor.ActorId, actorNames map[actor.ActorI
 
 func createMessageWindow(newMessageWindow component.NewMessageWindowFunc) *component.MessageWindow {
 	messageWindow := newMessageWindow(
-		&frontend.Vector{X: 192, Y: 0},
-		&frontend.Vector{X: 292, Y: 62},
-		frontend.DepthWindow,
-		frontend.PivotTopCenter,
+		&drawing.Vector{X: 192, Y: 0},
+		&drawing.Vector{X: 292, Y: 62},
+		drawing.DepthWindow,
+		drawing.PivotTopCenter,
 	)
 	testString := "あのイーハトーヴォのすきとおった風\n夏でも底に冷たさをもつ青いそら\nうつくしい森で飾られたモリーオ市"
 	messageWindow.SetText(testString, false)
@@ -259,7 +260,7 @@ func createBattleEnemyDisplay(newBattleEnemyDisplay battleenemy.NewBattleEnemyDi
 	displayArgs := battleenemy.ToDisplayArgs(enemyIds, enemySettings)
 	return newBattleEnemyDisplay(
 		displayArgs,
-		frontend.DepthEnemy,
+		drawing.DepthEnemy,
 	)
 }
 
@@ -269,9 +270,9 @@ func createBattleSelectWindow(
 	onSubmit func(battle.PlayerCommand),
 ) *battleselect.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
-		&frontend.Vector{X: 0, Y: 0},
-		frontend.PivotBottomLeft,
-		frontend.DepthWindow,
+		&drawing.Vector{X: 0, Y: 0},
+		drawing.PivotBottomLeft,
+		drawing.DepthWindow,
 		[]battle.PlayerCommand{
 			battle.PlayerCommandAttack,
 			battle.PlayerCommandFire,
@@ -291,7 +292,7 @@ func createBattleSelectWindow(
 func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay, effectManager *widget.EffectManager) func(widget.EffectId, actor.ActorId) {
 	return func(effectId widget.EffectId, target actor.ActorId) {
 		targetActor := serveActor(target)
-		position := func() *frontend.Vector {
+		position := func() *drawing.Vector {
 			if targetActor.Side == actor.ActorSideEnemy {
 				return battleEnemyDisplay.GetPosition(target)
 			}

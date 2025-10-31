@@ -1,7 +1,7 @@
 package selection
 
 import (
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 )
 
 type selectWindowView struct {
@@ -16,20 +16,20 @@ func newSelectWindowView(texts []textInterface, cursor Cursor) selectWindowViewI
 	}
 }
 
-func (w *selectWindowView) update(parentPosition *frontend.Vector) {
+func (w *selectWindowView) update(parentPosition *drawing.Vector) {
 	for _, text := range w.texts {
 		text.Update(parentPosition)
 	}
 	w.cursor.Update(parentPosition)
 }
 
-func (w *selectWindowView) draw(drawFunc frontend.DrawFunc) {
+func (w *selectWindowView) draw(drawFunc drawing.DrawFunc) {
 	w.cursor.Draw(drawFunc)
 	for _, text := range w.texts {
 		text.Draw(drawFunc)
 	}
 }
 
-func (w *selectWindowView) setCursorRelativePosition(position *frontend.Vector) {
+func (w *selectWindowView) setCursorRelativePosition(position *drawing.Vector) {
 	w.cursor.SetRelativePosition(position)
 }

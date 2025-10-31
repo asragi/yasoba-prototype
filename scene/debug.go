@@ -1,6 +1,6 @@
 package scene
 
-import "github.com/asragi/yasoba-prototype/frontend"
+import "github.com/asragi/yasoba-prototype/drawing"
 
 type DebugScene struct {
 	ui             debugUI
@@ -11,7 +11,7 @@ func (s *DebugScene) Update() {
 	s.ui.Update()
 }
 
-func (s *DebugScene) Draw(drawFunc frontend.DrawFunc) {
+func (s *DebugScene) Draw(drawFunc drawing.DrawFunc) {
 	s.ui.Draw(drawFunc)
 }
 

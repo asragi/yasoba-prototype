@@ -2,6 +2,8 @@ package widget
 
 import (
 	"fmt"
+
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
 
@@ -18,10 +20,10 @@ type Effect struct {
 }
 
 func (e *Effect) Update() {
-	e.animation.Update(frontend.VectorZero)
+	e.animation.Update(drawing.VectorZero)
 }
 
-func (e *Effect) Draw(drawFunc frontend.DrawFunc) {
+func (e *Effect) Draw(drawFunc drawing.DrawFunc) {
 	if e.animation.IsEnd() {
 		return
 	}
@@ -45,18 +47,18 @@ func NewEffectManager(
 	}
 }
 
-type ServeParentPosition func() *frontend.Vector
+type ServeParentPosition func() *drawing.Vector
 
 func (m *EffectManager) CallEffect(
 	effectId EffectId,
-	position *frontend.Vector,
+	position *drawing.Vector,
 ) {
 	effectData := m.serveEffect(effectId)
 	animationData := m.resource.GetAnimationData(effectData.AnimationId)
 	animation := NewAnimation(
 		position,
-		frontend.PivotCenter,
-		frontend.DepthEffect,
+		drawing.PivotCenter,
+		drawing.DepthEffect,
 		m.resource.GetTexture(animationData.TextureId),
 		animationData,
 	)
@@ -71,7 +73,7 @@ func (m *EffectManager) Update() {
 	}
 }
 
-func (m *EffectManager) Draw(drawFunc frontend.DrawFunc) {
+func (m *EffectManager) Draw(drawFunc drawing.DrawFunc) {
 	for _, effect := range m.effects {
 		effect.Draw(drawFunc)
 	}

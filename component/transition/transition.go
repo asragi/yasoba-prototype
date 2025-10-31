@@ -1,8 +1,8 @@
 package transition
 
-import "github.com/asragi/yasoba-prototype/frontend"
+import "github.com/asragi/yasoba-prototype/drawing"
 
-type transitionViewDraw func(drawFunc frontend.DrawFunc, rate float64)
+type transitionViewDraw func(drawFunc drawing.DrawFunc, rate float64)
 
 type mode int
 
@@ -57,7 +57,7 @@ func (t *transition) Update() {
 	t.fadeInUpdate()
 }
 
-func (t *transition) Draw(drawFunc frontend.DrawFunc) {
+func (t *transition) Draw(drawFunc drawing.DrawFunc) {
 	if drawFunc == nil {
 		return
 	}

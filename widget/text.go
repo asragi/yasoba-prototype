@@ -4,9 +4,9 @@ import (
 	"image/color"
 	"strings"
 
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/util"
-	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
@@ -20,7 +20,7 @@ type TextInterface interface {
 	Drawer
 	ForceComplete()
 	SetText(text string, displayAll bool)
-	Size() *frontend.Vector
+	Size() *drawing.Vector
 	CheckIsEnd() bool
 	SetTextColor(color color.Color)
 }
@@ -31,9 +31,9 @@ func (c Char) String() string {
 	return string(c)
 }
 
-func (c Char) Size(face *text.GoTextFace) *frontend.Vector {
+func (c Char) Size(face *text.GoTextFace) *drawing.Vector {
 	width, height := text.Measure(string(c), face, 1)
-	return &frontend.Vector{
+	return &drawing.Vector{
 		X: width,
 		Y: height,
 	}
@@ -71,7 +71,8 @@ type Text struct {
 	frameCounter   int
 	options        *TextOptionsNew
 	textFace       *text.GoTextFace
-	parentPosition *frontend.Vector
+	parentPosition *drawing.Vector
+	drawTextFunc   drawing.DrawTextFunc
 }
 
 type FontProvider interface {
@@ -112,13 +113,13 @@ func (t *Text) SetText(textString string, displayAll bool) {
 	t.textSize = textSize
 }
 
-func (t *Text) Update(parentPosition *frontend.Vector) {
+func (t *Text) Update(parentPosition *drawing.Vector) {
 	t.frameCounter++
 	t.currentIndex = util.ClampInt(t.frameCounter/t.options.Speed, t.currentIndex, t.textSize)
 	t.parentPosition = parentPosition
 }
 
-func (t *Text) Draw(drawFunc frontend.DrawFunc) {
+func (t *Text) Draw(drawFunc drawing.DrawFunc) {
 	if t.parentPosition == nil {
 		return
 	}
@@ -132,7 +133,7 @@ func (t *Text) Draw(drawFunc frontend.DrawFunc) {
 	}
 }
 
-func (t *Text) Size() *frontend.Vector {
+func (t *Text) Size() *drawing.Vector {
 	scale := float64(t.options.Scale)
 	characterHeight := t.getCharacterHeight()
 	maxWidth := 0.0
@@ -149,7 +150,7 @@ func (t *Text) Size() *frontend.Vector {
 	// 最後の文字のmarginXを引く
 	maxWidth -= marginX
 	height := characterHeight*float64(len(t.characterSet)) + lineMargin*float64(len(t.characterSet)-1)
-	return &frontend.Vector{
+	return &drawing.Vector{
 		X: maxWidth * scale,
 		Y: height * scale,
 	}
@@ -168,27 +169,27 @@ func (t *Text) getCharacterHeight() float64 {
 func (t *Text) drawText(
 	characters []Char,
 	currentIndex int,
-	parentPosition *frontend.Vector,
+	parentPosition *drawing.Vector,
 	line int,
-	drawFunc frontend.DrawFunc,
+	drawFunc drawing.DrawFunc,
 ) {
 	length := len(characters)
 	// TODO: characterSizeX should be calculated from font Size
 	const lineHeight = 16
 	scale := float64(t.options.Scale)
-	diffSet := []*frontend.Vector{
+	diffSet := []*drawing.Vector{
 		{X: 0, Y: 1},
 		{X: 0, Y: -1},
 		{X: 1, Y: 0},
 		{X: -1, Y: 0},
 	}
 	pivotDiff := t.options.Pivot.ApplyToSize(t.Size())
-	characterPosition := func() []*frontend.Vector {
-		result := make([]*frontend.Vector, length)
+	characterPosition := func() []*drawing.Vector {
+		result := make([]*drawing.Vector, length)
 		xPosition := 0.0
 		for i := 0; i < length; i++ {
 			targetCharacter := characters[i]
-			tmp := frontend.Vector{
+			tmp := drawing.Vector{
 				X: t.options.RelativePosition.X + xPosition*scale,
 				Y: t.options.RelativePosition.Y,
 			}
@@ -198,38 +199,38 @@ func (t *Text) drawText(
 		return result
 	}()
 	for i := 0; i < currentIndex; i++ {
-		op := &text.DrawOptions{}
+		op := &drawing.TextDrawOptions{}
 		x := characterPosition[i].X + parentPosition.X
 		y := characterPosition[i].Y + parentPosition.Y + float64(line*lineHeight)*scale
-		op.GeoM.Scale(scale, scale)
-		op.GeoM.Translate(x, y)
+		op.SetScale(scale, scale)
+		op.Translate(x, y)
 		targetCharacter := characters[i]
 		drawFunc(
-			func(screen *ebiten.Image) {
+			func(screen drawing.Image) {
 				if t.options.EnableOutline {
-					outlineOp := &text.DrawOptions{}
+					outlineOp := &drawing.TextDrawOptions{}
 					*outlineOp = *op
-					outlineOp.ColorScale.ScaleWithColor(t.options.OutlineColor)
+					outlineOp.SetColorScale(t.options.OutlineColor)
 					for j := 0; j < len(diffSet); j++ {
 						v := diffSet[j].Multiply(scale)
-						outlineOp.GeoM.Translate(v.X, v.Y)
-						text.Draw(screen, targetCharacter.String(), t.textFace, outlineOp)
-						outlineOp.GeoM.Translate(-v.X, -v.Y)
+						outlineOp.Translate(v.X, v.Y)
+						t.drawTextFunc(screen, targetCharacter.String(), t.textFace, outlineOp)
+						outlineOp.Translate(-v.X, -v.Y)
 					}
 				}
-				op.ColorScale.ScaleWithColor(t.options.Color)
-				text.Draw(screen, targetCharacter.String(), t.textFace, op)
+				op.SetColorScale(t.options.Color)
+				t.drawTextFunc(screen, targetCharacter.String(), t.textFace, op)
 			}, t.options.Depth,
 		)
 	}
 }
 
 type TextOptionsNew struct {
-	RelativePosition *frontend.Vector
-	Pivot            *frontend.Pivot
+	RelativePosition *drawing.Vector
+	Pivot            *drawing.Pivot
 	Font             frontend.FontId
 	Speed            int
-	Depth            frontend.Depth
+	Depth            drawing.Depth
 	Color            color.Color
 	OutlineColor     color.Color
 	EnableOutline    bool

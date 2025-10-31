@@ -1,11 +1,13 @@
 package widget
 
-import "github.com/asragi/yasoba-prototype/frontend"
+import (
+	"github.com/asragi/yasoba-prototype/drawing"
+)
 
 type PositionUpdater interface {
-	Update(parentPosition *frontend.Vector)
+	Update(parentPosition *drawing.Vector)
 }
 
 type Drawer interface {
-	Draw(drawFunc frontend.DrawFunc)
+	Draw(drawFunc drawing.DrawFunc)
 }

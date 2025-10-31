@@ -8,7 +8,7 @@ import (
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
 	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
@@ -56,7 +56,7 @@ func (s *BattleScene) Update() {
 	s.checkAndStartSequences(invoke.InvokeTimingEveryAction)
 }
 
-func (s *BattleScene) Draw(drawFunc frontend.DrawFunc) {
+func (s *BattleScene) Draw(drawFunc drawing.DrawFunc) {
 	s.ui.Draw(drawFunc)
 }
 

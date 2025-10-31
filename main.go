@@ -5,7 +5,7 @@ import (
 
 	"github.com/asragi/yasoba-prototype/app"
 	"github.com/asragi/yasoba-prototype/debug"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -16,7 +16,7 @@ type Game struct {
 	activeScene  scene.Scene
 	battleScene  *scene.BattleScene
 	debugOverlay *debug.Debug
-	drawing      *frontend.Drawing
+	drawing      *drawing.Drawing
 	width        int
 	height       int
 }

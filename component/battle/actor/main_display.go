@@ -5,7 +5,7 @@ import (
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
 	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/game/character"
 )
 
@@ -20,23 +20,23 @@ func (d *BattleActorDisplay) SetDamage(damage battleSkill.Damage, afterHP actor.
 	d.parameterDisplay.hpDisplay.SetHP(afterHP)
 }
 
-func (d *BattleActorDisplay) Update(bottomLeftPosition *frontend.Vector) {
+func (d *BattleActorDisplay) Update(bottomLeftPosition *drawing.Vector) {
 	d.faceWindow.Update(bottomLeftPosition)
 	d.displayDamage.Update(d.faceWindow.GetCenterPosition())
 	d.parameterDisplay.Update(bottomLeftPosition)
 }
 
-func (d *BattleActorDisplay) Draw(drawFunc frontend.DrawFunc) {
+func (d *BattleActorDisplay) Draw(drawFunc drawing.DrawFunc) {
 	d.faceWindow.Draw(drawFunc)
 	d.displayDamage.Draw(drawFunc)
 	d.parameterDisplay.Draw(drawFunc)
 }
 
-func (d *BattleActorDisplay) GetMainCharacterPosition() *frontend.Vector {
+func (d *BattleActorDisplay) GetMainCharacterPosition() *drawing.Vector {
 	return d.faceWindow.GetCenterPosition()
 }
 
-func (d *BattleActorDisplay) GetMainCharacterTopLeftPosition() *frontend.Vector {
+func (d *BattleActorDisplay) GetMainCharacterTopLeftPosition() *drawing.Vector {
 	return d.faceWindow.GetTopLeftPosition()
 }
 
@@ -53,13 +53,13 @@ func CreateNewBattleActorDisplay(
 ) NewBattleActorDisplayFunc {
 	return func(actor *actor.Actor) *BattleActorDisplay {
 		initialHp := actor.HP
-		parameter := newParameterDisplay(initialHp, frontend.PivotBottomLeft)
+		parameter := newParameterDisplay(initialHp, drawing.PivotBottomLeft)
 
 		return &BattleActorDisplay{
 			faceWindow: newFaceWindow(
-				&frontend.Vector{X: 0, Y: -parameter.GetHeight()},
-				frontend.DepthPlayer,
-				frontend.PivotBottomLeft,
+				&drawing.Vector{X: 0, Y: -parameter.GetHeight()},
+				drawing.DepthPlayer,
+				drawing.PivotBottomLeft,
 				character.CharacterLuneId,
 			),
 			displayDamage:    newDisplayDamage(),

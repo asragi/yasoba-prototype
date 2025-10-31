@@ -6,7 +6,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
@@ -47,7 +47,7 @@ func (d *BattleEnemyDisplay) SetEmotion(actorId actor.ActorId, emotion battleemo
 	graphics.SetEmotion(emotion)
 }
 
-func (d *BattleEnemyDisplay) GetPosition(id actor.ActorId) *frontend.Vector {
+func (d *BattleEnemyDisplay) GetPosition(id actor.ActorId) *drawing.Vector {
 	graphics, ok := d.actorGraphics[id]
 	if !ok {
 		return nil
@@ -55,14 +55,14 @@ func (d *BattleEnemyDisplay) GetPosition(id actor.ActorId) *frontend.Vector {
 	return graphics.GetDefinitivePosition()
 }
 
-func (d *BattleEnemyDisplay) Update(parentCenterPosition *frontend.Vector) {
+func (d *BattleEnemyDisplay) Update(parentCenterPosition *drawing.Vector) {
 	for _, id := range d.actorIds {
 		graphics := d.actorGraphics[id]
 		graphics.Update(parentCenterPosition)
 	}
 }
 
-func (d *BattleEnemyDisplay) Draw(drawFunc frontend.DrawFunc) {
+func (d *BattleEnemyDisplay) Draw(drawFunc drawing.DrawFunc) {
 	for _, id := range d.actorIds {
 		graphics := d.actorGraphics[id]
 		graphics.Draw(drawFunc)
@@ -72,7 +72,7 @@ func (d *BattleEnemyDisplay) Draw(drawFunc frontend.DrawFunc) {
 type BattleDisplayArgs struct {
 	ActorId  actor.ActorId
 	EnemyId  enemy.EnemyId
-	Position *frontend.Vector
+	Position *drawing.Vector
 }
 
 func ToDisplayArgs(
@@ -109,21 +109,21 @@ func ToDisplayArgs(
 	return result
 }
 
-type NewBattleEnemyDisplayFunc func([]*BattleDisplayArgs, frontend.Depth) *BattleEnemyDisplay
+type NewBattleEnemyDisplayFunc func([]*BattleDisplayArgs, drawing.Depth) *BattleEnemyDisplay
 
 func CreateNewBattleEnemyDisplay(
 	newBattleActorGraphics NewBattleEnemyGraphicsFunc,
 ) NewBattleEnemyDisplayFunc {
 	return func(
 		enemies []*BattleDisplayArgs,
-		depth frontend.Depth,
+		depth drawing.Depth,
 	) *BattleEnemyDisplay {
 		actorIds := make([]actor.ActorId, len(enemies))
 		actorGraphics := map[actor.ActorId]BattleEnemyGraphicsInterface{}
 		for i, enemy := range enemies {
 			graphics := newBattleActorGraphics(
 				enemy.Position,
-				frontend.PivotCenter,
+				drawing.PivotCenter,
 				depth,
 				enemy.EnemyId,
 			)

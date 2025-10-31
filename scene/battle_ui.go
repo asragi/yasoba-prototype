@@ -7,6 +7,7 @@ import (
 	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
 	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
 	"github.com/asragi/yasoba-prototype/component/selection"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -26,12 +27,12 @@ type battleUI struct {
 }
 
 type battleUILayout struct {
-	messageWindowPosition frontend.Vector
-	actorDisplayPosition  frontend.Vector
-	subActorDisplayPos    frontend.Vector
-	enemyDisplayPosition  frontend.Vector
-	subActorDialogAnchor  frontend.Vector
-	selectAnchor          frontend.Vector
+	messageWindowPosition drawing.Vector
+	actorDisplayPosition  drawing.Vector
+	subActorDisplayPos    drawing.Vector
+	enemyDisplayPosition  drawing.Vector
+	subActorDialogAnchor  drawing.Vector
+	selectAnchor          drawing.Vector
 }
 
 func (ui *battleUI) Update() {
@@ -50,12 +51,12 @@ func (ui *battleUI) Update() {
 	ui.effectManager.Update()
 }
 
-func updateBattleShake(shake *frontend.EmitShake) *frontend.Vector {
+func updateBattleShake(shake *frontend.EmitShake) *drawing.Vector {
 	shake.Update()
 	return shake.Delta()
 }
 
-func (ui *battleUI) Draw(drawFunc frontend.DrawFunc) {
+func (ui *battleUI) Draw(drawFunc drawing.DrawFunc) {
 	ui.messageWindow.Draw(drawFunc)
 	ui.battleSelectWindow.Draw(drawFunc)
 	ui.targetSelectWindow.Draw(drawFunc)
@@ -66,16 +67,16 @@ func (ui *battleUI) Draw(drawFunc frontend.DrawFunc) {
 	ui.effectManager.Draw(drawFunc)
 }
 
-func computeBattleUILayout(ui *battleUI, delta *frontend.Vector) battleUILayout {
+func computeBattleUILayout(ui *battleUI, delta *drawing.Vector) battleUILayout {
 	actorAnchor := ui.actorDisplay.GetMainCharacterTopLeftPosition()
 	subActorAnchor := ui.subActorDisplay.GetTopCenterPosition()
 
 	return battleUILayout{
-		messageWindowPosition: frontend.Vector{X: delta.X, Y: delta.Y},
-		actorDisplayPosition:  frontend.Vector{X: delta.X, Y: delta.Y + 288},
-		subActorDisplayPos:    frontend.Vector{X: delta.X + 384, Y: delta.Y + 288},
-		enemyDisplayPosition:  frontend.Vector{X: delta.X + 192, Y: delta.Y + 144},
-		subActorDialogAnchor:  frontend.Vector{X: subActorAnchor.X + delta.X, Y: subActorAnchor.Y + delta.Y},
-		selectAnchor:          frontend.Vector{X: actorAnchor.X + delta.X, Y: actorAnchor.Y + delta.Y},
+		messageWindowPosition: drawing.Vector{X: delta.X, Y: delta.Y},
+		actorDisplayPosition:  drawing.Vector{X: delta.X, Y: delta.Y + 288},
+		subActorDisplayPos:    drawing.Vector{X: delta.X + 384, Y: delta.Y + 288},
+		enemyDisplayPosition:  drawing.Vector{X: delta.X + 192, Y: delta.Y + 144},
+		subActorDialogAnchor:  drawing.Vector{X: subActorAnchor.X + delta.X, Y: subActorAnchor.Y + delta.Y},
+		selectAnchor:          drawing.Vector{X: actorAnchor.X + delta.X, Y: actorAnchor.Y + delta.Y},
 	}
 }

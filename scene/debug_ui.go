@@ -2,18 +2,19 @@ package scene
 
 import (
 	"github.com/asragi/yasoba-prototype/component/selection"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
 
 type debugUI struct {
 	selectWindow *selection.SelectWindow
 	input        frontend.InputManager
-	anchor       frontend.Vector
+	anchor       drawing.Vector
 	layout       debugUILayout
 }
 
 type debugUILayout struct {
-	selectAnchor frontend.Vector
+	selectAnchor drawing.Vector
 }
 
 func (ui *debugUI) Update() {
@@ -22,11 +23,11 @@ func (ui *debugUI) Update() {
 	ui.input.Update()
 }
 
-func (ui *debugUI) Draw(drawFunc frontend.DrawFunc) {
+func (ui *debugUI) Draw(drawFunc drawing.DrawFunc) {
 	ui.selectWindow.Draw(drawFunc)
 }
 
-func computeDebugUILayout(anchor *frontend.Vector) debugUILayout {
+func computeDebugUILayout(anchor *drawing.Vector) debugUILayout {
 	return debugUILayout{
 		selectAnchor: *anchor,
 	}

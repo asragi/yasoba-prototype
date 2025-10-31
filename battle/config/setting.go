@@ -1,13 +1,13 @@
 package config
 
 import (
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 )
 
 type EnemySetting struct {
 	EnemyId  enemy.EnemyId
-	Position *frontend.Vector
+	Position *drawing.Vector
 }
 
 type Id string
@@ -29,7 +29,7 @@ func NewServer() ServeFunc {
 		Enemies: []*EnemySetting{
 			{
 				EnemyId:  enemy.EnemyPunchingBagId,
-				Position: frontend.VectorZero,
+				Position: drawing.VectorZero,
 			},
 		},
 	}
@@ -37,15 +37,15 @@ func NewServer() ServeFunc {
 		Enemies: []*EnemySetting{
 			{
 				EnemyId:  enemy.EnemyPunchingBagId,
-				Position: &frontend.Vector{X: -100},
+				Position: &drawing.Vector{X: -100},
 			},
 			{
 				EnemyId:  enemy.EnemyPunchingBagId,
-				Position: frontend.VectorZero,
+				Position: drawing.VectorZero,
 			},
 			{
 				EnemyId:  enemy.EnemyPunchingBagId,
-				Position: &frontend.Vector{X: 100},
+				Position: &drawing.Vector{X: 100},
 			},
 		},
 	}

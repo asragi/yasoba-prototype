@@ -4,6 +4,7 @@ import (
 	"image/color"
 
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -22,15 +23,15 @@ type NewDisplayDamageFunc func() *DisplayDamage
 
 func CreateNewDisplayDamage(newText widget.NewTextFunc) NewDisplayDamageFunc {
 	damageTextColor := color.White
-	positionDiff := &frontend.Vector{Y: 33}
+	positionDiff := &drawing.Vector{Y: 33}
 	return func() *DisplayDamage {
 		text := newText(
 			&widget.TextOptionsNew{
 				RelativePosition: positionDiff,
-				Pivot:            frontend.PivotCenter,
+				Pivot:            drawing.PivotCenter,
 				Font:             frontend.MaruMinya,
 				Speed:            4,
-				Depth:            frontend.DepthDamageText,
+				Depth:            drawing.DepthDamageText,
 				Color:            damageTextColor,
 				EnableOutline:    true,
 				Scale:            2,
@@ -49,19 +50,19 @@ func (d *DisplayDamage) DisplayDamage(damage battleSkill.Damage) {
 	d.popFrame = 0
 }
 
-func (d *DisplayDamage) Update(parentPosition *frontend.Vector) {
+func (d *DisplayDamage) Update(parentPosition *drawing.Vector) {
 	d.popFrame++
-	positionDiff := func() *frontend.Vector {
+	positionDiff := func() *drawing.Vector {
 		if d.popFrame < DamageDisplayPopFrame {
 			y := DamageDisplayPopHeight * (1 - util.EaseOutBounce(float64(d.popFrame)/DamageDisplayPopFrame))
-			return &frontend.Vector{X: 0, Y: -y}
+			return &drawing.Vector{X: 0, Y: -y}
 		}
-		return frontend.VectorZero
+		return drawing.VectorZero
 	}()
 	d.text.Update(parentPosition.Add(positionDiff))
 }
 
-func (d *DisplayDamage) Draw(drawFunc frontend.DrawFunc) {
+func (d *DisplayDamage) Draw(drawFunc drawing.DrawFunc) {
 	if d.popFrame > DamageDisplayDuration {
 		return
 	}

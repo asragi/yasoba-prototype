@@ -19,35 +19,35 @@ type windowRect struct {
 type WindowInterface interface {
 	PositionUpdater
 	Drawer
-	Size() *frontend.Vector
-	GetPositionUpperLeft() *frontend.Vector
-	GetPositionTopCenter() *frontend.Vector
-	GetPositionCenter() *frontend.Vector
-	GetPositionLowerRight() *frontend.Vector
-	GetPadding() *frontend.Vector
-	SetSize(size *frontend.Vector)
+	Size() *drawing.Vector
+	GetPositionUpperLeft() *drawing.Vector
+	GetPositionTopCenter() *drawing.Vector
+	GetPositionCenter() *drawing.Vector
+	GetPositionLowerRight() *drawing.Vector
+	GetPadding() *drawing.Vector
+	SetSize(size *drawing.Vector)
 }
 
 type Window struct {
 	screenWidth      int
 	screenHeight     int
 	image            drawing.Image
-	relativePosition *frontend.Vector
-	parentPosition   *frontend.Vector
-	size             *frontend.Vector
-	pivot            *frontend.Pivot
+	relativePosition *drawing.Vector
+	parentPosition   *drawing.Vector
+	size             *drawing.Vector
+	pivot            *drawing.Pivot
 	corners          []*windowRect
 	sides            []*windowRect
-	cornerPosition   []*frontend.Vector
-	sidePosition     []*frontend.Vector
-	sideScale        []*frontend.Vector
+	cornerPosition   []*drawing.Vector
+	sidePosition     []*drawing.Vector
+	sideScale        []*drawing.Vector
 	cornerSize       int
 	depth            drawing.Depth
-	padding          *frontend.Vector
+	padding          *drawing.Vector
 }
 
 // Windowの枠を含めた全体のサイズを指定する
-func (w *Window) SetSize(size *frontend.Vector) {
+func (w *Window) SetSize(size *drawing.Vector) {
 	w.size = size
 	w.cornerPosition = calculateCornerPosition(size, float64(w.cornerSize))
 	w.sidePosition = calculateSidePosition(size, float64(w.cornerSize))
@@ -59,49 +59,49 @@ func (w *Window) SetSize(size *frontend.Vector) {
 	)
 }
 
-func (w *Window) GetPositionUpperLeft() *frontend.Vector {
+func (w *Window) GetPositionUpperLeft() *drawing.Vector {
 	pivotDiff := w.pivot.ApplyToSize(w.size)
-	return &frontend.Vector{
+	return &drawing.Vector{
 		X: w.relativePosition.X + w.parentPosition.X - pivotDiff.X,
 		Y: w.relativePosition.Y + w.parentPosition.Y - pivotDiff.Y,
 	}
 }
 
-func (w *Window) GetPositionTopCenter() *frontend.Vector {
-	return w.GetPositionUpperLeft().Add(&frontend.Vector{X: w.size.X / 2, Y: 0})
+func (w *Window) GetPositionTopCenter() *drawing.Vector {
+	return w.GetPositionUpperLeft().Add(&drawing.Vector{X: w.size.X / 2, Y: 0})
 }
 
-func (w *Window) GetPositionCenter() *frontend.Vector {
+func (w *Window) GetPositionCenter() *drawing.Vector {
 	pivotDiff := w.pivot.ApplyToSize(w.size)
-	return &frontend.Vector{
+	return &drawing.Vector{
 		X: w.relativePosition.X + w.parentPosition.X - pivotDiff.X + w.size.X/2,
 		Y: w.relativePosition.Y + w.parentPosition.Y - pivotDiff.Y + w.size.Y/2,
 	}
 }
 
-func (w *Window) GetPositionLowerRight() *frontend.Vector {
+func (w *Window) GetPositionLowerRight() *drawing.Vector {
 	pivotDiff := w.pivot.ApplyToSize(w.size)
-	return &frontend.Vector{
+	return &drawing.Vector{
 		X: w.relativePosition.X + w.parentPosition.X - pivotDiff.X + w.size.X,
 		Y: w.relativePosition.Y + w.parentPosition.Y - pivotDiff.Y + w.size.Y,
 	}
 }
 
 // 画面からはみ出す分を計算し修正に必要なVectorを返す
-func (w *Window) calculateInWindowPosition(passedParentPosition *frontend.Vector) *frontend.Vector {
+func (w *Window) calculateInWindowPosition(passedParentPosition *drawing.Vector) *drawing.Vector {
 	// TODO: 左や上に飛び出す場合を想定していない
 	// TODO: フラグではみ出しを許容するかどうかを変えたい
 	pivotDiff := w.pivot.ApplyToSize(w.size)
 	xDiff := math.Max(passedParentPosition.X+w.relativePosition.X+w.size.X-pivotDiff.X-float64(w.screenWidth), 0)
 	yDiff := math.Max(passedParentPosition.Y+w.relativePosition.Y+w.size.Y-pivotDiff.Y-float64(w.screenHeight), 0)
-	return &frontend.Vector{X: xDiff, Y: yDiff}
+	return &drawing.Vector{X: xDiff, Y: yDiff}
 }
 
-func (w *Window) GetPadding() *frontend.Vector {
+func (w *Window) GetPadding() *drawing.Vector {
 	return w.padding
 }
 
-func (w *Window) Update(passedPosition *frontend.Vector) {
+func (w *Window) Update(passedPosition *drawing.Vector) {
 	inWindowPosition := w.calculateInWindowPosition(passedPosition)
 	w.parentPosition = passedPosition.Sub(inWindowPosition)
 }
@@ -161,15 +161,15 @@ func (w *Window) Draw(drawFunc drawing.DrawFunc) {
 	)
 }
 
-func (w *Window) Size() *frontend.Vector {
+func (w *Window) Size() *drawing.Vector {
 	return w.size
 }
 
 func calculateCornerPosition(
-	size *frontend.Vector,
+	size *drawing.Vector,
 	cornerSize float64,
-) []*frontend.Vector {
-	return []*frontend.Vector{
+) []*drawing.Vector {
+	return []*drawing.Vector{
 		{0, 0},
 		{size.X - cornerSize, 0},
 		{0, size.Y - cornerSize},
@@ -178,10 +178,10 @@ func calculateCornerPosition(
 }
 
 func calculateSidePosition(
-	size *frontend.Vector,
+	size *drawing.Vector,
 	cornerSize float64,
-) []*frontend.Vector {
-	return []*frontend.Vector{
+) []*drawing.Vector {
+	return []*drawing.Vector{
 		{cornerSize, 0},
 		{size.X - cornerSize, cornerSize},
 		{0, cornerSize},
@@ -190,16 +190,16 @@ func calculateSidePosition(
 }
 
 func calculateSideScale(
-	size *frontend.Vector,
+	size *drawing.Vector,
 	cornerSize float64,
 	textureWidth float64,
 	textureHeight float64,
-) []*frontend.Vector {
+) []*drawing.Vector {
 	sideXSize := textureWidth - cornerSize*2
 	targetXSize := size.X - cornerSize*2
 	sideYSize := textureHeight - cornerSize*2
 	targetYSize := size.Y - cornerSize*2
-	return []*frontend.Vector{
+	return []*drawing.Vector{
 		{targetXSize / sideXSize, 1},
 		{1, targetYSize / sideYSize},
 		{1, targetYSize / sideYSize},
@@ -210,11 +210,11 @@ func calculateSideScale(
 type WindowOption struct {
 	Texture          frontend.TextureId
 	CornerSize       int
-	RelativePosition *frontend.Vector
-	Size             *frontend.Vector
+	RelativePosition *drawing.Vector
+	Size             *drawing.Vector
 	Depth            drawing.Depth
-	Pivot            *frontend.Pivot
-	Padding          *frontend.Vector
+	Pivot            *drawing.Pivot
+	Padding          *drawing.Vector
 }
 
 type NewWindowFunc func(*WindowOption) WindowInterface
@@ -239,7 +239,7 @@ func CreateNewWindow(
 	screenWidth, screenHeight int,
 ) NewWindowFunc {
 	return func(option *WindowOption) WindowInterface {
-		parentPosition := frontend.VectorZero
+		parentPosition := drawing.VectorZero
 		relativePosition := option.RelativePosition
 
 		if err := option.Validation(); err != nil {

@@ -4,18 +4,18 @@ import (
 	"image/color"
 	"testing"
 
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type dummyCursor struct {
-	size             *frontend.Vector
-	relativePosition *frontend.Vector
+	size             *drawing.Vector
+	relativePosition *drawing.Vector
 }
 
-func newDummyCursor(size *frontend.Vector) func(*frontend.Vector, *frontend.Pivot, frontend.Depth) Cursor {
-	return func(relativePosition *frontend.Vector, _ *frontend.Pivot, _ frontend.Depth) Cursor {
+func newDummyCursor(size *drawing.Vector) func(*drawing.Vector, *drawing.Pivot, drawing.Depth) Cursor {
+	return func(relativePosition *drawing.Vector, _ *drawing.Pivot, _ drawing.Depth) Cursor {
 		return &dummyCursor{
 			size:             size,
 			relativePosition: relativePosition,
@@ -23,28 +23,28 @@ func newDummyCursor(size *frontend.Vector) func(*frontend.Vector, *frontend.Pivo
 	}
 }
 
-func (c *dummyCursor) Update(*frontend.Vector) {}
+func (c *dummyCursor) Update(*drawing.Vector) {}
 
-func (c *dummyCursor) Draw(frontend.DrawFunc) {}
+func (c *dummyCursor) Draw(drawing.DrawFunc) {}
 
-func (c *dummyCursor) SetRelativePosition(position *frontend.Vector) {
+func (c *dummyCursor) SetRelativePosition(position *drawing.Vector) {
 	c.relativePosition = position
 }
 
-func (c *dummyCursor) Size() *frontend.Vector {
+func (c *dummyCursor) Size() *drawing.Vector {
 	return c.size
 }
 
 type mockText struct {
-	updateCalls []*frontend.Vector
+	updateCalls []*drawing.Vector
 	drawCount   int
 }
 
-func (m *mockText) Update(parentPosition *frontend.Vector) {
+func (m *mockText) Update(parentPosition *drawing.Vector) {
 	m.updateCalls = append(m.updateCalls, parentPosition)
 }
 
-func (m *mockText) Draw(frontend.DrawFunc) {
+func (m *mockText) Draw(drawing.DrawFunc) {
 	m.drawCount++
 }
 
@@ -52,8 +52,8 @@ func (m *mockText) ForceComplete() {}
 
 func (m *mockText) SetText(string, bool) {}
 
-func (m *mockText) Size() *frontend.Vector {
-	return frontend.VectorZero
+func (m *mockText) Size() *drawing.Vector {
+	return drawing.VectorZero
 }
 
 func (m *mockText) CheckIsEnd() bool {
@@ -80,21 +80,21 @@ func TestSelectWindow_DrawBeforeUpdate(t *testing.T) {
 	}
 
 	newSelectWindow := StandByNewSelectWindow(
-		newDummyCursor(frontend.VectorZero),
+		newDummyCursor(drawing.VectorZero),
 		mockTextFactory,
 		newDummyTextServer(),
 	)
 	selectWindow := newSelectWindow(
-		frontend.VectorZero,
-		frontend.PivotTopLeft,
-		frontend.DepthWindow,
+		drawing.VectorZero,
+		drawing.PivotTopLeft,
+		drawing.DepthWindow,
 		[]text.TextId{text.TextIdBattleCommandAttack},
 		func(int) {},
 		true,
 	)
 	selectWindow.Open()
 
-	selectWindow.Draw(func(frontend.DrawArgFunc, frontend.Depth) {})
+	selectWindow.Draw(func(drawing.DrawArgFunc, drawing.Depth) {})
 
 	if len(createdTexts) == 0 {
 		t.Fatalf("expected mock text to be created")

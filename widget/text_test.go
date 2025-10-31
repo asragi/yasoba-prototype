@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/util"
 )
@@ -177,17 +178,17 @@ func TestText_DrawBeforeUpdateSkipsRendering(t *testing.T) {
 
 	newText := CreateNewText(resource)
 	text := newText(&TextOptionsNew{
-		RelativePosition: frontend.VectorZero,
-		Pivot:            frontend.PivotTopLeft,
+		RelativePosition: drawing.VectorZero,
+		Pivot:            drawing.PivotTopLeft,
 		Font:             frontend.MaruMinya,
 		Speed:            1,
-		Depth:            frontend.DepthWindow,
+		Depth:            drawing.DepthWindow,
 	})
 	text.SetText("dummy", true)
 
 	drawCalled := false
 
-	text.Draw(func(frontend.DrawArgFunc, frontend.Depth) {
+	text.Draw(func(drawing.DrawArgFunc, drawing.Depth) {
 		drawCalled = true
 	})
 
@@ -204,19 +205,19 @@ func TestText_DrawAfterUpdateRenders(t *testing.T) {
 
 	newText := CreateNewText(resource)
 	textInterface := newText(&TextOptionsNew{
-		RelativePosition: frontend.VectorZero,
-		Pivot:            frontend.PivotTopLeft,
+		RelativePosition: drawing.VectorZero,
+		Pivot:            drawing.PivotTopLeft,
 		Font:             frontend.MaruMinya,
 		Speed:            1,
-		Depth:            frontend.DepthWindow,
+		Depth:            drawing.DepthWindow,
 	})
 	textInterface.SetText("dummy", true)
 
-	position := &frontend.Vector{X: 10, Y: 20}
+	position := &drawing.Vector{X: 10, Y: 20}
 	textInterface.Update(position)
 
 	drawCalled := false
-	textInterface.Draw(func(frontend.DrawArgFunc, frontend.Depth) {
+	textInterface.Draw(func(drawing.DrawArgFunc, drawing.Depth) {
 		drawCalled = true
 	})
 

@@ -2,7 +2,7 @@ package dialogue
 
 import (
 	"github.com/asragi/yasoba-prototype/component"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 )
 
 type PartnerDialogueMessageWindow interface {
@@ -10,16 +10,16 @@ type PartnerDialogueMessageWindow interface {
 	Close()
 	SetText(string, bool)
 	FitToMessage()
-	Draw(frontend.DrawFunc)
-	Update(parentPosition *frontend.Vector)
+	Draw(drawing.DrawFunc)
+	Update(parentPosition *drawing.Vector)
 	IsTextEnd() bool
 }
 
 type makeMessageWindowFunc func(
-	*frontend.Vector,
-	*frontend.Vector,
-	frontend.Depth,
-	*frontend.Pivot,
+	*drawing.Vector,
+	*drawing.Vector,
+	drawing.Depth,
+	*drawing.Pivot,
 ) PartnerDialogueMessageWindow
 
 type BattlePartnerDialogue struct {
@@ -61,14 +61,14 @@ func (d *BattlePartnerDialogue) SetText(textString string, displayAll bool) {
 	d.window.FitToMessage()
 }
 
-func (d *BattlePartnerDialogue) Draw(drawFunc frontend.DrawFunc) {
+func (d *BattlePartnerDialogue) Draw(drawFunc drawing.DrawFunc) {
 	if d.window == nil {
 		return
 	}
 	d.window.Draw(drawFunc)
 }
 
-func (d *BattlePartnerDialogue) Update(parentPosition *frontend.Vector) {
+func (d *BattlePartnerDialogue) Update(parentPosition *drawing.Vector) {
 	if d.window == nil {
 		return
 	}
@@ -77,10 +77,10 @@ func (d *BattlePartnerDialogue) Update(parentPosition *frontend.Vector) {
 
 func (d *BattlePartnerDialogue) newWindow() PartnerDialogueMessageWindow {
 	window := d.newWindowFunc(
-		frontend.VectorZero,
-		frontend.VectorZero,
-		frontend.DepthWindow,
-		frontend.PivotBottomCenter,
+		drawing.VectorZero,
+		drawing.VectorZero,
+		drawing.DepthWindow,
+		drawing.PivotBottomCenter,
 	)
 	window.FitToMessage()
 	return window
@@ -90,10 +90,10 @@ func CreateNewBattlePartnerDialogue(newWindow component.NewMessageWindowFunc) Ne
 	return func() *BattlePartnerDialogue {
 		return &BattlePartnerDialogue{
 			newWindowFunc: func(
-				relativePosition *frontend.Vector,
-				size *frontend.Vector,
-				depth frontend.Depth,
-				pivot *frontend.Pivot,
+				relativePosition *drawing.Vector,
+				size *drawing.Vector,
+				depth drawing.Depth,
+				pivot *drawing.Pivot,
 			) PartnerDialogueMessageWindow {
 				return newWindow(relativePosition, size, depth, pivot)
 			},

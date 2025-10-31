@@ -3,26 +3,25 @@ package transition
 import (
 	"image/color"
 
-	"github.com/asragi/yasoba-prototype/frontend"
-	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/asragi/yasoba-prototype/drawing"
 )
 
 type View struct {
 	overlay OverlayImage
-	depth   frontend.Depth
+	depth   drawing.Depth
 }
 
 type NewTransitionViewFunc func() *View
 
 type OverlayImage interface {
 	Fill(color color.Color)
-	Draw(target *ebiten.Image, op *ebiten.DrawImageOptions)
+	Draw(target drawing.Image, op *drawing.DrawOptions)
 }
 
 type CreateImageFunc func(width, height int) OverlayImage
 
 func CreateNewView(
-	width, height int, depth frontend.Depth, createImage CreateImageFunc,
+	width, height int, depth drawing.Depth, createImage CreateImageFunc,
 ) NewTransitionViewFunc {
 	if width <= 0 {
 		panic("transition: width must be positive")
@@ -46,7 +45,7 @@ func CreateNewView(
 	}
 }
 
-func (v *View) Draw(drawFunc frontend.DrawFunc, rate float64) {
+func (v *View) Draw(drawFunc drawing.DrawFunc, rate float64) {
 	if v == nil || v.overlay == nil {
 		return
 	}
@@ -58,9 +57,9 @@ func (v *View) Draw(drawFunc frontend.DrawFunc, rate float64) {
 		return
 	}
 
-	drawFunc(func(screen *ebiten.Image) {
-		op := &ebiten.DrawImageOptions{}
-		op.ColorScale.ScaleAlpha(float32(alpha))
+	drawFunc(func(screen drawing.Image) {
+		op := drawing.NewDrawOptions()
+		op.SetOpacity(alpha)
 		v.overlay.Draw(screen, op)
 	}, v.depth)
 }
@@ -73,30 +72,4 @@ func clampRate(rate float64) float64 {
 		return 1
 	}
 	return rate
-}
-
-type ebitenOverlayImage struct {
-	img *ebiten.Image
-}
-
-func (e *ebitenOverlayImage) Fill(c color.Color) {
-	if e.img == nil {
-		return
-	}
-	e.img.Fill(c)
-}
-
-func (e *ebitenOverlayImage) Draw(target *ebiten.Image, op *ebiten.DrawImageOptions) {
-	if e.img == nil || target == nil || op == nil {
-		return
-	}
-	target.DrawImage(e.img, op)
-}
-
-func NewEbitenImageFactory() CreateImageFunc {
-	return func(width, height int) OverlayImage {
-		return &ebitenOverlayImage{
-			img: ebiten.NewImage(width, height),
-		}
-	}
 }

@@ -1,6 +1,7 @@
 package component
 
 import (
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -20,7 +21,7 @@ type VariableMessageWindow struct {
 	serveText text.ServeTextDataFunc
 }
 
-func (w *VariableMessageWindow) Draw(drawFunc frontend.DrawFunc) {
+func (w *VariableMessageWindow) Draw(drawFunc drawing.DrawFunc) {
 	if !w.isActive {
 		return
 	}
@@ -28,7 +29,7 @@ func (w *VariableMessageWindow) Draw(drawFunc frontend.DrawFunc) {
 	w.text.Draw(drawFunc)
 }
 
-func (w *VariableMessageWindow) Update(parentPosition *frontend.Vector) {
+func (w *VariableMessageWindow) Update(parentPosition *drawing.Vector) {
 	w.window.Update(parentPosition)
 	w.text.Update(w.window.GetPositionUpperLeft().Add(w.window.GetPadding()))
 }
@@ -45,9 +46,9 @@ func (w *VariableMessageWindow) SetText(textId text.TextId) {
 }
 
 type NewVariableMessageWindowFunc func(
-	*frontend.Vector,
-	frontend.Depth,
-	*frontend.Pivot,
+	*drawing.Vector,
+	drawing.Depth,
+	*drawing.Pivot,
 ) VariableMessageWindowInterface
 
 func StandByNewVariableMessageWindow(
@@ -55,23 +56,23 @@ func StandByNewVariableMessageWindow(
 	newText widget.NewTextFunc,
 	serveTextData text.ServeTextDataFunc,
 ) NewVariableMessageWindowFunc {
-	padding := &frontend.Vector{X: 16, Y: 8}
+	padding := &drawing.Vector{X: 16, Y: 8}
 	windowTexture := frontend.TextureWindow
 	font := frontend.MaruMinya
 	speed := 5
 	margin := 5.0
 	return func(
-		relativePosition *frontend.Vector,
-		depth frontend.Depth,
-		pivot *frontend.Pivot,
+		relativePosition *drawing.Vector,
+		depth drawing.Depth,
+		pivot *drawing.Pivot,
 	) VariableMessageWindowInterface {
 		text := newText(
 			&widget.TextOptionsNew{
 				Font:             font,
 				Speed:            speed,
-				RelativePosition: frontend.VectorZero,
+				RelativePosition: drawing.VectorZero,
 				Depth:            depth,
-				Pivot:            frontend.PivotTopLeft,
+				Pivot:            drawing.PivotTopLeft,
 			},
 		)
 
@@ -79,8 +80,8 @@ func StandByNewVariableMessageWindow(
 			&widget.WindowOption{
 				Texture:          windowTexture,
 				CornerSize:       6,
-				RelativePosition: relativePosition.Add(&frontend.Vector{X: 0, Y: -margin}),
-				Size:             frontend.VectorOne,
+				RelativePosition: relativePosition.Add(&drawing.Vector{X: 0, Y: -margin}),
+				Size:             drawing.VectorOne,
 				Depth:            depth,
 				Pivot:            pivot,
 				Padding:          padding,

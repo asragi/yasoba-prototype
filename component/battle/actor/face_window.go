@@ -2,10 +2,10 @@ package actor
 
 import (
 	"github.com/asragi/yasoba-prototype/component/battle/emotion"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/widget"
-	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type (
@@ -16,31 +16,31 @@ type (
 	}
 
 	animation interface {
-		Update(*frontend.Vector)
-		Draw(frontend.DrawFunc)
-		SetScaleBySize(*frontend.Vector)
+		Update(*drawing.Vector)
+		Draw(drawing.DrawFunc)
+		SetScaleBySize(*drawing.Vector)
 	}
 
 	window interface {
-		Update(*frontend.Vector)
-		Draw(frontend.DrawFunc)
-		GetPositionCenter() *frontend.Vector
-		GetPositionTopCenter() *frontend.Vector
-		GetPositionUpperLeft() *frontend.Vector
-		GetPositionLowerRight() *frontend.Vector
+		Update(*drawing.Vector)
+		Draw(drawing.DrawFunc)
+		GetPositionCenter() *drawing.Vector
+		GetPositionTopCenter() *drawing.Vector
+		GetPositionUpperLeft() *drawing.Vector
+		GetPositionLowerRight() *drawing.Vector
 	}
 
 	resourceProvider interface {
 		GetAnimationData(frontend.AnimationId) *frontend.AnimationData
-		GetTexture(frontend.TextureId) *ebiten.Image
+		GetTexture(frontend.TextureId) drawing.Image
 	}
 
 	newWindowFunc    func(*widget.WindowOption) window
 	newAnimationFunc func(
-		*frontend.Vector,
-		*frontend.Pivot,
-		frontend.Depth,
-		*ebiten.Image,
+		*drawing.Vector,
+		*drawing.Pivot,
+		drawing.Depth,
+		drawing.Image,
 		*frontend.AnimationData,
 	) animation
 	newEmotionQueueFunc func(emotion.BattleEmotionType) emotionQueue
@@ -53,9 +53,9 @@ type FaceWindow struct {
 }
 
 type NewFaceWindowFunc func(
-	*frontend.Vector,
-	frontend.Depth,
-	*frontend.Pivot,
+	*drawing.Vector,
+	drawing.Depth,
+	*drawing.Pivot,
 	character.CharacterId,
 ) *FaceWindow
 
@@ -67,7 +67,7 @@ func (f *FaceWindow) SetEmotion(emotion emotion.BattleEmotionType) {
 	f.emotion.Enqueue(emotion)
 }
 
-func (f *FaceWindow) Update(parentPosition *frontend.Vector) {
+func (f *FaceWindow) Update(parentPosition *drawing.Vector) {
 	f.window.Update(parentPosition)
 	anim := f.emotion.Apply(func(emotion emotion.BattleEmotionType) *widget.Animation {
 		return f.face[emotion].(*widget.Animation)
@@ -75,29 +75,29 @@ func (f *FaceWindow) Update(parentPosition *frontend.Vector) {
 	anim.Update(f.window.GetPositionCenter())
 }
 
-func (f *FaceWindow) Draw(drawFunc frontend.DrawFunc) {
+func (f *FaceWindow) Draw(drawFunc drawing.DrawFunc) {
 	f.window.Draw(drawFunc)
 	f.getCurrentAnimation().Draw(drawFunc)
 }
 
-func (f *FaceWindow) GetTopCenterPosition() *frontend.Vector {
+func (f *FaceWindow) GetTopCenterPosition() *drawing.Vector {
 	return f.window.GetPositionTopCenter()
 }
 
-func (f *FaceWindow) GetTopLeftPosition() *frontend.Vector {
+func (f *FaceWindow) GetTopLeftPosition() *drawing.Vector {
 	return f.window.GetPositionUpperLeft()
 }
 
-func (f *FaceWindow) GetBottomRightPosition() *frontend.Vector {
+func (f *FaceWindow) GetBottomRightPosition() *drawing.Vector {
 	return f.window.GetPositionLowerRight()
 }
 
-func (f *FaceWindow) GetCenterPosition() *frontend.Vector {
+func (f *FaceWindow) GetCenterPosition() *drawing.Vector {
 	return f.window.GetPositionCenter()
 }
 
 func StandByNewFaceWindow(
-	resource *frontend.ResourceManager,
+	resource resourceProvider,
 	newWindow widget.NewWindowFunc,
 ) NewFaceWindowFunc {
 	return standByNewFaceWindow(
@@ -106,10 +106,10 @@ func StandByNewFaceWindow(
 			return newWindow(option)
 		},
 		func(
-			relativePosition *frontend.Vector,
-			pivot *frontend.Pivot,
-			depth frontend.Depth,
-			texture *ebiten.Image,
+			relativePosition *drawing.Vector,
+			pivot *drawing.Pivot,
+			depth drawing.Depth,
+			texture drawing.Image,
 			data *frontend.AnimationData,
 		) animation {
 			return widget.NewAnimation(
@@ -136,9 +136,9 @@ func standByNewFaceWindow(
 	getAllEmotion := createGetAllEmotionFunc()
 	allEmotion := getAllEmotion()
 	return func(
-		relativePosition *frontend.Vector,
-		depth frontend.Depth,
-		pivot *frontend.Pivot,
+		relativePosition *drawing.Vector,
+		depth drawing.Depth,
+		pivot *drawing.Pivot,
 		characterId character.CharacterId,
 	) *FaceWindow {
 		const padding = 6
@@ -149,13 +149,13 @@ func standByNewFaceWindow(
 				animationData := resource.GetAnimationData(animationId)
 				texture := resource.GetTexture(animationData.TextureId)
 				animation := newAnimation(
-					frontend.VectorZero,
-					frontend.PivotCenter,
+					drawing.VectorZero,
+					drawing.PivotCenter,
 					depth,
 					texture,
 					animationData,
 				)
-				animation.SetScaleBySize(&frontend.Vector{X: faceSize, Y: faceSize})
+				animation.SetScaleBySize(&drawing.Vector{X: faceSize, Y: faceSize})
 				result[emotion] = animation
 			}
 			return result
@@ -165,7 +165,7 @@ func standByNewFaceWindow(
 				Texture:          frontend.TextureWindow,
 				CornerSize:       6,
 				RelativePosition: relativePosition,
-				Size:             frontend.NewVectorShort(faceSize).Add(&frontend.Vector{X: padding, Y: padding}),
+				Size:             drawing.NewVector(faceSize, faceSize).Add(drawing.NewVector(padding, padding)),
 				Depth:            depth,
 				Pivot:            pivot,
 			},

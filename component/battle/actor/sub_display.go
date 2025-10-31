@@ -5,6 +5,7 @@ import (
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
 	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 )
@@ -24,13 +25,13 @@ func CreateNewBattleSubActorDisplay(
 	newParameterDisplay NewBattleParameterDisplayFunc,
 ) NewBattleSubActorDisplayFunc {
 	return func(actor *actor.Actor) *BattleSubActorDisplay {
-		parameterDisplay := newParameterDisplay(actor.HP, frontend.PivotBottomRight)
+		parameterDisplay := newParameterDisplay(actor.HP, drawing.PivotBottomRight)
 		height := parameterDisplay.GetHeight()
 		return &BattleSubActorDisplay{
 			faceWindow: newFaceWindow(
-				&frontend.Vector{X: 0, Y: -height},
-				frontend.DepthPlayer,
-				frontend.PivotBottomRight,
+				&drawing.Vector{X: 0, Y: -height},
+				drawing.DepthPlayer,
+				drawing.PivotBottomRight,
 				character.CharacterSunnyId,
 			),
 			displayDamage:    newDisplayDamage(),
@@ -52,7 +53,7 @@ func (d *BattleSubActorDisplay) Shake() {
 	)
 }
 
-func (d *BattleSubActorDisplay) Update(bottomRightPosition *frontend.Vector) {
+func (d *BattleSubActorDisplay) Update(bottomRightPosition *drawing.Vector) {
 	d.shake.Update()
 	delta := d.shake.Delta()
 	d.faceWindow.Update(bottomRightPosition.Add(delta))
@@ -60,17 +61,17 @@ func (d *BattleSubActorDisplay) Update(bottomRightPosition *frontend.Vector) {
 	d.displayDamage.Update(d.faceWindow.GetCenterPosition())
 }
 
-func (d *BattleSubActorDisplay) Draw(drawFunc frontend.DrawFunc) {
+func (d *BattleSubActorDisplay) Draw(drawFunc drawing.DrawFunc) {
 	d.faceWindow.Draw(drawFunc)
 	d.parameterDisplay.Draw(drawFunc)
 	d.displayDamage.Draw(drawFunc)
 }
 
-func (d *BattleSubActorDisplay) GetTopCenterPosition() *frontend.Vector {
+func (d *BattleSubActorDisplay) GetTopCenterPosition() *drawing.Vector {
 	return d.faceWindow.GetTopCenterPosition()
 }
 
-func (d *BattleSubActorDisplay) GetCenterPosition() *frontend.Vector {
+func (d *BattleSubActorDisplay) GetCenterPosition() *drawing.Vector {
 	return d.faceWindow.GetCenterPosition()
 }
 

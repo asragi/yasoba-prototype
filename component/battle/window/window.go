@@ -3,7 +3,7 @@ package window
 import (
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/component/selection"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/text"
 )
 
@@ -33,11 +33,11 @@ func (w *BattleSelectWindow) Close() {
 	w.selectWindow.Close()
 }
 
-func (w *BattleSelectWindow) Update(parentPosition *frontend.Vector) {
+func (w *BattleSelectWindow) Update(parentPosition *drawing.Vector) {
 	w.selectWindow.Update(parentPosition)
 }
 
-func (w *BattleSelectWindow) Draw(drawFunc frontend.DrawFunc) {
+func (w *BattleSelectWindow) Draw(drawFunc drawing.DrawFunc) {
 	w.selectWindow.Draw(drawFunc)
 }
 
@@ -50,9 +50,9 @@ func (w *BattleSelectWindow) OnInputDown() {
 }
 
 type NewBattleSelectWindowFunc func(
-	*frontend.Vector,
-	*frontend.Pivot,
-	frontend.Depth,
+	*drawing.Vector,
+	*drawing.Pivot,
+	drawing.Depth,
 	[]battle.PlayerCommand,
 	func(battle.PlayerCommand),
 ) *BattleSelectWindow
@@ -61,9 +61,9 @@ func StandByNewBattleSelectWindow(
 	newSelectWindow selection.NewSelectWindowFunc,
 ) NewBattleSelectWindowFunc {
 	return func(
-		relativePosition *frontend.Vector,
-		pivot *frontend.Pivot,
-		depth frontend.Depth,
+		relativePosition *drawing.Vector,
+		pivot *drawing.Pivot,
+		depth drawing.Depth,
 		commands []battle.PlayerCommand,
 		onSubmit func(battle.PlayerCommand),
 	) *BattleSelectWindow {

@@ -23,6 +23,7 @@ import (
 	"github.com/asragi/yasoba-prototype/component/battle/window"
 	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/debug"
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
@@ -39,7 +40,7 @@ import (
 // Injectors from wire.go:
 
 func initializeApp(cfg Config) (*App, error) {
-	drawing := frontend.NewDrawing()
+	drawingInstance := drawing.NewDrawing()
 	resourceManager, err := frontend.CreateResourceManager()
 	if err != nil {
 		return nil, err
@@ -101,7 +102,7 @@ func initializeApp(cfg Config) (*App, error) {
 	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
 	debugScene := makeDebugScene(createDebugScene)
 	debugDebug := debug.CreateDrawParameters(newTextFunc)
-	app := buildApp(drawing, battleScene, debugScene, debugDebug)
+	app := buildApp(drawingInstance, battleScene, debugScene, debugDebug)
 	return app, nil
 }
 
@@ -177,9 +178,9 @@ func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWi
 
 func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 	return func(
-		relativePosition *frontend.Vector,
-		pivot *frontend.Pivot,
-		depth frontend.Depth,
+		relativePosition *drawing.Vector,
+		pivot *drawing.Pivot,
+		depth drawing.Depth,
 	) selection.Cursor {
 		return widget.NewImage(
 			relativePosition,

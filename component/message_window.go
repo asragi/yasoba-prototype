@@ -1,6 +1,7 @@
 package component
 
 import (
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -40,13 +41,13 @@ func (m *MessageWindow) SetText(textString string, displayAll bool) {
 	m.text.SetText(textString, displayAll)
 }
 
-func (m *MessageWindow) Update(parentPosition *frontend.Vector) {
+func (m *MessageWindow) Update(parentPosition *drawing.Vector) {
 	m.shake.Update()
 	m.window.Update(parentPosition)
 	m.text.Update(m.window.GetPositionUpperLeft())
 }
 
-func (m *MessageWindow) Draw(drawFunc frontend.DrawFunc) {
+func (m *MessageWindow) Draw(drawFunc drawing.DrawFunc) {
 	if !m.isOpen {
 		return
 	}
@@ -55,10 +56,10 @@ func (m *MessageWindow) Draw(drawFunc frontend.DrawFunc) {
 }
 
 type NewMessageWindowFunc func(
-	relativePosition *frontend.Vector,
-	size *frontend.Vector,
-	depth frontend.Depth,
-	pivot *frontend.Pivot,
+	relativePosition *drawing.Vector,
+	size *drawing.Vector,
+	depth drawing.Depth,
+	pivot *drawing.Pivot,
 ) *MessageWindow
 
 func StandByNewMessageWindow(
@@ -66,13 +67,13 @@ func StandByNewMessageWindow(
 	newWindow widget.NewWindowFunc,
 ) NewMessageWindowFunc {
 	cornerSize := 6
-	padding := &frontend.Vector{X: 16, Y: 8}
+	padding := &drawing.Vector{X: 16, Y: 8}
 	speed := 5
 	return func(
-		relativePosition *frontend.Vector,
-		size *frontend.Vector,
-		depth frontend.Depth,
-		pivot *frontend.Pivot,
+		relativePosition *drawing.Vector,
+		size *drawing.Vector,
+		depth drawing.Depth,
+		pivot *drawing.Pivot,
 	) *MessageWindow {
 		window := newWindow(
 			&widget.WindowOption{
@@ -89,7 +90,7 @@ func StandByNewMessageWindow(
 		text := newText(
 			&widget.TextOptionsNew{
 				RelativePosition: window.GetPadding(),
-				Pivot:            frontend.PivotTopLeft,
+				Pivot:            drawing.PivotTopLeft,
 				Font:             frontend.MaruMinya,
 				Speed:            speed,
 				Depth:            depth,

@@ -1,10 +1,11 @@
 package widget
 
 import (
+	"image"
+
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/util"
-	"github.com/hajimehoshi/ebiten/v2"
-	"image"
 )
 
 type Animation struct {
@@ -14,10 +15,10 @@ type Animation struct {
 }
 
 func NewAnimation(
-	relativePosition *frontend.Vector,
-	pivot *frontend.Pivot,
-	depth frontend.Depth,
-	image *ebiten.Image,
+	relativePosition *drawing.Vector,
+	pivot *drawing.Pivot,
+	depth drawing.Depth,
+	image drawing.Image,
 	data *frontend.AnimationData,
 ) *Animation {
 	return &Animation{
@@ -54,13 +55,13 @@ func (a *Animation) setRect() {
 	)
 }
 
-func (a *Animation) Update(passedPosition *frontend.Vector) {
+func (a *Animation) Update(passedPosition *drawing.Vector) {
 	a.frame++
 	a.setRect()
 	a.image.Update(passedPosition)
 }
 
-func (a *Animation) Draw(drawFunc frontend.DrawFunc) {
+func (a *Animation) Draw(drawFunc drawing.DrawFunc) {
 	a.image.Draw(drawFunc)
 }
 
@@ -75,12 +76,12 @@ func (a *Animation) IsEnd() bool {
 	return a.frame >= a.data.Duration*a.data.AnimationCount
 }
 
-func (a *Animation) SetShader(shader *frontend.Shader) {
+func (a *Animation) SetShader(shader *drawing.Shader) {
 	a.image.SetShader(shader)
 }
 
-func (a *Animation) SetScaleBySize(size *frontend.Vector) {
+func (a *Animation) SetScaleBySize(size *drawing.Vector) {
 	width := size.X * float64(a.data.ColumnCount)
 	height := size.Y * float64(a.data.RowCount)
-	a.image.SetScaleBySize(&frontend.Vector{X: width, Y: height})
+	a.image.SetScaleBySize(&drawing.Vector{X: width, Y: height})
 }

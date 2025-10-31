@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -21,7 +22,7 @@ func tps() float64 {
 
 type Debug struct {
 	Update func()
-	Draw   func(frontend.DrawFunc)
+	Draw   func(drawing.DrawFunc)
 }
 
 var (
@@ -30,39 +31,39 @@ var (
 
 func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 	textFPS := newText(&widget.TextOptionsNew{
-		RelativePosition: &frontend.Vector{X: 0, Y: 0},
+		RelativePosition: &drawing.Vector{X: 0, Y: 0},
 		Font:             frontend.MaruMinya,
 		Scale:            1,
-		Depth:            frontend.DepthDebug,
-		Pivot:            frontend.PivotTopLeft,
+		Depth:            drawing.DepthDebug,
+		Pivot:            drawing.PivotTopLeft,
 		Color:            textColor,
 	})
 	textTPS := newText(&widget.TextOptionsNew{
-		RelativePosition: &frontend.Vector{X: 0, Y: 16},
+		RelativePosition: &drawing.Vector{X: 0, Y: 16},
 		Font:             frontend.MaruMinya,
 		Scale:            1,
-		Depth:            frontend.DepthDebug,
-		Pivot:            frontend.PivotTopLeft,
+		Depth:            drawing.DepthDebug,
+		Pivot:            drawing.PivotTopLeft,
 		Color:            textColor,
 	})
 	textMemory := newText(&widget.TextOptionsNew{
-		RelativePosition: &frontend.Vector{X: 0, Y: 32},
+		RelativePosition: &drawing.Vector{X: 0, Y: 32},
 		Font:             frontend.MaruMinya,
 		Scale:            1,
-		Depth:            frontend.DepthDebug,
-		Pivot:            frontend.PivotTopLeft,
+		Depth:            drawing.DepthDebug,
+		Pivot:            drawing.PivotTopLeft,
 		Color:            textColor,
 	})
 	textSys := newText(&widget.TextOptionsNew{
-		RelativePosition: &frontend.Vector{X: 0, Y: 48},
+		RelativePosition: &drawing.Vector{X: 0, Y: 48},
 		Font:             frontend.MaruMinya,
 		Scale:            1,
-		Depth:            frontend.DepthDebug,
-		Pivot:            frontend.PivotTopLeft,
+		Depth:            drawing.DepthDebug,
+		Pivot:            drawing.PivotTopLeft,
 		Color:            textColor,
 	})
 
-	position := frontend.VectorZero
+	position := drawing.VectorZero
 	update := func() {
 		var memory runtime.MemStats
 		runtime.ReadMemStats(&memory)
@@ -82,7 +83,7 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 		textMemory.SetTextColor(textColor)
 		textSys.SetTextColor(textColor)
 	}
-	draw := func(draw frontend.DrawFunc) {
+	draw := func(draw drawing.DrawFunc) {
 		textFPS.Draw(draw)
 		textTPS.Draw(draw)
 		textMemory.Draw(draw)
