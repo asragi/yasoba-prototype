@@ -4,6 +4,7 @@ import (
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
 	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
+	componentshake "github.com/asragi/yasoba-prototype/component/shake"
 	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/enemy"
@@ -14,7 +15,7 @@ type BattleEnemyGraphics struct {
 	emotion          battleemotion.Queued
 	animation        map[battleemotion.BattleEmotionType]*widget.Animation
 	displayDamage    *component.DisplayDamage
-	shake            *frontend.EmitShake
+	shake            *componentshake.EmitShake
 	disappearShader  *drawing.Shader
 	parentPosition   *drawing.Vector
 	relativePosition *drawing.Vector
@@ -47,7 +48,7 @@ func (g *BattleEnemyGraphics) SetDamage(damage battleSkill.Damage) {
 }
 
 func (g *BattleEnemyGraphics) DoShake() {
-	g.shake.Shake(frontend.ShakeDefaultAmplitude, frontend.ShakeDefaultPeriod)
+	g.shake.Shake(componentshake.ShakeDefaultAmplitude, componentshake.ShakeDefaultPeriod)
 }
 
 func (g *BattleEnemyGraphics) Update(parentCenterPosition *drawing.Vector) {
@@ -122,7 +123,7 @@ func NewBattleActorGraphics(
 		return &BattleEnemyGraphics{
 			emotion:          battleemotion.NewQueued(battleemotion.BattleEmotionNormal),
 			animation:        animations,
-			shake:            frontend.NewShake(),
+			shake:            componentshake.NewShake(),
 			parentPosition:   drawing.VectorZero,
 			relativePosition: relativePosition,
 			displayDamage:    newDisplayDamage(),

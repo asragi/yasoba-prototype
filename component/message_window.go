@@ -1,6 +1,7 @@
 package component
 
 import (
+	componentshake "github.com/asragi/yasoba-prototype/component/shake"
 	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -9,7 +10,7 @@ import (
 type MessageWindow struct {
 	text   widget.TextInterface
 	window widget.WindowInterface
-	shake  *frontend.EmitShake
+	shake  *componentshake.EmitShake
 	isOpen bool
 }
 
@@ -100,7 +101,7 @@ func StandByNewMessageWindow(
 		return &MessageWindow{
 			text:   text,
 			window: window,
-			shake:  frontend.NewShake(),
+			shake:  componentshake.NewShake(),
 		}
 	}
 }

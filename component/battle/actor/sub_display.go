@@ -5,8 +5,8 @@ import (
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
 	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
+	componentshake "github.com/asragi/yasoba-prototype/component/shake"
 	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 )
 
@@ -14,7 +14,7 @@ type BattleSubActorDisplay struct {
 	faceWindow       *FaceWindow
 	displayDamage    *component.DisplayDamage
 	parameterDisplay *BattleParameterDisplay
-	shake            *frontend.EmitShake
+	shake            *componentshake.EmitShake
 }
 
 type NewBattleSubActorDisplayFunc func(*actor.Actor) *BattleSubActorDisplay
@@ -36,7 +36,7 @@ func CreateNewBattleSubActorDisplay(
 			),
 			displayDamage:    newDisplayDamage(),
 			parameterDisplay: parameterDisplay,
-			shake:            frontend.NewShake(),
+			shake:            componentshake.NewShake(),
 		}
 	}
 }
@@ -48,8 +48,8 @@ func (d *BattleSubActorDisplay) SetDamage(damage battleSkill.Damage, afterHP act
 
 func (d *BattleSubActorDisplay) Shake() {
 	d.shake.Shake(
-		frontend.ShakeDefaultAmplitude,
-		frontend.ShakeDefaultPeriod,
+		componentshake.ShakeDefaultAmplitude,
+		componentshake.ShakeDefaultPeriod,
 	)
 }
 

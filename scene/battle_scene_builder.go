@@ -14,8 +14,8 @@ import (
 	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
 	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
 	"github.com/asragi/yasoba-prototype/component/selection"
+	componentshake "github.com/asragi/yasoba-prototype/component/shake"
 	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
 	"github.com/asragi/yasoba-prototype/input"
@@ -102,8 +102,8 @@ func InitializeCreateBattleScene(
 
 		// エフェクト関数の定義
 		playEffect := createPlayEffectFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, effectManager)
-		shake := frontend.NewShake()
-		doShake := createDoShakeFunction(serveActor, battleEnemyDisplay, subActorDisplay, shake)
+		uiShake := componentshake.NewShake()
+		doShake := createDoShakeFunction(serveActor, battleEnemyDisplay, subActorDisplay, uiShake)
 		setDamage := createSetDamageFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, displayedHp)
 		setEmotion := createSetEmotionFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay)
 
@@ -140,7 +140,7 @@ func InitializeCreateBattleScene(
 				input:              inputManager,
 				battleEnemyDisplay: battleEnemyDisplay,
 				effectManager:      effectManager,
-				shake:              shake,
+				shake:              uiShake,
 			},
 			battleSequence: battleevent.NewBattleEventSequencer(),
 			enemyData:      battleResponse.EnemyIds,
@@ -307,7 +307,7 @@ func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay
 	}
 }
 
-func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, shake *frontend.EmitShake) func(actor.ActorId) {
+func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, shakeEmitter *componentshake.EmitShake) func(actor.ActorId) {
 	return func(actorId actor.ActorId) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -319,7 +319,7 @@ func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *b
 			return
 		}
 		// メインキャラクターのシェイク処理
-		shake.Shake(frontend.ShakeDefaultAmplitude, frontend.ShakeDefaultPeriod)
+		shakeEmitter.Shake(componentshake.ShakeDefaultAmplitude, componentshake.ShakeDefaultPeriod)
 	}
 }
 

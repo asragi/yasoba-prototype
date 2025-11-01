@@ -7,8 +7,8 @@ import (
 	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
 	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
 	"github.com/asragi/yasoba-prototype/component/selection"
+	"github.com/asragi/yasoba-prototype/component/shake"
 	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/input"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -23,7 +23,7 @@ type battleUI struct {
 	input              input.InputManager
 	battleEnemyDisplay *battleenemy.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
-	shake              *frontend.EmitShake
+	shake              *shake.EmitShake
 	layout             battleUILayout
 }
 
@@ -52,7 +52,7 @@ func (ui *battleUI) Update() {
 	ui.effectManager.Update()
 }
 
-func updateBattleShake(shake *frontend.EmitShake) *drawing.Vector {
+func updateBattleShake(shake *shake.EmitShake) *drawing.Vector {
 	shake.Update()
 	return shake.Delta()
 }

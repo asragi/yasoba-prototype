@@ -1,4 +1,4 @@
-package frontend
+package shake
 
 import (
 	"math"
