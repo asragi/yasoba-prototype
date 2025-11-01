@@ -21,7 +21,6 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
-	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/scene"
@@ -62,7 +61,6 @@ func initializeApp(cfg Config) (*App, error) {
 		damageview.CreateNewDisplayDamage,
 		actorview.CreateNewBattleActorDisplay,
 		actorview.CreateNewBattleSubActorDisplay,
-		component.StandByNewVariableMessageWindow,
 		makeBattleEnemyGraphics,
 		enemyview.CreateNewBattleEnemyDisplay,
 		widget.CreateServeEffectData,

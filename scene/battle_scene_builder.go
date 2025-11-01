@@ -10,7 +10,6 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
-	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
@@ -42,7 +41,6 @@ func InitializeCreateBattleScene(
 	effectManager *widget.EffectManager,
 	serveEnemyView battleenemy.ServeEnemyViewData,
 	serveActor actor.ActorSupplier,
-	newVariableMessageWindow component.NewVariableMessageWindowFunc,
 	newProcessBattle battle.NewProcessBattleFunc,
 	produceCreateSequence sequence.ProduceCreateSequence,
 	produceCheckInvokeSequence invoke.ProduceCheckInvokeSequence,

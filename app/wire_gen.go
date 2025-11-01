@@ -20,7 +20,6 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
-	"github.com/asragi/yasoba-prototype/component"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/scene"
@@ -87,7 +86,6 @@ func initializeApp(cfg Config) (*App, error) {
 	effectManager := widget.NewEffectManager(serveEffectDataFunc, resourceManager)
 	serveEnemyViewData := enemy2.NewServeEnemyViewData()
 	actorSupplier := makeActorSupplier(inMemoryActorServer)
-	newVariableMessageWindowFunc := component.StandByNewVariableMessageWindow(newWindowFunc, newTextFunc, serveTextDataFunc)
 	processPlayerCommandFunc := battle.CreateProcessPlayerCommand(actorSupplier)
 	checkFunc := combination.CreateCheckCombination()
 	serveSkillData := skill.NewSkillServer()
@@ -101,7 +99,7 @@ func initializeApp(cfg Config) (*App, error) {
 	prepareProduceCreateSequence := adapter2.InitializeProduceCreateSequence()
 	produceCreateSequence := makeProduceCreateSequence(prepareProduceCreateSequence, serveTextDataFunc)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
-	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newVariableMessageWindowFunc, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
+	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
 	battleScene := makeBattleScene(cfg, createBattleScene)
 	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
 	debugScene := makeDebugScene(createDebugScene)
