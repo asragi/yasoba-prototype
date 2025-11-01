@@ -6,8 +6,6 @@ import (
 	"github.com/asragi/yasoba-prototype/drawing"
 )
 
-type newEmptyTextureFunc func() drawing.Image
-
 type Image struct {
 	relativePosition *drawing.Vector
 	parentPosition   *drawing.Vector
@@ -17,7 +15,7 @@ type Image struct {
 	scale            *drawing.Vector
 	rect             *image.Rectangle
 	shader           *drawing.Shader
-	newEmptyTexture  newEmptyTextureFunc
+	newEmptyTexture  func() drawing.Image
 }
 
 func (i *Image) Update(passedPosition *drawing.Vector) {
@@ -102,7 +100,7 @@ func (i *Image) SetShader(shader *drawing.Shader) {
 	shader.Reset()
 }
 
-func (i *Image) SetRenderTargetFactory(factory newEmptyTextureFunc) {
+func (i *Image) SetRenderTargetFactory(factory func() drawing.Image) {
 	i.newEmptyTexture = factory
 }
 

@@ -1,6 +1,7 @@
 package actor
 
 import (
+	anim "github.com/asragi/yasoba-prototype/animation"
 	"github.com/asragi/yasoba-prototype/component/battle/emotion"
 	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
@@ -12,13 +13,7 @@ type (
 	emotionQueue interface {
 		Current() emotion.BattleEmotionType
 		Enqueue(emotion.BattleEmotionType)
-		Apply(func(emotion.BattleEmotionType) *widget.Animation) *widget.Animation
-	}
-
-	animation interface {
-		Update(*drawing.Vector)
-		Draw(drawing.DrawFunc)
-		SetScaleBySize(*drawing.Vector)
+		Apply(func(emotion.BattleEmotionType) *anim.Animation) *anim.Animation
 	}
 
 	window interface {
@@ -42,13 +37,13 @@ type (
 		drawing.Depth,
 		drawing.Image,
 		*frontend.AnimationData,
-	) animation
+	) *anim.Animation
 	newEmotionQueueFunc func(emotion.BattleEmotionType) emotionQueue
 )
 
 type FaceWindow struct {
 	emotion emotionQueue
-	face    map[emotion.BattleEmotionType]animation
+	face    map[emotion.BattleEmotionType]*anim.Animation
 	window  window
 }
 
@@ -59,7 +54,7 @@ type NewFaceWindowFunc func(
 	character.CharacterId,
 ) *FaceWindow
 
-func (f *FaceWindow) getCurrentAnimation() animation {
+func (f *FaceWindow) getCurrentAnimation() *anim.Animation {
 	return f.face[f.emotion.Current()]
 }
 
@@ -69,10 +64,10 @@ func (f *FaceWindow) SetEmotion(emotion emotion.BattleEmotionType) {
 
 func (f *FaceWindow) Update(parentPosition *drawing.Vector) {
 	f.window.Update(parentPosition)
-	anim := f.emotion.Apply(func(emotion emotion.BattleEmotionType) *widget.Animation {
-		return f.face[emotion].(*widget.Animation)
+	animation := f.emotion.Apply(func(emotion emotion.BattleEmotionType) *anim.Animation {
+		return f.face[emotion]
 	})
-	anim.Update(f.window.GetPositionCenter())
+	animation.Update(f.window.GetPositionCenter())
 }
 
 func (f *FaceWindow) Draw(drawFunc drawing.DrawFunc) {
@@ -111,13 +106,22 @@ func StandByNewFaceWindow(
 			depth drawing.Depth,
 			texture drawing.Image,
 			data *frontend.AnimationData,
-		) animation {
-			return widget.NewAnimation(
+		) *anim.Animation {
+			return anim.New(
+				func(
+					relativePosition *drawing.Vector,
+					pivot *drawing.Pivot,
+					depth drawing.Depth,
+					image drawing.Image,
+				) anim.Sprite {
+					return widget.NewImage(relativePosition, pivot, depth, image)
+				},
 				relativePosition,
 				pivot,
 				depth,
 				texture,
 				data,
+				nil,
 			)
 		},
 		func(initial emotion.BattleEmotionType) emotionQueue {
@@ -143,8 +147,8 @@ func standByNewFaceWindow(
 	) *FaceWindow {
 		const padding = 6
 		const faceSize = 74
-		animationMap := func() map[emotion.BattleEmotionType]animation {
-			result := map[emotion.BattleEmotionType]animation{}
+		animationMap := func() map[emotion.BattleEmotionType]*anim.Animation {
+			result := map[emotion.BattleEmotionType]*anim.Animation{}
 			for emotion, animationId := range allEmotion[characterId] {
 				animationData := resource.GetAnimationData(animationId)
 				texture := resource.GetTexture(animationData.TextureId)

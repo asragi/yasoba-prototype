@@ -1,6 +1,6 @@
 package emotion
 
-import "github.com/asragi/yasoba-prototype/widget"
+import anim "github.com/asragi/yasoba-prototype/animation"
 
 type BattleEmotionType int
 
@@ -34,7 +34,7 @@ func (q *Queued) Current() BattleEmotionType {
 	return q.currentType
 }
 
-func (q *Queued) Apply(fetch func(BattleEmotionType) *widget.Animation) *widget.Animation {
+func (q *Queued) Apply(fetch func(BattleEmotionType) *anim.Animation) *anim.Animation {
 	changed, emotion := q.consume()
 	animation := fetch(emotion)
 	if changed && animation != nil {

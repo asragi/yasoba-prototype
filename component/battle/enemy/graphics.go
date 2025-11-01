@@ -1,6 +1,7 @@
 package enemy
 
 import (
+	anim "github.com/asragi/yasoba-prototype/animation"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/component"
 	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
@@ -13,7 +14,7 @@ import (
 
 type BattleEnemyGraphics struct {
 	emotion          battleemotion.Queued
-	animation        map[battleemotion.BattleEmotionType]*widget.Animation
+	animation        map[battleemotion.BattleEmotionType]*anim.Animation
 	displayDamage    *component.DisplayDamage
 	shake            *componentshake.EmitShake
 	disappearShader  *drawing.Shader
@@ -35,7 +36,7 @@ func (g *BattleEnemyGraphics) GetDefinitivePosition() *drawing.Vector {
 	return g.parentPosition.Add(g.relativePosition)
 }
 
-func (g *BattleEnemyGraphics) getCurrentAnimation() *widget.Animation {
+func (g *BattleEnemyGraphics) getCurrentAnimation() *anim.Animation {
 	animation, ok := g.animation[g.emotion.Current()]
 	if !ok {
 		return g.animation[battleemotion.BattleEmotionNormal]
@@ -55,7 +56,7 @@ func (g *BattleEnemyGraphics) Update(parentCenterPosition *drawing.Vector) {
 	g.shake.Update()
 	g.displayDamage.Update(parentCenterPosition.Add(g.relativePosition))
 	g.parentPosition = parentCenterPosition
-	animation := g.emotion.Apply(func(emotion battleemotion.BattleEmotionType) *widget.Animation {
+	animation := g.emotion.Apply(func(emotion battleemotion.BattleEmotionType) *anim.Animation {
 		return g.animation[emotion]
 	})
 	if animation == nil {
@@ -101,22 +102,30 @@ func NewBattleActorGraphics(
 		enemyId enemy.EnemyId,
 	) BattleEnemyGraphicsInterface {
 		enemyGraphicsData := getEnemyGraphics(enemyId)
-		animations := func() map[battleemotion.BattleEmotionType]*widget.Animation {
-			result := map[battleemotion.BattleEmotionType]*widget.Animation{}
+		animations := func() map[battleemotion.BattleEmotionType]*anim.Animation {
+			result := map[battleemotion.BattleEmotionType]*anim.Animation{}
 			for _, data := range enemyGraphicsData {
 				texture := resource.GetTexture(data.texture)
 				animation := resource.GetAnimationData(data.animation)
-				anim := widget.NewAnimation(
+				animSprite := anim.New(
+					func(
+						relativePosition *drawing.Vector,
+						pivot *drawing.Pivot,
+						depth drawing.Depth,
+						image drawing.Image,
+					) anim.Sprite {
+						return widget.NewImage(relativePosition, pivot, depth, image)
+					},
 					relativePosition,
 					pivot,
 					depth,
 					texture,
 					animation,
+					func() drawing.Image {
+						return resource.NewEmptyImage(screenWidth, screenHeight)
+					},
 				)
-				anim.SetRenderTargetFactory(func() drawing.Image {
-					return resource.NewEmptyImage(screenWidth, screenHeight)
-				})
-				result[data.emotion] = anim
+				result[data.emotion] = animSprite
 			}
 			return result
 		}()

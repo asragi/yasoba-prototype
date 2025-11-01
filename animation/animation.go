@@ -1,4 +1,4 @@
-package widget
+package animation
 
 import (
 	"image"
@@ -8,33 +8,56 @@ import (
 	"github.com/asragi/yasoba-prototype/util"
 )
 
-type Animation struct {
-	image *Image
-	frame int
-	data  *frontend.AnimationData
+type Sprite interface {
+	Update(*drawing.Vector)
+	Draw(drawing.DrawFunc)
+	SetRect(image.Rectangle)
+	TextureSize() *drawing.Vector
+	SetShader(*drawing.Shader)
+	SetRenderTargetFactory(func() drawing.Image)
+	SetScaleBySize(*drawing.Vector)
 }
 
-func NewAnimation(
+type SpriteFactory func(
+	relativePosition *drawing.Vector,
+	pivot *drawing.Pivot,
+	depth drawing.Depth,
+	image drawing.Image,
+) Sprite
+
+type Animation struct {
+	sprite Sprite
+	frame  int
+	data   *frontend.AnimationData
+}
+
+func New(
+	newSprite SpriteFactory,
 	relativePosition *drawing.Vector,
 	pivot *drawing.Pivot,
 	depth drawing.Depth,
 	image drawing.Image,
 	data *frontend.AnimationData,
+	renderTargetFactory func() drawing.Image,
 ) *Animation {
+	sprite := newSprite(
+		relativePosition,
+		pivot,
+		depth,
+		image,
+	)
+	if renderTargetFactory != nil {
+		sprite.SetRenderTargetFactory(renderTargetFactory)
+	}
 	return &Animation{
-		image: NewImage(
-			relativePosition,
-			pivot,
-			depth,
-			image,
-		),
-		frame: 0,
-		data:  data,
+		sprite: sprite,
+		frame:  0,
+		data:   data,
 	}
 }
 
 func (a *Animation) setRect() {
-	textureSize := a.image.TextureSize()
+	textureSize := a.sprite.TextureSize()
 	width := textureSize.X / float64(a.data.ColumnCount)
 	height := textureSize.Y / float64(a.data.RowCount)
 	target := func() int {
@@ -45,7 +68,7 @@ func (a *Animation) setRect() {
 	}()
 	row := target / a.data.ColumnCount
 	column := target % a.data.ColumnCount
-	a.image.SetRect(
+	a.sprite.SetRect(
 		image.Rect(
 			int(width*float64(column)),
 			int(height*float64(row)),
@@ -58,11 +81,11 @@ func (a *Animation) setRect() {
 func (a *Animation) Update(passedPosition *drawing.Vector) {
 	a.frame++
 	a.setRect()
-	a.image.Update(passedPosition)
+	a.sprite.Update(passedPosition)
 }
 
 func (a *Animation) Draw(drawFunc drawing.DrawFunc) {
-	a.image.Draw(drawFunc)
+	a.sprite.Draw(drawFunc)
 }
 
 func (a *Animation) Reset() {
@@ -77,15 +100,15 @@ func (a *Animation) IsEnd() bool {
 }
 
 func (a *Animation) SetShader(shader *drawing.Shader) {
-	a.image.SetShader(shader)
+	a.sprite.SetShader(shader)
 }
 
-func (a *Animation) SetRenderTargetFactory(factory newEmptyTextureFunc) {
-	a.image.SetRenderTargetFactory(factory)
+func (a *Animation) SetRenderTargetFactory(factory func() drawing.Image) {
+	a.sprite.SetRenderTargetFactory(factory)
 }
 
 func (a *Animation) SetScaleBySize(size *drawing.Vector) {
 	width := size.X * float64(a.data.ColumnCount)
 	height := size.Y * float64(a.data.RowCount)
-	a.image.SetScaleBySize(&drawing.Vector{X: width, Y: height})
+	a.sprite.SetScaleBySize(&drawing.Vector{X: width, Y: height})
 }

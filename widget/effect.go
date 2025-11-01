@@ -3,6 +3,7 @@ package widget
 import (
 	"fmt"
 
+	anim "github.com/asragi/yasoba-prototype/animation"
 	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
 )
@@ -16,7 +17,7 @@ const (
 )
 
 type Effect struct {
-	animation *Animation
+	animation *anim.Animation
 }
 
 func (e *Effect) Update() {
@@ -55,12 +56,22 @@ func (m *EffectManager) CallEffect(
 ) {
 	effectData := m.serveEffect(effectId)
 	animationData := m.resource.GetAnimationData(effectData.AnimationId)
-	animation := NewAnimation(
+	// TODO: インゲーム中にメモリ確保し続けるのは良くないためプールするなどの対策を行う
+	animation := anim.New(
+		func(
+			relativePosition *drawing.Vector,
+			pivot *drawing.Pivot,
+			depth drawing.Depth,
+			image drawing.Image,
+		) anim.Sprite {
+			return NewImage(relativePosition, pivot, depth, image)
+		},
 		position,
 		drawing.PivotCenter,
 		drawing.DepthEffect,
 		m.resource.GetTexture(animationData.TextureId),
 		animationData,
+		nil,
 	)
 	m.effects[effectId] = &Effect{
 		animation: animation,
