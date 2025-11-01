@@ -50,13 +50,26 @@ type CreateSequence func(id SequenceId) *sequence
 
 func initializeProduceCreateSequence(
 	sequencesDataPort sequenceDataPort,
-) func(createPartnerDialogueEvent, createChangeEmotionEvent, createOpenPartnerMessageWindowEvent, createClosePartnerMessageWindowEvent) CreateSequence {
+) func(
+	createPartnerDialogueEvent,
+	createChangeEmotionEvent,
+	createOpenPartnerMessageWindowEvent,
+	createClosePartnerMessageWindowEvent,
+	createShowPlayerCommandWindowEvent,
+	createHidePlayerCommandWindowEvent,
+	createStartTransitionFadeOutEvent,
+	createStartTransitionFadeInEvent,
+) CreateSequence {
 	sequenceDataArray := sequencesDataPort()
 	return func(
 		createPartnerDialogueEvent createPartnerDialogueEvent,
 		createChangeEmotionEvent createChangeEmotionEvent,
 		createOpenPartnerMessageWindowEvent createOpenPartnerMessageWindowEvent,
 		createClosePartnerMessageWindowEvent createClosePartnerMessageWindowEvent,
+		createShowPlayerCommandWindowEvent createShowPlayerCommandWindowEvent,
+		createHidePlayerCommandWindowEvent createHidePlayerCommandWindowEvent,
+		createStartTransitionFadeOutEvent createStartTransitionFadeOutEvent,
+		createStartTransitionFadeInEvent createStartTransitionFadeInEvent,
 	) CreateSequence {
 		sequences := make(map[SequenceId]*sequence)
 		for _, seqData := range sequenceDataArray {
@@ -71,6 +84,14 @@ func initializeProduceCreateSequence(
 					events = append(events, createOpenPartnerMessageWindowEvent(event.id))
 				case closePartnerMessageWindowEvent:
 					events = append(events, createClosePartnerMessageWindowEvent(event.id))
+				case showPlayerCommandWindowEvent:
+					events = append(events, createShowPlayerCommandWindowEvent(event.id))
+				case hidePlayerCommandWindowEvent:
+					events = append(events, createHidePlayerCommandWindowEvent(event.id))
+				case startTransitionFadeOutEvent:
+					events = append(events, createStartTransitionFadeOutEvent(event.id))
+				case startTransitionFadeInEvent:
+					events = append(events, createStartTransitionFadeInEvent(event.id))
 				}
 			}
 			sequences[seqData.id] = &sequence{

@@ -91,3 +91,11 @@ func (t *Transition) setInitialState(initial InitialState) {
 	}
 	t.frame = 0
 }
+
+func (t *Transition) IsFadingOut() bool {
+	return t.mode == ModeFadeOut
+}
+
+func (t *Transition) IsFadingIn() bool {
+	return t.mode == ModeFadeIn
+}

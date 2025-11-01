@@ -1,0 +1,3 @@
+events:
+  - id: "transition_command_fade"
+    waitForComplete: true

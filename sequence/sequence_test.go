@@ -1,6 +1,7 @@
 package sequence
 
 import (
+	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
 	"testing"
 )
 
@@ -83,6 +84,30 @@ func TestProvideCreateSequence(t *testing.T) {
 					ownerId:   mockId,
 					order:     3,
 				},
+				{
+					id:        "event-4",
+					eventType: showPlayerCommandWindowEvent,
+					ownerId:   mockId,
+					order:     4,
+				},
+				{
+					id:        "event-5",
+					eventType: hidePlayerCommandWindowEvent,
+					ownerId:   mockId,
+					order:     5,
+				},
+				{
+					id:        "event-6",
+					eventType: startTransitionFadeOutEvent,
+					ownerId:   mockId,
+					order:     6,
+				},
+				{
+					id:        "event-7",
+					eventType: startTransitionFadeInEvent,
+					ownerId:   mockId,
+					order:     7,
+				},
 			},
 		},
 	}
@@ -125,7 +150,40 @@ func TestProvideCreateSequence(t *testing.T) {
 
 	// initializeProduceCreateSequenceの正しい呼び出し方法に修正
 	produceCreateSequence := initializeProduceCreateSequence(mockSequenceDataPort)
-	createSeq := produceCreateSequence(mockCreatePartnerDialogueEvent, mockCreateChangeEmotionEvent, mockCreateOpenPartnerMessageWindowEvent, mockCreateClosePartnerMessageWindowEvent)
+	createSeq := produceCreateSequence(
+		mockCreatePartnerDialogueEvent,
+		mockCreateChangeEmotionEvent,
+		mockCreateOpenPartnerMessageWindowEvent,
+		mockCreateClosePartnerMessageWindowEvent,
+		func(id EventID) *eventUnit {
+			return &eventUnit{
+				start:      func() {},
+				checkIsEnd: func() IsEnd { return false },
+				reset:      func() {},
+			}
+		},
+		func(id EventID) *eventUnit {
+			return &eventUnit{
+				start:      func() {},
+				checkIsEnd: func() IsEnd { return false },
+				reset:      func() {},
+			}
+		},
+		func(id EventID) *eventUnit {
+			return &eventUnit{
+				start:      func() {},
+				checkIsEnd: func() IsEnd { return false },
+				reset:      func() {},
+			}
+		},
+		func(id EventID) *eventUnit {
+			return &eventUnit{
+				start:      func() {},
+				checkIsEnd: func() IsEnd { return false },
+				reset:      func() {},
+			}
+		},
+	)
 
 	// 存在するシーケンスIDでテスト
 	seq := createSeq(SequenceId("test-sequence-1"))
@@ -135,15 +193,17 @@ func TestProvideCreateSequence(t *testing.T) {
 	if seq.id != mockId {
 		t.Errorf("expected sequence id '%s', got '%s'", mockId, seq.id)
 	}
-	if len(seq.events) != 3 {
-		t.Errorf("expected 3 events, got %d", len(seq.events))
+	if len(seq.events) != 7 {
+		t.Errorf("expected 7 events, got %d", len(seq.events))
 	}
 
 	// 存在しないシーケンスIDでテスト
-	nonExistentSeq := createSeq(SequenceId("non-existent"))
-	if nonExistentSeq != nil {
-		t.Error("expected nil for non-existent sequence, got sequence")
-	}
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("expected panic for non-existent sequence")
+		}
+	}()
+	createSeq(SequenceId("non-existent"))
 }
 
 func TestOpenPartnerMessageWindowEvent(t *testing.T) {
@@ -222,5 +282,50 @@ func TestEventUnit(t *testing.T) {
 	event.reset()
 	if !resetCalled {
 		t.Error("reset function was not called")
+	}
+}
+
+func TestStartTransitionFadeOutEvent_WaitOption(t *testing.T) {
+	eventID := EventID("fade-out")
+	running := true
+	optionPort := func(id string) *seqtransition.Option {
+		if id != string(eventID) {
+			return nil
+		}
+		return seqtransition.NewOption(true)
+	}
+	controller := seqtransition.NewController(
+		func() {},
+		func() bool { return running },
+	)
+	createEvent := produceCreateStartTransitionFadeOutEventToUnit(optionPort, controller)
+	event := createEvent(eventID)
+
+	event.start()
+	if event.checkIsEnd() {
+		t.Fatal("expected event to wait while transition is running")
+	}
+
+	running = false
+	if !event.checkIsEnd() {
+		t.Fatal("expected event to finish after transition stops")
+	}
+}
+
+func TestStartTransitionFadeInEvent_NoWaitByDefault(t *testing.T) {
+	eventID := EventID("fade-in")
+	optionPort := func(string) *seqtransition.Option {
+		return nil
+	}
+	controller := seqtransition.NewController(
+		func() {},
+		func() bool { return true },
+	)
+	createEvent := produceCreateStartTransitionFadeInEventToUnit(optionPort, controller)
+	event := createEvent(eventID)
+
+	event.start()
+	if !event.checkIsEnd() {
+		t.Fatal("expected event to finish immediately when wait option is disabled")
 	}
 }

@@ -8,6 +8,10 @@ const (
 	changeEmotionEvent             EventType = "change_emotion"
 	openPartnerMessageWindowEvent  EventType = "open_partner_message_window"
 	closePartnerMessageWindowEvent EventType = "close_partner_message_window"
+	showPlayerCommandWindowEvent   EventType = "show_player_command_window"
+	hidePlayerCommandWindowEvent   EventType = "hide_player_command_window"
+	startTransitionFadeOutEvent    EventType = "start_transition_fade_out"
+	startTransitionFadeInEvent     EventType = "start_transition_fade_in"
 )
 
 type EventDataModel struct {

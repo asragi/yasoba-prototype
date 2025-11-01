@@ -1,12 +1,19 @@
 package sequence
 
-import "github.com/asragi/yasoba-prototype/text"
+import (
+	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
+	"github.com/asragi/yasoba-prototype/text"
+)
 
 type ProduceCreateSequence func(
 	SetPartnerDialogue,
 	SetEmotion,
 	OpenPartnerMessageWindow,
 	ClosePartnerMessageWindow,
+	ShowPlayerCommandWindow,
+	HidePlayerCommandWindow,
+	seqtransition.Controller,
+	seqtransition.Controller,
 ) CreateSequence
 
 type PrepareProduceCreateSequence func(text.ServeTextDataFunc) ProduceCreateSequence
@@ -16,6 +23,7 @@ func InitializeProduceCreateSequence(
 	eventDataModelPort EventDataModelPort,
 	partnerDialogueDataPort PartnerDialogueDataPort,
 	changeEmotionDataPort ChangeEmotionDataPort,
+	transitionFadeOptionPort seqtransition.OptionPort,
 ) PrepareProduceCreateSequence {
 	sequencesDataAdapter := initializeSequenceDataAdapter(
 		sequenceModelPort,
@@ -32,6 +40,10 @@ func InitializeProduceCreateSequence(
 			setEmotion SetEmotion,
 			setOpenPartnerMessageWindow OpenPartnerMessageWindow,
 			setClosePartnerMessageWindow ClosePartnerMessageWindow,
+			showPlayerCommandWindow ShowPlayerCommandWindow,
+			hidePlayerCommandWindow HidePlayerCommandWindow,
+			startTransitionFadeOut seqtransition.Controller,
+			startTransitionFadeIn seqtransition.Controller,
 		) CreateSequence {
 			return produceCreateSequence(
 				produceCreatePartnerDialogueEventToUnit(
@@ -48,6 +60,20 @@ func InitializeProduceCreateSequence(
 				),
 				produceCreateClosePartnerMessageWindowEventToUnit(
 					setClosePartnerMessageWindow,
+				),
+				produceCreateShowPlayerCommandWindowEventToUnit(
+					showPlayerCommandWindow,
+				),
+				produceCreateHidePlayerCommandWindowEventToUnit(
+					hidePlayerCommandWindow,
+				),
+				produceCreateStartTransitionFadeOutEventToUnit(
+					transitionFadeOptionPort,
+					startTransitionFadeOut,
+				),
+				produceCreateStartTransitionFadeInEventToUnit(
+					transitionFadeOptionPort,
+					startTransitionFadeIn,
 				),
 			)
 		}

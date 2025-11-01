@@ -3,6 +3,7 @@ package adapter
 import (
 	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/sequence"
+	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/view/battle/emotion"
 )
@@ -20,12 +21,15 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 	partnerDialogueDataPort := adaptPartnerDialogueDataPort(partnerDialogueRecords)
 	changeEmotionRecords := ChangeEmotionRecordsFromYAML("assets/data/change_emotion.yaml")
 	changeEmotionDataPort := adaptChangeEmotionDataPort(changeEmotionRecords)
+	transitionFadeRecords := TransitionFadeRecordsFromYAML("assets/data/transition_fade.yaml")
+	transitionFadeOptionPort := adaptTransitionFadeOptionPort(transitionFadeRecords)
 
 	return sequence.InitializeProduceCreateSequence(
 		sequenceModelPort,
 		eventDataModelPort,
 		partnerDialogueDataPort,
 		changeEmotionDataPort,
+		transitionFadeOptionPort,
 	)
 }
 
@@ -82,6 +86,16 @@ func adaptChangeEmotionDataPort(records map[string]*ChangeEmotionRecord) sequenc
 			panic("event not found: " + string(id))
 		}
 		return emotion
+	}
+}
+
+func adaptTransitionFadeOptionPort(records map[string]*TransitionFadeRecord) seqtransition.OptionPort {
+	options := make(map[string]*seqtransition.Option, len(records))
+	for _, record := range records {
+		options[record.EventID] = seqtransition.NewOption(record.WaitForComplete)
+	}
+	return func(id string) *seqtransition.Option {
+		return options[id]
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
 	"github.com/asragi/yasoba-prototype/sequence"
+	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/toolkit/input"
@@ -108,7 +109,6 @@ func InitializeCreateBattleScene(
 			transitionView.Draw,
 			transitionview.InitialStateOpaque,
 		)
-		battleTransition.FadeIn()
 
 		// エフェクト関数の定義
 		playEffect := createPlayEffectFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, effectManager)
@@ -129,6 +129,26 @@ func InitializeCreateBattleScene(
 
 		battleSelectWindow := createBattleSelectWindow(newBattleSelectWindow, inputManager, onSubmit)
 
+		showPlayerCommandWindow := func() {
+			battleSelectWindow.Open()
+			inputManager.Set(battleSelectWindow)
+		}
+
+		hidePlayerCommandWindow := func() {
+			battleSelectWindow.Close()
+			inputManager.Set(input.InputReceiverEmptyInstance)
+		}
+
+		startTransitionFadeOut := seqtransition.NewController(
+			battleTransition.FadeOut,
+			battleTransition.IsFadingOut,
+		)
+
+		startTransitionFadeIn := seqtransition.NewController(
+			battleTransition.FadeIn,
+			battleTransition.IsFadingIn,
+		)
+
 		// パートナーダイアログの設定
 		setPartnerDialogue := createSetPartnerDialogueFunction(subActorDialog)
 		createSequence := produceCreateSequence(
@@ -136,8 +156,13 @@ func InitializeCreateBattleScene(
 			setEmotion,
 			subActorDialog.Open,
 			subActorDialog.Close,
+			showPlayerCommandWindow,
+			hidePlayerCommandWindow,
+			startTransitionFadeOut,
+			startTransitionFadeIn,
 		)
 		seq := createSequence("test_sequence_0000")
+		commandWindowSequence := createSequence("test_sequence_transition_command")
 
 		// バトルシーンの作成
 		battleScene := &BattleScene{
@@ -160,6 +185,7 @@ func InitializeCreateBattleScene(
 			sequences:      sequence.CreateSequenceManager(),
 		}
 		battleScene.sequences.AddSequence(seq)
+		battleScene.sequences.AddSequence(commandWindowSequence)
 
 		// バトル処理の設定
 		processBattle := newProcessBattle(battleResponse, battleScene.onBattleEnd)
@@ -279,7 +305,7 @@ func createBattleEnemyDisplay(newBattleEnemyDisplay battleenemy.NewBattleEnemyDi
 
 func createBattleSelectWindow(
 	newBattleSelectWindow window.NewBattleSelectWindowFunc,
-	input input.InputManager,
+	inputManager input.InputManager,
 	onSubmit func(battle.PlayerCommand),
 ) *window.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
@@ -297,8 +323,8 @@ func createBattleSelectWindow(
 		},
 		onSubmit,
 	)
-	input.Set(battleSelectWindow)
-	battleSelectWindow.Open()
+	battleSelectWindow.Close()
+	inputManager.Set(input.InputReceiverEmptyInstance)
 	return battleSelectWindow
 }
 

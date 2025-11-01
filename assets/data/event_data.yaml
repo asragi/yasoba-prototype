@@ -67,3 +67,12 @@ events:
     eventType: "change_emotion"
     ownerId: "lune_hp_low_sequence"
     order: 5
+  # フェードイン後にプレイヤーコマンドウィンドウを開くテストシーケンス
+  - id: "transition_command_fade"
+    eventType: "start_transition_fade_in"
+    ownerId: "test_sequence_transition_command"
+    order: 1
+  - id: "transition_command_show"
+    eventType: "show_player_command_window"
+    ownerId: "test_sequence_transition_command"
+    order: 2
