@@ -25,6 +25,7 @@ import (
 	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/drawing"
+	drawingadapter "github.com/asragi/yasoba-prototype/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
@@ -47,12 +48,13 @@ func initializeApp(cfg Config) (*App, error) {
 		buildApp,
 
 		frontend.CreateResourceManager,
+		drawingadapter.NewDrawTextFunc,
 		widget.CreateNewText,
 		component.StandByNewMessageWindow,
 		makeSelectCursor,
 		selection.StandByNewSelectWindow,
 		battleselect.StandByNewBattleSelectWindow,
-		battleactor.StandByNewFaceWindow,
+		makeFaceWindowFactory,
 		battlehp.CreateNewBattleHPDisplay,
 		battleactor.CreateNewBattleParameterDisplay,
 		component.CreateNewDisplayDamage,
@@ -106,6 +108,7 @@ func initializeApp(cfg Config) (*App, error) {
 		wire.Value(frontend.MaruMinya),
 		wire.Bind(new(frontend.ResourceManagerInterface), new(*frontend.ResourceManager)),
 		wire.Bind(new(battle.AllActorServer), new(*actor.InMemoryActorServer)),
+		wire.Bind(new(widget.FontProvider), new(*frontend.ResourceManager)),
 		makeWindowFunc,
 	)
 	return nil, nil
@@ -170,7 +173,7 @@ func makeProcessBattle(
 }
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
-	return widget.CreateNewWindow(resource, cfg.GameWidth, cfg.GameHeight)
+	return widget.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
 }
 
 func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
@@ -190,6 +193,10 @@ func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 
 func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {
 	return create()
+}
+
+func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) battleactor.NewFaceWindowFunc {
+	return battleactor.StandByNewFaceWindow(resource, newWindow)
 }
 
 func makeBattleScene(cfg Config, create scene.CreateBattleScene) *scene.BattleScene {

@@ -80,6 +80,10 @@ func (a *Animation) SetShader(shader *drawing.Shader) {
 	a.image.SetShader(shader)
 }
 
+func (a *Animation) SetRenderTargetFactory(factory newEmptyTextureFunc) {
+	a.image.SetRenderTargetFactory(factory)
+}
+
 func (a *Animation) SetScaleBySize(size *drawing.Vector) {
 	width := size.X * float64(a.data.ColumnCount)
 	height := size.Y * float64(a.data.RowCount)

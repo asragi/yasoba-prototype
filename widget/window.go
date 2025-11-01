@@ -113,7 +113,7 @@ func (w *Window) Draw(drawFunc drawing.DrawFunc) {
 	targetXSize := w.size.X - float64(w.cornerSize*2)
 	targetYSize := w.size.Y - float64(w.cornerSize*2)
 	for i, v := range w.corners {
-		op := &drawing.DrawOptions{}
+		op := drawing.NewDrawOptions()
 		x := w.cornerPosition[i].X + w.relativePosition.X - pivotDiff.X + w.parentPosition.X
 		y := w.cornerPosition[i].Y + w.relativePosition.Y - pivotDiff.Y + w.parentPosition.Y
 		op.Translate(x, y)

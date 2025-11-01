@@ -2,14 +2,14 @@ package drawing
 
 import "image/color"
 
-type textFace interface{}
+type TextFace interface{}
 
-type DrawTextFunc func(Image, string, textFace, *TextDrawOptions)
+type DrawTextFunc func(Image, string, TextFace, *TextDrawOptions)
 
 type TextDrawOptions struct {
-	Position     *Vector
-	Scale        *Vector
-	OutlineColor color.Color
+	Position *Vector
+	Scale    *Vector
+	Color    color.Color
 }
 
 func NewTextDrawOptions() *TextDrawOptions {
@@ -30,5 +30,5 @@ func (o *TextDrawOptions) SetScale(sx, sy float64) {
 }
 
 func (o *TextDrawOptions) SetColorScale(color color.Color) {
-	o.OutlineColor = color
+	o.Color = color
 }

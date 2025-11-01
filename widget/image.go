@@ -32,7 +32,7 @@ func (i *Image) Draw(drawFunc drawing.DrawFunc) {
 	if i.parentPosition == nil {
 		return
 	}
-	op := &drawing.DrawOptions{}
+	op := drawing.NewDrawOptions()
 	pivotModification := i.pivot.ApplyToSize(i.Size())
 	op.SetScale(
 		i.scale.X,
@@ -51,8 +51,15 @@ func (i *Image) Draw(drawFunc drawing.DrawFunc) {
 				return
 			}
 			w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
+			if i.newEmptyTexture == nil {
+				panic("widget: shader render target factory is not set")
+			}
 			renderTarget := i.newEmptyTexture()
-			renderTarget.DrawImage(renderTarget, op)
+			targetBounds := renderTarget.Bounds()
+			if targetBounds.Dx() != imageToDraw.Bounds().Dx() || targetBounds.Dy() != imageToDraw.Bounds().Dy() {
+				// panic("widget: shader render target size mismatch")
+			}
+			renderTarget.DrawImage(imageToDraw, op)
 			shaderOption := drawing.NewDrawRectShaderOptions()
 			shaderOption.SetImage(0, renderTarget)
 			shaderOption.SetUniforms(i.shader.GetUniforms())
@@ -93,6 +100,10 @@ func (i *Image) SetRelativePosition(position *drawing.Vector) {
 func (i *Image) SetShader(shader *drawing.Shader) {
 	i.shader = shader
 	shader.Reset()
+}
+
+func (i *Image) SetRenderTargetFactory(factory newEmptyTextureFunc) {
+	i.newEmptyTexture = factory
 }
 
 func (i *Image) SetShaderUniforms(key string, value interface{}) {

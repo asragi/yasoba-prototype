@@ -24,6 +24,7 @@ import (
 	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/drawing"
+	"github.com/asragi/yasoba-prototype/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
@@ -40,12 +41,13 @@ import (
 // Injectors from wire.go:
 
 func initializeApp(cfg Config) (*App, error) {
-	drawingInstance := drawing.NewDrawing()
+	drawingDrawing := drawing.NewDrawing()
 	resourceManager, err := frontend.CreateResourceManager()
 	if err != nil {
 		return nil, err
 	}
-	newTextFunc := widget.CreateNewText(resourceManager)
+	drawTextFunc := adapter.NewDrawTextFunc()
+	newTextFunc := widget.CreateNewText(resourceManager, drawTextFunc)
 	newWindowFunc := makeWindowFunc(resourceManager, cfg)
 	newMessageWindowFunc := component.StandByNewMessageWindow(newTextFunc, newWindowFunc)
 	newCursor := makeSelectCursor(resourceManager)
@@ -55,7 +57,7 @@ func initializeApp(cfg Config) (*App, error) {
 	}
 	newSelectWindowFunc := selection.StandByNewSelectWindow(newCursor, newTextFunc, serveTextDataFunc)
 	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc)
-	newFaceWindowFunc := actor.StandByNewFaceWindow(resourceManager, newWindowFunc)
+	newFaceWindowFunc := makeFaceWindowFactory(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := component.CreateNewDisplayDamage(newTextFunc)
 	fontId := _wireFontIdValue
 	newBattleHPDisplayFunc := hp.CreateNewBattleHPDisplay(fontId, newTextFunc)
@@ -102,7 +104,7 @@ func initializeApp(cfg Config) (*App, error) {
 	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
 	debugScene := makeDebugScene(createDebugScene)
 	debugDebug := debug.CreateDrawParameters(newTextFunc)
-	app := buildApp(drawingInstance, battleScene, debugScene, debugDebug)
+	app := buildApp(drawingDrawing, battleScene, debugScene, debugDebug)
 	return app, nil
 }
 
@@ -173,7 +175,7 @@ func makeProcessBattle(
 }
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
-	return widget.CreateNewWindow(resource, cfg.GameWidth, cfg.GameHeight)
+	return widget.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
 }
 
 func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
@@ -193,6 +195,10 @@ func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 
 func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {
 	return create()
+}
+
+func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) actor.NewFaceWindowFunc {
+	return actor.StandByNewFaceWindow(resource, newWindow)
 }
 
 func makeBattleScene(cfg Config, create scene.CreateBattleScene) *scene.BattleScene {

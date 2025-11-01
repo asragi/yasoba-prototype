@@ -9,6 +9,8 @@ import (
 	"github.com/asragi/yasoba-prototype/util"
 )
 
+var noopDrawTextFunc = func(drawing.Image, string, drawing.TextFace, *drawing.TextDrawOptions) {}
+
 func TestText_ToChar(t *testing.T) {
 	tests := []struct {
 		text     string
@@ -43,7 +45,7 @@ func TestText_Size(t *testing.T) {
 	}
 
 	// CreateNewText関数を作成
-	newText := CreateNewText(resource)
+	newText := CreateNewText(resource, noopDrawTextFunc)
 
 	tests := []struct {
 		name    string
@@ -138,7 +140,7 @@ func TestText_getLineSpacing(t *testing.T) {
 		t.Fatalf("ResourceManagerの作成に失敗しました: %v", err)
 	}
 
-	newText := CreateNewText(resource)
+	newText := CreateNewText(resource, noopDrawTextFunc)
 
 	tests := []struct {
 		name     string
@@ -176,7 +178,7 @@ func TestText_DrawBeforeUpdateSkipsRendering(t *testing.T) {
 		t.Fatalf("failed to create resource manager: %v", err)
 	}
 
-	newText := CreateNewText(resource)
+	newText := CreateNewText(resource, noopDrawTextFunc)
 	text := newText(&TextOptionsNew{
 		RelativePosition: drawing.VectorZero,
 		Pivot:            drawing.PivotTopLeft,
@@ -203,7 +205,7 @@ func TestText_DrawAfterUpdateRenders(t *testing.T) {
 		t.Fatalf("failed to create resource manager: %v", err)
 	}
 
-	newText := CreateNewText(resource)
+	newText := CreateNewText(resource, noopDrawTextFunc)
 	textInterface := newText(&TextOptionsNew{
 		RelativePosition: drawing.VectorZero,
 		Pivot:            drawing.PivotTopLeft,

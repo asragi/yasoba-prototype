@@ -103,13 +103,18 @@ func NewBattleActorGraphics(
 			for _, data := range enemyGraphicsData {
 				texture := resource.GetTexture(data.texture)
 				animation := resource.GetAnimationData(data.animation)
-				result[data.emotion] = widget.NewAnimation(
+				anim := widget.NewAnimation(
 					relativePosition,
 					pivot,
 					depth,
 					texture,
 					animation,
 				)
+				anim.SetRenderTargetFactory(func() drawing.Image {
+					// TODO: Test
+					return resource.NewEmptyImage(384, 288)
+				})
+				result[data.emotion] = anim
 			}
 			return result
 		}()

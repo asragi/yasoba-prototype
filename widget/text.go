@@ -199,7 +199,7 @@ func (t *Text) drawText(
 		return result
 	}()
 	for i := 0; i < currentIndex; i++ {
-		op := &drawing.TextDrawOptions{}
+		op := drawing.NewTextDrawOptions()
 		x := characterPosition[i].X + parentPosition.X
 		y := characterPosition[i].Y + parentPosition.Y + float64(line*lineHeight)*scale
 		op.SetScale(scale, scale)
@@ -208,8 +208,9 @@ func (t *Text) drawText(
 		drawFunc(
 			func(screen drawing.Image) {
 				if t.options.EnableOutline {
-					outlineOp := &drawing.TextDrawOptions{}
-					*outlineOp = *op
+					outlineOp := drawing.NewTextDrawOptions()
+					outlineOp.SetScale(scale, scale)
+					outlineOp.Translate(x, y)
 					outlineOp.SetColorScale(t.options.OutlineColor)
 					for j := 0; j < len(diffSet); j++ {
 						v := diffSet[j].Multiply(scale)
@@ -241,7 +242,11 @@ type NewTextFunc func(*TextOptionsNew) TextInterface
 
 func CreateNewText(
 	resource FontProvider,
+	drawText drawing.DrawTextFunc,
 ) NewTextFunc {
+	if drawText == nil {
+		panic("widget: drawText func is required")
+	}
 	return func(options *TextOptionsNew) TextInterface {
 		if options.Color == nil {
 			options.Color = color.White
@@ -264,6 +269,7 @@ func CreateNewText(
 			options:        options,
 			parentPosition: nil,
 			textFace:       resource.GetFont(options.Font),
+			drawTextFunc:   drawText,
 		}
 	}
 }

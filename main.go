@@ -6,6 +6,7 @@ import (
 	"github.com/asragi/yasoba-prototype/app"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/drawing"
+	"github.com/asragi/yasoba-prototype/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -43,7 +44,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.activeScene.Draw(g.drawing.Draw)
 	g.debugOverlay.Draw(g.drawing.Draw)
-	g.drawing.DrawEnd(screen)
+	g.drawing.DrawEnd(adapter.NewEbitenImage(screen))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

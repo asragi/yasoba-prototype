@@ -68,3 +68,27 @@ func (o *DrawOptions) SetOpacity(opacity float64) {
 type DrawArgFunc func(Image)
 type DrawFunc func(DrawArgFunc, Depth)
 type DrawEndFunc func(Image)
+
+const defaultDrawCapacity = 128
+
+type Drawing struct {
+	manager *Manager
+}
+
+func NewDrawing() *Drawing {
+	depthOrder := make([]int, len(AllDepths))
+	for i, depth := range AllDepths {
+		depthOrder[i] = int(depth)
+	}
+	return &Drawing{
+		manager: NewManager(depthOrder, defaultDrawCapacity),
+	}
+}
+
+func (d *Drawing) Draw(fn DrawArgFunc, depth Depth) {
+	d.manager.Draw(fn, int(depth))
+}
+
+func (d *Drawing) DrawEnd(target Image) {
+	d.manager.DrawEnd(target)
+}

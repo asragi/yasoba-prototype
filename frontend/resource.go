@@ -67,9 +67,10 @@ type ResourceManagerInterface interface {
 	GetFont(id FontId) *text.GoTextFace
 	GetAnimationData(id AnimationId) *AnimationData
 	GetShader(id drawing.ShaderId) *drawing.Shader
+	NewEmptyImage(width, height int) drawing.Image
 }
 
-func (r *ResourceManager) GetTexture(id TextureId) *adapter.EbitenImage {
+func (r *ResourceManager) GetTexture(id TextureId) drawing.Image {
 	t, ok := r.textureDict[id]
 	if !ok {
 		panic(fmt.Sprintf("texture not found: %d", id))
@@ -95,6 +96,10 @@ func (r *ResourceManager) GetShader(id drawing.ShaderId) *drawing.Shader {
 		panic(fmt.Sprintf("shader not found: %d", id))
 	}
 	return drawing.NewShader(s)
+}
+
+func (r *ResourceManager) NewEmptyImage(width, height int) drawing.Image {
+	return adapter.NewEbitenImage(ebiten.NewImage(width, height))
 }
 
 func CreateResourceManager() (*ResourceManager, error) {
