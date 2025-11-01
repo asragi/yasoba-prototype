@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 )

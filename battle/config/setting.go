@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/game/enemy"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
 type EnemySetting struct {

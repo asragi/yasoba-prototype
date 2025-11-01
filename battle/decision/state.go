@@ -1,9 +1,9 @@
 package decision
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/game/character"
-	"github.com/asragi/yasoba-prototype/game/enemy"
+	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
+	"github.com/asragi/yasoba-prototype/common/character"
 )
 
 // ChoiceActionId is issued for each one enemy.

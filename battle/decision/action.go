@@ -1,10 +1,10 @@
 package decision
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/game/character"
-	"github.com/asragi/yasoba-prototype/game/enemy"
-	gameSkill "github.com/asragi/yasoba-prototype/game/skill"
+	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
+	gameSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/common/character"
 	"github.com/asragi/yasoba-prototype/util"
 )
 

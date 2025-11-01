@@ -5,8 +5,8 @@ import (
 	"image"
 	"math"
 
-	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
 type windowRect struct {

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"image"
 
-	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/drawing/adapter"
-	"github.com/asragi/yasoba-prototype/font"
-	load "github.com/asragi/yasoba-prototype/image"
+	"github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
+	"github.com/asragi/yasoba-prototype/assets/font"
+	load "github.com/asragi/yasoba-prototype/assets/image"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )

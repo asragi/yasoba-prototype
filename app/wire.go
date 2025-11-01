@@ -8,34 +8,35 @@ package app
 import (
 	"math/rand"
 
-	"github.com/asragi/yasoba-prototype/actor"
+	drawingadapter "github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
+	sequenceadapter "github.com/asragi/yasoba-prototype/adapter/ebiten/sequence/adapter"
 	"github.com/asragi/yasoba-prototype/battle"
+	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/combination"
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/decision"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
+	"github.com/asragi/yasoba-prototype/battle/invoke"
 	"github.com/asragi/yasoba-prototype/battle/partner"
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/common/character"
 	"github.com/asragi/yasoba-prototype/component"
-	battleactor "github.com/asragi/yasoba-prototype/component/battle/actor"
-	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
-	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
-	battlehp "github.com/asragi/yasoba-prototype/component/battle/hp"
-	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
-	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/debug"
-	"github.com/asragi/yasoba-prototype/drawing"
-	drawingadapter "github.com/asragi/yasoba-prototype/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/frontend"
-	"github.com/asragi/yasoba-prototype/game/character"
-	"github.com/asragi/yasoba-prototype/game/enemy"
-	gameSkill "github.com/asragi/yasoba-prototype/game/skill"
-	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
-	sequenceadapter "github.com/asragi/yasoba-prototype/sequence/adapter"
 	"github.com/asragi/yasoba-prototype/text"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/util"
+	actorview "github.com/asragi/yasoba-prototype/view/battle/actor"
+	damageview "github.com/asragi/yasoba-prototype/view/battle/damage"
+	enemyview "github.com/asragi/yasoba-prototype/view/battle/enemy"
+	eventview "github.com/asragi/yasoba-prototype/view/battle/event"
+	hpview "github.com/asragi/yasoba-prototype/view/battle/hp"
+	windowview "github.com/asragi/yasoba-prototype/view/battle/window"
+	messageview "github.com/asragi/yasoba-prototype/view/common/message"
+	"github.com/asragi/yasoba-prototype/view/common/selection"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/google/wire"
 )
@@ -51,23 +52,23 @@ func initializeApp(cfg Config) (*App, error) {
 		frontend.CreateResourceManager,
 		drawingadapter.NewDrawTextFunc,
 		widget.CreateNewText,
-		component.StandByNewMessageWindow,
+		messageview.StandByNewMessageWindow,
 		makeSelectCursor,
 		selection.StandByNewSelectWindow,
-		battleselect.StandByNewBattleSelectWindow,
+		windowview.StandByNewBattleSelectWindow,
 		makeFaceWindowFactory,
-		battlehp.CreateNewBattleHPDisplay,
-		battleactor.CreateNewBattleParameterDisplay,
-		component.CreateNewDisplayDamage,
-		battleactor.CreateNewBattleActorDisplay,
-		battleactor.CreateNewBattleSubActorDisplay,
+		hpview.CreateNewBattleHPDisplay,
+		actorview.CreateNewBattleParameterDisplay,
+		damageview.CreateNewDisplayDamage,
+		actorview.CreateNewBattleActorDisplay,
+		actorview.CreateNewBattleSubActorDisplay,
 		component.StandByNewVariableMessageWindow,
 		makeBattleEnemyGraphics,
-		battleenemy.CreateNewBattleEnemyDisplay,
+		enemyview.CreateNewBattleEnemyDisplay,
 		widget.CreateServeEffectData,
 		widget.NewEffectManager,
-		battleenemy.NewServeEnemyViewData,
-		battleenemy.CreateGetEnemyGraphics,
+		enemyview.NewServeEnemyViewData,
+		enemyview.CreateGetEnemyGraphics,
 
 		sequenceadapter.InitializeProduceCreateSequence,
 		loadTextServer,
@@ -85,7 +86,7 @@ func initializeApp(cfg Config) (*App, error) {
 		enemy.CreateNameServer,
 		makePrepareService,
 
-		gameSkill.NewSkillServer,
+		skill.NewSkillServer,
 		skill.CreateSkillApply,
 		decision.CreateChoiceSkillTarget,
 		decision.StandByCreateRandomAction,
@@ -99,9 +100,9 @@ func initializeApp(cfg Config) (*App, error) {
 		makeProcessBattle,
 
 		invoke.InitializeProduceCheckInvokeSequence,
-		battleevent.CreateServeBattleEventSequence,
-		battleevent.CreateExecBattleEventSequence,
-		wire.Value(battleevent.SkillToSequenceFunc(battleevent.ToEventSequenceId)),
+		eventview.CreateServeBattleEventSequence,
+		eventview.CreateExecBattleEventSequence,
+		wire.Value(eventview.SkillToSequenceFunc(eventview.ToEventSequenceId)),
 		config.NewServer,
 		scene.InitializeCreateBattleScene,
 		scene.InitializeCreateDebugScene,
@@ -179,11 +180,11 @@ func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWi
 
 func makeBattleEnemyGraphics(
 	resource frontend.ResourceManagerInterface,
-	getEnemyGraphics battleenemy.GetEnemyGraphicsFunc,
-	newDisplayDamage component.NewDisplayDamageFunc,
+	getEnemyGraphics enemyview.GetEnemyGraphicsFunc,
+	newDisplayDamage damageview.NewDisplayDamageFunc,
 	cfg Config,
-) battleenemy.NewBattleEnemyGraphicsFunc {
-	return battleenemy.NewBattleActorGraphics(
+) enemyview.NewBattleEnemyGraphicsFunc {
+	return enemyview.NewBattleActorGraphics(
 		resource,
 		getEnemyGraphics,
 		newDisplayDamage,
@@ -211,8 +212,8 @@ func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {
 	return create()
 }
 
-func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) battleactor.NewFaceWindowFunc {
-	return battleactor.StandByNewFaceWindow(resource, newWindow)
+func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) actorview.NewFaceWindowFunc {
+	return actorview.StandByNewFaceWindow(resource, newWindow)
 }
 
 func makeBattleScene(cfg Config, create scene.CreateBattleScene) *scene.BattleScene {

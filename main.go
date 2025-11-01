@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
+	"github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/app"
 	"github.com/asragi/yasoba-prototype/debug"
-	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/scene"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 

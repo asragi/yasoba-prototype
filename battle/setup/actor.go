@@ -3,9 +3,9 @@ package setup
 import (
 	"fmt"
 
-	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/game/character"
-	"github.com/asragi/yasoba-prototype/game/enemy"
+	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
+	"github.com/asragi/yasoba-prototype/common/character"
 )
 
 type PrepareArgs struct {

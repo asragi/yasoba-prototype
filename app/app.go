@@ -2,8 +2,8 @@ package app
 
 import (
 	"github.com/asragi/yasoba-prototype/debug"
-	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/scene"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
 type App struct {

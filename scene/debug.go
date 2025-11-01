@@ -1,6 +1,6 @@
 package scene
 
-import "github.com/asragi/yasoba-prototype/drawing"
+import "github.com/asragi/yasoba-prototype/toolkit/drawing"
 
 type DebugScene struct {
 	ui             debugUI

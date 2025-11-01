@@ -1,9 +1,9 @@
 package scene
 
 import (
-	"github.com/asragi/yasoba-prototype/component/selection"
-	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/input"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	"github.com/asragi/yasoba-prototype/toolkit/input"
+	"github.com/asragi/yasoba-prototype/view/common/selection"
 )
 
 type debugUI struct {

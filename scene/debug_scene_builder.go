@@ -1,10 +1,10 @@
 package scene
 
 import (
-	"github.com/asragi/yasoba-prototype/component/selection"
-	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/input/adapter"
+	ebiteninput "github.com/asragi/yasoba-prototype/adapter/ebiten/input"
 	"github.com/asragi/yasoba-prototype/text"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	"github.com/asragi/yasoba-prototype/view/common/selection"
 )
 
 func InitializeCreateDebugScene(newSelectWindow selection.NewSelectWindowFunc) CreateDebugScene {
@@ -25,7 +25,7 @@ func InitializeCreateDebugScene(newSelectWindow selection.NewSelectWindowFunc) C
 		)
 		selectWindow.Open()
 
-		inputManager := &adapter.KeyBoardInput{}
+		inputManager := &ebiteninput.KeyBoardInput{}
 		inputManager.Set(selectWindow)
 
 		scene.ui = debugUI{

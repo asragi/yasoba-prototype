@@ -1,18 +1,18 @@
 package scene
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
 	"github.com/asragi/yasoba-prototype/battle"
+	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/config"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
+	"github.com/asragi/yasoba-prototype/battle/invoke"
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
-	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
-	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
-	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/game/enemy"
-	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/text"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	battleenemy "github.com/asragi/yasoba-prototype/view/battle/enemy"
+	battleevent "github.com/asragi/yasoba-prototype/view/battle/event"
 )
 
 type BattleScene struct {

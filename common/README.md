@@ -1,0 +1,3 @@
+# Common
+
+yasoba特有のebitenに依存しない純粋なGoでRPGの戦闘・探索に共通するmodelやlogicを配置

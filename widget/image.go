@@ -3,7 +3,7 @@ package widget
 import (
 	"image"
 
-	"github.com/asragi/yasoba-prototype/drawing"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
 type Image struct {

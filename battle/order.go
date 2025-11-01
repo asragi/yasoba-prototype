@@ -1,7 +1,7 @@
 package battle
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/util"
 )
 

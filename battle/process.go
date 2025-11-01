@@ -1,13 +1,13 @@
 package battle
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/combination"
 	"github.com/asragi/yasoba-prototype/battle/decision"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
 	"github.com/asragi/yasoba-prototype/battle/partner"
 	"github.com/asragi/yasoba-prototype/battle/skill"
-	"github.com/asragi/yasoba-prototype/game/character"
-	"github.com/asragi/yasoba-prototype/game/enemy"
+	"github.com/asragi/yasoba-prototype/common/character"
 )
 
 // PostCommandRequest captures the player's chosen command.

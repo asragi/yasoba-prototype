@@ -1,10 +1,9 @@
 package battle
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/skill"
-	gameSkill "github.com/asragi/yasoba-prototype/game/skill"
-	textpkg "github.com/asragi/yasoba-prototype/text"
+	"github.com/asragi/yasoba-prototype/text"
 )
 
 // PlayerCommand is a command that the player can select in the battle.
@@ -21,22 +20,22 @@ const (
 )
 
 // ToTextId converts a player command into the associated text ID.
-func (b *PlayerCommand) ToTextId() textpkg.TextId {
+func (b *PlayerCommand) ToTextId() text.TextId {
 	switch *b {
 	case PlayerCommandAttack:
-		return textpkg.TextIdBattleCommandAttack
+		return text.TextIdBattleCommandAttack
 	case PlayerCommandFire:
-		return textpkg.TextIdBattleCommandFire
+		return text.TextIdBattleCommandFire
 	case PlayerCommandThunder:
-		return textpkg.TextIdBattleCommandThunder
+		return text.TextIdBattleCommandThunder
 	case PlayerCommandBarrier:
-		return textpkg.TextIdBattleCommandBarrier
+		return text.TextIdBattleCommandBarrier
 	case PlayerCommandWind:
-		return textpkg.TextIdBattleCommandWind
+		return text.TextIdBattleCommandWind
 	case PlayerCommandFocus:
-		return textpkg.TextIdBattleCommandFocus
+		return text.TextIdBattleCommandFocus
 	case PlayerCommandDefend:
-		return textpkg.TextIdBattleCommandDefend
+		return text.TextIdBattleCommandDefend
 	}
 	return ""
 }
@@ -59,19 +58,19 @@ func CreateProcessPlayerCommand(supplyActor actor.ActorSupplier) ProcessPlayerCo
 		return target.Side == actor.ActorSideEnemy
 	}
 	return func(command *PostCommandRequest) *BattlePlayerCommandResult {
-		decidedSkillId := func() gameSkill.SkillId {
+		decidedSkillId := func() skill.SkillId {
 			if isToEnemy(command.TargetId) {
 				switch command.Command {
 				case PlayerCommandAttack:
-					return gameSkill.SkillIdLuneAttack
+					return skill.SkillIdLuneAttack
 				case PlayerCommandFire:
-					return gameSkill.SkillIdLuneFireEnemy
+					return skill.SkillIdLuneFireEnemy
 				default:
 					panic("not implemented")
 				}
 			}
 			// TODO: implement friendly-target commands
-			return gameSkill.SkillIdLuneAttack
+			return skill.SkillIdLuneAttack
 		}()
 		return &BattlePlayerCommandResult{
 			SkillApplyArgs: &skill.SelectedAction{

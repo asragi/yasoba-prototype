@@ -1,10 +1,10 @@
 package battle
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
+	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
 	"github.com/asragi/yasoba-prototype/battle/setup"
-	"github.com/asragi/yasoba-prototype/game/character"
-	"github.com/asragi/yasoba-prototype/game/enemy"
+	"github.com/asragi/yasoba-prototype/common/character"
 )
 
 // InitializeBattleRequest points to the characters and enemies to prepare.

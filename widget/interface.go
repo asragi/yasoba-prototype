@@ -1,8 +1,6 @@
 package widget
 
-import (
-	"github.com/asragi/yasoba-prototype/drawing"
-)
+import "github.com/asragi/yasoba-prototype/toolkit/drawing"
 
 type PositionUpdater interface {
 	Update(parentPosition *drawing.Vector)

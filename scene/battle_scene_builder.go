@@ -1,35 +1,36 @@
 package scene
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
+	ebiteninput "github.com/asragi/yasoba-prototype/adapter/ebiten/input"
 	"github.com/asragi/yasoba-prototype/battle"
+	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/config"
+	"github.com/asragi/yasoba-prototype/battle/enemy"
+	"github.com/asragi/yasoba-prototype/battle/invoke"
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/common/character"
 	"github.com/asragi/yasoba-prototype/component"
-	battleactor "github.com/asragi/yasoba-prototype/component/battle/actor"
-	battledialogue "github.com/asragi/yasoba-prototype/component/battle/dialogue"
-	battleemotion "github.com/asragi/yasoba-prototype/component/battle/emotion"
-	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
-	battleevent "github.com/asragi/yasoba-prototype/component/battle/event"
-	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
-	"github.com/asragi/yasoba-prototype/component/selection"
-	componentshake "github.com/asragi/yasoba-prototype/component/shake"
-	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/game/character"
-	"github.com/asragi/yasoba-prototype/game/enemy"
-	"github.com/asragi/yasoba-prototype/input"
-	"github.com/asragi/yasoba-prototype/input/adapter"
-	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/text"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	"github.com/asragi/yasoba-prototype/toolkit/input"
+	battleactor "github.com/asragi/yasoba-prototype/view/battle/actor"
+	battledialogue "github.com/asragi/yasoba-prototype/view/battle/dialogue"
+	battleemotion "github.com/asragi/yasoba-prototype/view/battle/emotion"
+	battleenemy "github.com/asragi/yasoba-prototype/view/battle/enemy"
+	battleevent "github.com/asragi/yasoba-prototype/view/battle/event"
+	"github.com/asragi/yasoba-prototype/view/battle/window"
+	"github.com/asragi/yasoba-prototype/view/common/message"
+	"github.com/asragi/yasoba-prototype/view/common/selection"
+	"github.com/asragi/yasoba-prototype/view/common/shake"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 func InitializeCreateBattleScene(
-	newMessageWindow component.NewMessageWindowFunc,
+	newMessageWindow message.NewMessageWindowFunc,
 	newSelectWindow selection.NewSelectWindowFunc,
-	newBattleSelectWindow battleselect.NewBattleSelectWindowFunc,
+	newBattleSelectWindow window.NewBattleSelectWindowFunc,
 	newBattleActorDisplay battleactor.NewBattleActorDisplayFunc,
 	newBattleSubActorDisplay battleactor.NewBattleSubActorDisplayFunc,
 	serveEnemyName enemy.NameServer,
@@ -70,8 +71,8 @@ func InitializeCreateBattleScene(
 		allActorId := createAllActorIdList(battleResponse)
 		allTextId := createAllTextIdList(allActorId, actorNames)
 
-		displayedHp := func() map[actor.ActorId]actor.HP {
-			hp := make(map[actor.ActorId]actor.HP, len(allActorId))
+		displayedHp := func() map[actor.ActorId]character.HP {
+			hp := make(map[actor.ActorId]character.HP, len(allActorId))
 			for _, id := range allActorId {
 				actor := serveActor(id)
 				if actor == nil {
@@ -87,7 +88,7 @@ func InitializeCreateBattleScene(
 		battleEnemyDisplay := createBattleEnemyDisplay(newBattleEnemyDisplay, battleResponse.EnemyIds, battleSetting.Enemies)
 
 		// バトル選択ウィンドウの設定
-		inputManager := &adapter.KeyBoardInput{}
+		inputManager := &ebiteninput.KeyBoardInput{}
 		var selectedCommand battle.PlayerCommand
 		var targetSelectWindow *selection.SelectWindow
 		onSubmit := func(command battle.PlayerCommand) {
@@ -102,7 +103,7 @@ func InitializeCreateBattleScene(
 
 		// エフェクト関数の定義
 		playEffect := createPlayEffectFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, effectManager)
-		uiShake := componentshake.NewShake()
+		uiShake := shake.NewShake()
 		doShake := createDoShakeFunction(serveActor, battleEnemyDisplay, subActorDisplay, uiShake)
 		setDamage := createSetDamageFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, displayedHp)
 		setEmotion := createSetEmotionFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay)
@@ -180,7 +181,7 @@ func InitializeCreateBattleScene(
 		)
 		battleScene.ui.targetSelectWindow = targetSelectWindow
 
-		getActorHpRatio := func(actorId actor.ActorId) actor.HPRatio {
+		getActorHpRatio := func(actorId actor.ActorId) character.HPRatio {
 			actor := serveActor(actorId)
 			if actor == nil {
 				panic("actor not found: " + string(actorId))
@@ -245,7 +246,7 @@ func createAllTextIdList(allActorId []actor.ActorId, actorNames map[actor.ActorI
 	return texts
 }
 
-func createMessageWindow(newMessageWindow component.NewMessageWindowFunc) *component.MessageWindow {
+func createMessageWindow(newMessageWindow message.NewMessageWindowFunc) *message.MessageWindow {
 	messageWindow := newMessageWindow(
 		&drawing.Vector{X: 192, Y: 0},
 		&drawing.Vector{X: 292, Y: 62},
@@ -267,10 +268,10 @@ func createBattleEnemyDisplay(newBattleEnemyDisplay battleenemy.NewBattleEnemyDi
 }
 
 func createBattleSelectWindow(
-	newBattleSelectWindow battleselect.NewBattleSelectWindowFunc,
+	newBattleSelectWindow window.NewBattleSelectWindowFunc,
 	input input.InputManager,
 	onSubmit func(battle.PlayerCommand),
-) *battleselect.BattleSelectWindow {
+) *window.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
 		&drawing.Vector{X: 0, Y: 0},
 		drawing.PivotBottomLeft,
@@ -307,7 +308,7 @@ func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay
 	}
 }
 
-func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, shakeEmitter *componentshake.EmitShake) func(actor.ActorId) {
+func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, shakeEmitter *shake.EmitShake) func(actor.ActorId) {
 	return func(actorId actor.ActorId) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -319,7 +320,7 @@ func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *b
 			return
 		}
 		// メインキャラクターのシェイク処理
-		shakeEmitter.Shake(componentshake.ShakeDefaultAmplitude, componentshake.ShakeDefaultPeriod)
+		shakeEmitter.Shake(shake.ShakeDefaultAmplitude, shake.ShakeDefaultPeriod)
 	}
 }
 
@@ -328,9 +329,9 @@ func createSetDamageFunction(
 	battleEnemyDisplay *battleenemy.BattleEnemyDisplay,
 	subActorDisplay *battleactor.BattleSubActorDisplay,
 	actorDisplay *battleactor.BattleActorDisplay,
-	displayedHp map[actor.ActorId]actor.HP,
-) func(actor.ActorId, battleSkill.Damage, actor.HP) {
-	return func(actorId actor.ActorId, damage battleSkill.Damage, afterHp actor.HP) {
+	displayedHp map[actor.ActorId]character.HP,
+) func(actor.ActorId, battleSkill.Damage, character.HP) {
+	return func(actorId actor.ActorId, damage battleSkill.Damage, afterHp character.HP) {
 		displayedHp[actorId] = afterHp
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -373,7 +374,7 @@ func createSetPartnerDialogueFunction(subActorDialog *battledialogue.BattlePartn
 }
 
 func createOnSubmitTargetSelect(
-	battleSelectWindow *battleselect.BattleSelectWindow,
+	battleSelectWindow *window.BattleSelectWindow,
 	inputManager input.InputManager,
 ) func() {
 	return func() {

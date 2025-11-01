@@ -1,8 +1,8 @@
 package combination
 
 import (
-	"github.com/asragi/yasoba-prototype/actor"
-	"github.com/asragi/yasoba-prototype/game/skill"
+	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/skill"
 )
 
 // Request carries the input data for checking skill combinations.

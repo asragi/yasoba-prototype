@@ -1,27 +1,27 @@
 package scene
 
 import (
-	"github.com/asragi/yasoba-prototype/component"
-	battleactor "github.com/asragi/yasoba-prototype/component/battle/actor"
-	battledialogue "github.com/asragi/yasoba-prototype/component/battle/dialogue"
-	battleenemy "github.com/asragi/yasoba-prototype/component/battle/enemy"
-	battleselect "github.com/asragi/yasoba-prototype/component/battle/window"
-	"github.com/asragi/yasoba-prototype/component/selection"
-	"github.com/asragi/yasoba-prototype/component/shake"
-	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/input"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	"github.com/asragi/yasoba-prototype/toolkit/input"
+	"github.com/asragi/yasoba-prototype/view/battle/actor"
+	"github.com/asragi/yasoba-prototype/view/battle/dialogue"
+	"github.com/asragi/yasoba-prototype/view/battle/enemy"
+	"github.com/asragi/yasoba-prototype/view/battle/window"
+	"github.com/asragi/yasoba-prototype/view/common/message"
+	"github.com/asragi/yasoba-prototype/view/common/selection"
+	"github.com/asragi/yasoba-prototype/view/common/shake"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type battleUI struct {
-	messageWindow      *component.MessageWindow
-	battleSelectWindow *battleselect.BattleSelectWindow
-	actorDisplay       *battleactor.BattleActorDisplay
-	subActorDisplay    *battleactor.BattleSubActorDisplay
-	subActorDialog     *battledialogue.BattlePartnerDialogue
+	messageWindow      *message.MessageWindow
+	battleSelectWindow *window.BattleSelectWindow
+	actorDisplay       *actor.BattleActorDisplay
+	subActorDisplay    *actor.BattleSubActorDisplay
+	subActorDialog     *dialogue.BattlePartnerDialogue
 	targetSelectWindow *selection.SelectWindow
 	input              input.InputManager
-	battleEnemyDisplay *battleenemy.BattleEnemyDisplay
+	battleEnemyDisplay *enemy.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
 	shake              *shake.EmitShake
 	layout             battleUILayout
