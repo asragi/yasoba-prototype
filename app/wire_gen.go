@@ -79,7 +79,7 @@ func initializeApp(cfg Config) (*App, error) {
 	prepareBattleEventSequenceFunc := event.CreateExecBattleEventSequence(serveTextDataFunc, serveBattleEventSequenceFunc)
 	skillToSequenceFunc := _wireSkillToSequenceFuncValue
 	getEnemyGraphicsFunc := enemy2.CreateGetEnemyGraphics()
-	newBattleEnemyGraphicsFunc := enemy2.NewBattleActorGraphics(resourceManager, getEnemyGraphicsFunc, newDisplayDamageFunc)
+	newBattleEnemyGraphicsFunc := makeBattleEnemyGraphics(resourceManager, getEnemyGraphicsFunc, newDisplayDamageFunc, cfg)
 	newBattleEnemyDisplayFunc := enemy2.CreateNewBattleEnemyDisplay(newBattleEnemyGraphicsFunc)
 	serveEffectDataFunc := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(serveEffectDataFunc, resourceManager)
@@ -199,6 +199,21 @@ func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {
 
 func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) actor.NewFaceWindowFunc {
 	return actor.StandByNewFaceWindow(resource, newWindow)
+}
+
+func makeBattleEnemyGraphics(
+	resource frontend.ResourceManagerInterface,
+	getEnemyGraphics enemy2.GetEnemyGraphicsFunc,
+	newDisplayDamage component.NewDisplayDamageFunc,
+	cfg Config,
+) enemy2.NewBattleEnemyGraphicsFunc {
+	return enemy2.NewBattleActorGraphics(
+		resource,
+		getEnemyGraphics,
+		newDisplayDamage,
+		cfg.GameWidth,
+		cfg.GameHeight,
+	)
 }
 
 func makeBattleScene(cfg Config, create scene.CreateBattleScene) *scene.BattleScene {

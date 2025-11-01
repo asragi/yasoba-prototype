@@ -90,6 +90,8 @@ func NewBattleActorGraphics(
 	resource frontend.ResourceManagerInterface,
 	getEnemyGraphics GetEnemyGraphicsFunc,
 	newDisplayDamage component.NewDisplayDamageFunc,
+	screenWidth int,
+	screenHeight int,
 ) NewBattleEnemyGraphicsFunc {
 	return func(
 		relativePosition *drawing.Vector,
@@ -111,8 +113,7 @@ func NewBattleActorGraphics(
 					animation,
 				)
 				anim.SetRenderTargetFactory(func() drawing.Image {
-					// TODO: Test
-					return resource.NewEmptyImage(384, 288)
+					return resource.NewEmptyImage(screenWidth, screenHeight)
 				})
 				result[data.emotion] = anim
 			}

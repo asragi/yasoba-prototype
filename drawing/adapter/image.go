@@ -1,7 +1,6 @@
 package adapter
 
 import (
-	"fmt"
 	"image"
 
 	"github.com/asragi/yasoba-prototype/drawing"
@@ -76,7 +75,6 @@ func (*EbitenImage) toEbitenShaderOptions(
 			panic("drawing/adapter: img is not EbitenImage")
 		}
 		op.Images[index] = ebitenImg.img
-		fmt.Printf("img width: %d, height: %d", op.Images[index].Bounds().Dx(), op.Images[index].Bounds().Dy())
 	}
 	op.Uniforms = map[string]interface{}{}
 	for key, value := range options.Uniforms {

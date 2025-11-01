@@ -61,7 +61,7 @@ func initializeApp(cfg Config) (*App, error) {
 		battleactor.CreateNewBattleActorDisplay,
 		battleactor.CreateNewBattleSubActorDisplay,
 		component.StandByNewVariableMessageWindow,
-		battleenemy.NewBattleActorGraphics,
+		makeBattleEnemyGraphics,
 		battleenemy.CreateNewBattleEnemyDisplay,
 		widget.CreateServeEffectData,
 		widget.NewEffectManager,
@@ -174,6 +174,21 @@ func makeProcessBattle(
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
 	return widget.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
+}
+
+func makeBattleEnemyGraphics(
+	resource frontend.ResourceManagerInterface,
+	getEnemyGraphics battleenemy.GetEnemyGraphicsFunc,
+	newDisplayDamage component.NewDisplayDamageFunc,
+	cfg Config,
+) battleenemy.NewBattleEnemyGraphicsFunc {
+	return battleenemy.NewBattleActorGraphics(
+		resource,
+		getEnemyGraphics,
+		newDisplayDamage,
+		cfg.GameWidth,
+		cfg.GameHeight,
+	)
 }
 
 func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {

@@ -1,7 +1,5 @@
 package sequence
 
-import "fmt"
-
 type SequenceId string
 
 type sequence struct {
@@ -94,8 +92,7 @@ func initializeProduceCreateSequence(
 				return seq
 			}
 
-			fmt.Println("sequence not found")
-			return nil
+			panic("sequence not found")
 		}
 	}
 }
