@@ -1,3 +1,4 @@
+// go:build wireinject
 //go:build wireinject
 // +build wireinject
 
@@ -36,6 +37,7 @@ import (
 	windowview "github.com/asragi/yasoba-prototype/view/battle/window"
 	messageview "github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
+	transitionview "github.com/asragi/yasoba-prototype/view/common/transition"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/google/wire"
 )
@@ -56,6 +58,7 @@ func initializeApp(cfg Config) (*App, error) {
 		selection.StandByNewSelectWindow,
 		windowview.StandByNewBattleSelectWindow,
 		makeFaceWindowFactory,
+		makeTransitionView,
 		hpview.CreateNewBattleHPDisplay,
 		actorview.CreateNewBattleParameterDisplay,
 		damageview.CreateNewDisplayDamage,
@@ -188,6 +191,23 @@ func makeBattleEnemyGraphics(
 		newDisplayDamage,
 		cfg.GameWidth,
 		cfg.GameHeight,
+	)
+}
+
+func makeTransitionView(resource frontend.ResourceManagerInterface, cfg Config) transitionview.NewTransitionViewFunc {
+	createImage := func(width, height int) transitionview.OverlayImage {
+		img := resource.NewEmptyImage(width, height)
+		overlay, ok := img.(transitionview.OverlayImage)
+		if !ok {
+			panic("transition: created image does not satisfy overlay interface")
+		}
+		return overlay
+	}
+	return transitionview.CreateNewView(
+		cfg.GameWidth,
+		cfg.GameHeight,
+		drawing.DepthTransition,
+		createImage,
 	)
 }
 

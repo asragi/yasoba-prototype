@@ -1,6 +1,6 @@
 package transition
 
-import "github.com/asragi/yasoba-prototype/drawing"
+import "github.com/asragi/yasoba-prototype/toolkit/drawing"
 
 type transitionViewDraw func(drawFunc drawing.DrawFunc, rate float64)
 
@@ -12,22 +12,29 @@ const (
 	ModeFadeIn
 )
 
-type transition struct {
+type InitialState int
+
+const (
+	InitialStateTransparent InitialState = iota
+	InitialStateOpaque
+)
+
+type Transition struct {
 	frame    int
 	maxFrame int
 	mode     mode
 	view     transitionViewDraw
 }
 
-func (t *transition) FadeOut() {
+func (t *Transition) FadeOut() {
 	t.mode = ModeFadeOut
 }
 
-func (t *transition) FadeIn() {
+func (t *Transition) FadeIn() {
 	t.mode = ModeFadeIn
 }
 
-func (t *transition) fadeOutUpdate() {
+func (t *Transition) fadeOutUpdate() {
 	if t.mode != ModeFadeOut {
 		return
 	}
@@ -38,7 +45,7 @@ func (t *transition) fadeOutUpdate() {
 	t.frame++
 }
 
-func (t *transition) fadeInUpdate() {
+func (t *Transition) fadeInUpdate() {
 	if t.mode != ModeFadeIn {
 		return
 	}
@@ -49,7 +56,7 @@ func (t *transition) fadeInUpdate() {
 	t.frame--
 }
 
-func (t *transition) Update() {
+func (t *Transition) Update() {
 	if t.mode == ModeNone {
 		return
 	}
@@ -57,18 +64,30 @@ func (t *transition) Update() {
 	t.fadeInUpdate()
 }
 
-func (t *transition) Draw(drawFunc drawing.DrawFunc) {
+func (t *Transition) Draw(drawFunc drawing.DrawFunc) {
 	if drawFunc == nil {
 		return
 	}
 	t.view(drawFunc, float64(t.frame)/float64(t.maxFrame))
 }
 
-func New(maxFrame int, view transitionViewDraw) *transition {
-	return &transition{
-		frame:    0,
+func New(maxFrame int, view transitionViewDraw, initial InitialState) *Transition {
+	if maxFrame <= 0 {
+		panic("transition: maxFrame must be positive")
+	}
+	tr := &Transition{
 		maxFrame: maxFrame,
 		mode:     ModeNone,
 		view:     view,
 	}
+	tr.setInitialState(initial)
+	return tr
+}
+
+func (t *Transition) setInitialState(initial InitialState) {
+	if initial == InitialStateOpaque {
+		t.frame = t.maxFrame
+		return
+	}
+	t.frame = 0
 }

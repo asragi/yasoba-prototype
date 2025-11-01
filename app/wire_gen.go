@@ -35,6 +35,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/battle/window"
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
+	transition "github.com/asragi/yasoba-prototype/view/common/transition"
 	"github.com/asragi/yasoba-prototype/widget"
 	"math/rand"
 )
@@ -65,6 +66,7 @@ func initializeApp(cfg Config) (*App, error) {
 	newBattleParameterDisplayFunc := actor.CreateNewBattleParameterDisplay(newWindowFunc, newBattleHPDisplayFunc)
 	newBattleActorDisplayFunc := actor.CreateNewBattleActorDisplay(newFaceWindowFunc, newDisplayDamageFunc, newBattleParameterDisplayFunc)
 	newBattleSubActorDisplayFunc := actor.CreateNewBattleSubActorDisplay(newFaceWindowFunc, newDisplayDamageFunc, newBattleParameterDisplayFunc)
+	newTransitionViewFunc := makeTransitionView(resourceManager, cfg)
 	nameServer := enemy.CreateNameServer()
 	serveCharacterFunc := character.CreateCharacterServer()
 	serveEnemyData := enemy.CreateEnemyServer()
@@ -99,7 +101,7 @@ func initializeApp(cfg Config) (*App, error) {
 	prepareProduceCreateSequence := adapter2.InitializeProduceCreateSequence()
 	produceCreateSequence := makeProduceCreateSequence(prepareProduceCreateSequence, serveTextDataFunc)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
-	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
+	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, newTransitionViewFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
 	battleScene := makeBattleScene(cfg, createBattleScene)
 	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
 	debugScene := makeDebugScene(createDebugScene)
@@ -190,6 +192,23 @@ func makeBattleEnemyGraphics(
 		newDisplayDamage,
 		cfg.GameWidth,
 		cfg.GameHeight,
+	)
+}
+
+func makeTransitionView(resource frontend.ResourceManagerInterface, cfg Config) transition.NewTransitionViewFunc {
+	createImage := func(width, height int) transition.OverlayImage {
+		img := resource.NewEmptyImage(width, height)
+		overlay, ok := img.(transition.OverlayImage)
+		if !ok {
+			panic("transition: created image does not satisfy overlay interface")
+		}
+		return overlay
+	}
+	return transition.CreateNewView(
+		cfg.GameWidth,
+		cfg.GameHeight,
+		drawing.DepthTransition,
+		createImage,
 	)
 }
 

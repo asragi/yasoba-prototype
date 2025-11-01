@@ -11,6 +11,7 @@ const (
 	DepthDamageText
 	DepthWindow
 	DepthDebug
+	DepthTransition
 )
 
 var AllDepths = []Depth{
@@ -21,4 +22,5 @@ var AllDepths = []Depth{
 	DepthDamageText,
 	DepthWindow,
 	DepthDebug,
+	DepthTransition,
 }

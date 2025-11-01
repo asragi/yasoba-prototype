@@ -23,8 +23,11 @@ import (
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
+	transitionview "github.com/asragi/yasoba-prototype/view/common/transition"
 	"github.com/asragi/yasoba-prototype/widget"
 )
+
+const battleTransitionFrameCount = 15
 
 func InitializeCreateBattleScene(
 	newMessageWindow message.NewMessageWindowFunc,
@@ -32,6 +35,7 @@ func InitializeCreateBattleScene(
 	newBattleSelectWindow window.NewBattleSelectWindowFunc,
 	newBattleActorDisplay battleactor.NewBattleActorDisplayFunc,
 	newBattleSubActorDisplay battleactor.NewBattleSubActorDisplayFunc,
+	newTransitionView transitionview.NewTransitionViewFunc,
 	serveEnemyName enemy.NameServer,
 	initializeBattle battle.InitializeBattleFunc,
 	getBattleSetting config.ServeFunc,
@@ -98,6 +102,13 @@ func InitializeCreateBattleScene(
 		actorDisplay := newBattleActorDisplay(mainActor)
 		subActorDisplay := newBattleSubActorDisplay(subActor)
 		subActorDialog := battledialogue.CreateNewBattlePartnerDialogue(newMessageWindow)()
+		transitionView := newTransitionView()
+		battleTransition := transitionview.New(
+			battleTransitionFrameCount,
+			transitionView.Draw,
+			transitionview.InitialStateOpaque,
+		)
+		battleTransition.FadeIn()
 
 		// エフェクト関数の定義
 		playEffect := createPlayEffectFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, effectManager)
@@ -140,6 +151,7 @@ func InitializeCreateBattleScene(
 				battleEnemyDisplay: battleEnemyDisplay,
 				effectManager:      effectManager,
 				shake:              uiShake,
+				transition:         battleTransition,
 			},
 			battleSequence: battleevent.NewBattleEventSequencer(),
 			enemyData:      battleResponse.EnemyIds,

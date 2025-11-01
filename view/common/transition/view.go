@@ -3,7 +3,7 @@ package transition
 import (
 	"image/color"
 
-	"github.com/asragi/yasoba-prototype/drawing"
+	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
 type View struct {
@@ -14,8 +14,8 @@ type View struct {
 type NewTransitionViewFunc func() *View
 
 type OverlayImage interface {
+	drawing.Image
 	Fill(color color.Color)
-	Draw(target drawing.Image, op *drawing.DrawOptions)
 }
 
 type CreateImageFunc func(width, height int) OverlayImage
@@ -60,7 +60,7 @@ func (v *View) Draw(drawFunc drawing.DrawFunc, rate float64) {
 	drawFunc(func(screen drawing.Image) {
 		op := drawing.NewDrawOptions()
 		op.SetOpacity(alpha)
-		v.overlay.Draw(screen, op)
+		screen.DrawImage(v.overlay, op)
 	}, v.depth)
 }
 

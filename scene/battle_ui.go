@@ -10,6 +10,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
+	transitionview "github.com/asragi/yasoba-prototype/view/common/transition"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -25,6 +26,7 @@ type battleUI struct {
 	effectManager      *widget.EffectManager
 	shake              *shake.EmitShake
 	layout             battleUILayout
+	transition         *transitionview.Transition
 }
 
 type battleUILayout struct {
@@ -50,6 +52,7 @@ func (ui *battleUI) Update() {
 
 	ui.input.Update()
 	ui.effectManager.Update()
+	ui.transition.Update()
 }
 
 func updateBattleShake(shake *shake.EmitShake) *drawing.Vector {
@@ -66,6 +69,7 @@ func (ui *battleUI) Draw(drawFunc drawing.DrawFunc) {
 	ui.subActorDialog.Draw(drawFunc)
 	ui.actorDisplay.Draw(drawFunc)
 	ui.effectManager.Draw(drawFunc)
+	ui.transition.Draw(drawFunc)
 }
 
 func computeBattleUILayout(ui *battleUI, delta *drawing.Vector) battleUILayout {

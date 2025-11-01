@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"image"
+	"image/color"
 
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -55,6 +56,9 @@ func (i *EbitenImage) DrawRectShader(
 }
 
 func (*EbitenImage) toEbitenOptions(options *drawing.DrawOptions) *ebiten.DrawImageOptions {
+	if options == nil {
+		options = drawing.NewDrawOptions()
+	}
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(options.Scale.X, options.Scale.Y)
 	op.GeoM.Translate(options.Position.X, options.Position.Y)
@@ -81,4 +85,8 @@ func (*EbitenImage) toEbitenShaderOptions(
 		op.Uniforms[key] = value
 	}
 	return op
+}
+
+func (i *EbitenImage) Fill(clr color.Color) {
+	i.img.Fill(clr)
 }
