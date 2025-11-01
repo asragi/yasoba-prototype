@@ -1,13 +1,13 @@
 package sequence
 
-type createClosePartnerMessageWindowEvent func(eventId) *eventUnit
+type createClosePartnerMessageWindowEvent func(EventID) *eventUnit
 
 type ClosePartnerMessageWindow func()
 
 func produceCreateClosePartnerMessageWindowEventToUnit(
 	setClosePartnerMessageWindow ClosePartnerMessageWindow,
 ) createClosePartnerMessageWindowEvent {
-	return func(id eventId) *eventUnit {
+	return func(id EventID) *eventUnit {
 		start := func() {
 			setClosePartnerMessageWindow()
 		}

@@ -33,6 +33,7 @@ import (
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
+	sequenceadapter "github.com/asragi/yasoba-prototype/sequence/adapter"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -68,7 +69,7 @@ func initializeApp(cfg Config) (*App, error) {
 		battleenemy.NewServeEnemyViewData,
 		battleenemy.CreateGetEnemyGraphics,
 
-		sequence.InitializeProduceCreateSequence,
+		sequenceadapter.InitializeProduceCreateSequence,
 		loadTextServer,
 		makeProduceCreateSequence,
 

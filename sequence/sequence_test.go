@@ -64,7 +64,7 @@ func TestProvideCreateSequence(t *testing.T) {
 	mockSequencesData := []*sequenceData{
 		{
 			id: mockId,
-			events: []*eventDataModel{
+			events: []*EventDataModel{
 				{
 					id:        "event-1",
 					eventType: partnerDialogueEvent,
@@ -91,7 +91,7 @@ func TestProvideCreateSequence(t *testing.T) {
 		return mockSequencesData
 	}
 
-	mockCreatePartnerDialogueEvent := func(id eventId) *eventUnit {
+	mockCreatePartnerDialogueEvent := func(id EventID) *eventUnit {
 		return &eventUnit{
 			start:      func() {},
 			checkIsEnd: func() IsEnd { return false },
@@ -99,7 +99,7 @@ func TestProvideCreateSequence(t *testing.T) {
 		}
 	}
 
-	mockCreateChangeEmotionEvent := func(id eventId) *eventUnit {
+	mockCreateChangeEmotionEvent := func(id EventID) *eventUnit {
 		return &eventUnit{
 			start:      func() {},
 			checkIsEnd: func() IsEnd { return false },
@@ -107,7 +107,7 @@ func TestProvideCreateSequence(t *testing.T) {
 		}
 	}
 
-	mockCreateOpenPartnerMessageWindowEvent := func(id eventId) *eventUnit {
+	mockCreateOpenPartnerMessageWindowEvent := func(id EventID) *eventUnit {
 		return &eventUnit{
 			start:      func() {},
 			checkIsEnd: func() IsEnd { return false },
@@ -115,7 +115,7 @@ func TestProvideCreateSequence(t *testing.T) {
 		}
 	}
 
-	mockCreateClosePartnerMessageWindowEvent := func(id eventId) *eventUnit {
+	mockCreateClosePartnerMessageWindowEvent := func(id EventID) *eventUnit {
 		return &eventUnit{
 			start:      func() {},
 			checkIsEnd: func() IsEnd { return false },
@@ -128,7 +128,7 @@ func TestProvideCreateSequence(t *testing.T) {
 	createSeq := produceCreateSequence(mockCreatePartnerDialogueEvent, mockCreateChangeEmotionEvent, mockCreateOpenPartnerMessageWindowEvent, mockCreateClosePartnerMessageWindowEvent)
 
 	// 存在するシーケンスIDでテスト
-	seq := createSeq("test-sequence-1")
+	seq := createSeq(SequenceId("test-sequence-1"))
 	if seq == nil {
 		t.Fatal("expected sequence to be created, got nil")
 	}
@@ -140,7 +140,7 @@ func TestProvideCreateSequence(t *testing.T) {
 	}
 
 	// 存在しないシーケンスIDでテスト
-	nonExistentSeq := createSeq("non-existent")
+	nonExistentSeq := createSeq(SequenceId("non-existent"))
 	if nonExistentSeq != nil {
 		t.Error("expected nil for non-existent sequence, got sequence")
 	}
@@ -154,7 +154,7 @@ func TestOpenPartnerMessageWindowEvent(t *testing.T) {
 	}
 
 	createEvent := produceCreateOpenPartnerMessageWindowEventToUnit(setOpenPartnerMessageWindow)
-	event := createEvent("test-event")
+	event := createEvent(EventID("test-event"))
 
 	// startのテスト
 	event.start()
@@ -177,7 +177,7 @@ func TestClosePartnerMessageWindowEvent(t *testing.T) {
 	}
 
 	createEvent := produceCreateClosePartnerMessageWindowEventToUnit(setClosePartnerMessageWindow)
-	event := createEvent("test-event")
+	event := createEvent(EventID("test-event"))
 
 	// startのテスト
 	event.start()

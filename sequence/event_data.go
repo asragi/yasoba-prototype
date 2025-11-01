@@ -1,50 +1,51 @@
 package sequence
 
-type eventId string
-type eventType string
+type EventID string
+type EventType string
 
 const (
-	partnerDialogueEvent           eventType = "partner_dialogue"
-	openPartnerMessageWindowEvent  eventType = "open_partner_message_window"
-	closePartnerMessageWindowEvent eventType = "close_partner_message_window"
+	partnerDialogueEvent           EventType = "partner_dialogue"
+	changeEmotionEvent             EventType = "change_emotion"
+	openPartnerMessageWindowEvent  EventType = "open_partner_message_window"
+	closePartnerMessageWindowEvent EventType = "close_partner_message_window"
 )
 
-type eventDataModel struct {
-	id        eventId
-	eventType eventType
+type EventDataModel struct {
+	id        EventID
+	eventType EventType
 	ownerId   SequenceId
 	order     int
 }
 
-type eventDataModelPort func() []*eventDataModel
+type EventDataModelPort func() []*EventDataModel
 
-type sequenceModel struct {
+type SequenceModel struct {
 	id SequenceId
 }
 
-type sequenceModelPort func() []*sequenceModel
+type SequenceModelPort func() []*SequenceModel
 
 type sequenceData struct {
 	id     SequenceId
-	events []*eventDataModel
+	events []*EventDataModel
 }
 
 // sequenceModelとeventDataModelを組み合わせてsequenceDataを作成します
 type sequenceDataPort func() []*sequenceData
 
 func initializeSequenceDataAdapter(
-	sequenceModelPort sequenceModelPort,
-	eventDataPort eventDataModelPort,
+	sequenceModelPort SequenceModelPort,
+	eventDataPort EventDataModelPort,
 ) sequenceDataPort {
-	groupEventsBySequenceId := func(events []*eventDataModel) map[SequenceId][]*eventDataModel {
-		eventMap := make(map[SequenceId][]*eventDataModel)
+	groupEventsBySequenceId := func(events []*EventDataModel) map[SequenceId][]*EventDataModel {
+		eventMap := make(map[SequenceId][]*EventDataModel)
 		for _, event := range events {
 			eventMap[event.ownerId] = append(eventMap[event.ownerId], event)
 		}
 		return eventMap
 	}
 
-	sortEventsByOrder := func(events []*eventDataModel) []*eventDataModel {
+	sortEventsByOrder := func(events []*EventDataModel) []*EventDataModel {
 		for i := 0; i < len(events)-1; i++ {
 			for j := i + 1; j < len(events); j++ {
 				if events[i].order > events[j].order {
@@ -77,5 +78,18 @@ func initializeSequenceDataAdapter(
 		}
 
 		return result
+	}
+}
+
+func NewSequenceModel(id SequenceId) *SequenceModel {
+	return &SequenceModel{id: id}
+}
+
+func NewEventDataModel(id EventID, eventType EventType, ownerId SequenceId, order int) *EventDataModel {
+	return &EventDataModel{
+		id:        id,
+		eventType: eventType,
+		ownerId:   ownerId,
+		order:     order,
 	}
 }

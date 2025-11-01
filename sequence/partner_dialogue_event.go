@@ -2,14 +2,16 @@ package sequence
 
 import "github.com/asragi/yasoba-prototype/text"
 
-type partnerDialogueModel struct {
-	eventId eventId
+type PartnerDialogueModel struct {
+	eventId EventID
 	textId  text.TextId
 }
 
-type partnerDialogueDataPort func(eventId) *partnerDialogueModel
+type PartnerDialogueDataPort func(EventID) *PartnerDialogueModel
 
-type createPartnerDialogueEvent func(eventId) *eventUnit
+type createPartnerDialogueEvent func(EventID) *eventUnit
+
+type SetPartnerDialogue func(text.String) *SetPartnerDialogueResponse
 
 type SetPartnerDialogueResponse struct {
 	CheckIsEnd checkIsEnd
@@ -17,10 +19,10 @@ type SetPartnerDialogueResponse struct {
 
 func produceCreatePartnerDialogueEventToUnit(
 	serveTextData text.ServeTextDataFunc,
-	partnerDialogueDataPort partnerDialogueDataPort,
+	partnerDialogueDataPort PartnerDialogueDataPort,
 	setPartnerDialogue SetPartnerDialogue,
 ) createPartnerDialogueEvent {
-	return func(id eventId) *eventUnit {
+	return func(id EventID) *eventUnit {
 		model := partnerDialogueDataPort(id)
 		textData := serveTextData(model.textId)
 		var textUpdate checkIsEnd
@@ -39,5 +41,12 @@ func produceCreatePartnerDialogueEventToUnit(
 			checkIsEnd: checkIsEnd,
 			reset:      func() {},
 		}
+	}
+}
+
+func NewPartnerDialogueModel(eventID EventID, textID text.TextId) *PartnerDialogueModel {
+	return &PartnerDialogueModel{
+		eventId: eventID,
+		textId:  textID,
 	}
 }

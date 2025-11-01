@@ -32,6 +32,7 @@ import (
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
+	sequenceadapter "github.com/asragi/yasoba-prototype/sequence/adapter"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -96,7 +97,7 @@ func initializeApp(cfg Config) (*App, error) {
 	newChoiceRandomActionFunc := decision.StandByCreateRandomAction(emitRandomFunc, serveSkillData, choiceSkillTargetFunc)
 	newChoiceActionFunc := decision.CreateNewChoiceAction(newChoiceRandomActionFunc)
 	newProcessBattleFunc := makeProcessBattle(actorSupplier, serveBattleState, processPlayerCommandFunc, partnerActionServer, checkFunc, skillApplyFunc, decideActionOrderFunc, newChoiceActionFunc)
-	prepareProduceCreateSequence := sequence.InitializeProduceCreateSequence()
+	prepareProduceCreateSequence := sequenceadapter.InitializeProduceCreateSequence()
 	produceCreateSequence := makeProduceCreateSequence(prepareProduceCreateSequence, serveTextDataFunc)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
 	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newVariableMessageWindowFunc, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)

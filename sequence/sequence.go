@@ -59,28 +59,22 @@ func initializeProduceCreateSequence(
 		createClosePartnerMessageWindowEvent createClosePartnerMessageWindowEvent,
 	) CreateSequence {
 		sequences := make(map[SequenceId]*sequence)
-		for _, seq := range sequenceDataArray {
+		for _, seqData := range sequenceDataArray {
 			events := []*eventUnit{}
-			for _, event := range seq.events {
-				if event.eventType == "partner_dialogue" {
+			for _, event := range seqData.events {
+				switch event.eventType {
+				case partnerDialogueEvent:
 					events = append(events, createPartnerDialogueEvent(event.id))
-					continue
-				}
-				if event.eventType == "change_emotion" {
+				case changeEmotionEvent:
 					events = append(events, createChangeEmotionEvent(event.id))
-					continue
-				}
-				if event.eventType == "open_partner_message_window" {
+				case openPartnerMessageWindowEvent:
 					events = append(events, createOpenPartnerMessageWindowEvent(event.id))
-					continue
-				}
-				if event.eventType == "close_partner_message_window" {
+				case closePartnerMessageWindowEvent:
 					events = append(events, createClosePartnerMessageWindowEvent(event.id))
-					continue
 				}
 			}
-			sequences[seq.id] = &sequence{
-				id:      seq.id,
+			sequences[seqData.id] = &sequence{
+				id:      seqData.id,
 				events:  events,
 				isStart: true,
 			}

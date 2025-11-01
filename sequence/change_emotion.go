@@ -10,17 +10,17 @@ type ChangeEmotion struct {
 	emotion battleemotion.BattleEmotionType
 }
 
-type changeEmotionDataPort func(eventId) *ChangeEmotion
+type ChangeEmotionDataPort func(EventID) *ChangeEmotion
 
-type createChangeEmotionEvent func(eventId) *eventUnit
+type createChangeEmotionEvent func(EventID) *eventUnit
 
 type SetEmotion func(actor.ActorId, battleemotion.BattleEmotionType)
 
 func produceCreateChangeEmotionEventToUnit(
-	changeEmotionDataPort changeEmotionDataPort,
+	changeEmotionDataPort ChangeEmotionDataPort,
 	setEmotion SetEmotion,
 ) createChangeEmotionEvent {
-	return func(eventId eventId) *eventUnit {
+	return func(eventId EventID) *eventUnit {
 		model := changeEmotionDataPort(eventId)
 		return &eventUnit{
 			start: func() {
@@ -29,5 +29,12 @@ func produceCreateChangeEmotionEventToUnit(
 			checkIsEnd: func() IsEnd { return true },
 			reset:      func() {},
 		}
+	}
+}
+
+func NewChangeEmotion(actorId actor.ActorId, emotion battleemotion.BattleEmotionType) *ChangeEmotion {
+	return &ChangeEmotion{
+		actorId: actorId,
+		emotion: emotion,
 	}
 }
