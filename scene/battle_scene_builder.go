@@ -18,6 +18,8 @@ import (
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/game/character"
 	"github.com/asragi/yasoba-prototype/game/enemy"
+	"github.com/asragi/yasoba-prototype/input"
+	"github.com/asragi/yasoba-prototype/input/adapter"
 	"github.com/asragi/yasoba-prototype/invoke"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/text"
@@ -85,13 +87,13 @@ func InitializeCreateBattleScene(
 		battleEnemyDisplay := createBattleEnemyDisplay(newBattleEnemyDisplay, battleResponse.EnemyIds, battleSetting.Enemies)
 
 		// バトル選択ウィンドウの設定
-		input := &frontend.KeyBoardInput{}
+		inputManager := &adapter.KeyBoardInput{}
 		var selectedCommand battle.PlayerCommand
 		var targetSelectWindow *selection.SelectWindow
 		onSubmit := func(command battle.PlayerCommand) {
 			selectedCommand = command
 			targetSelectWindow.Open()
-			input.Set(targetSelectWindow)
+			inputManager.Set(targetSelectWindow)
 		}
 
 		actorDisplay := newBattleActorDisplay(mainActor)
@@ -115,7 +117,7 @@ func InitializeCreateBattleScene(
 			battleEnemyDisplay.SetDisappear,
 		)
 
-		battleSelectWindow := createBattleSelectWindow(newBattleSelectWindow, input, onSubmit)
+		battleSelectWindow := createBattleSelectWindow(newBattleSelectWindow, inputManager, onSubmit)
 
 		// パートナーダイアログの設定
 		setPartnerDialogue := createSetPartnerDialogueFunction(subActorDialog)
@@ -135,7 +137,7 @@ func InitializeCreateBattleScene(
 				actorDisplay:       actorDisplay,
 				subActorDisplay:    subActorDisplay,
 				subActorDialog:     subActorDialog,
-				input:              input,
+				input:              inputManager,
 				battleEnemyDisplay: battleEnemyDisplay,
 				effectManager:      effectManager,
 				shake:              shake,
@@ -159,7 +161,7 @@ func InitializeCreateBattleScene(
 		)
 
 		// ターゲット選択の設定
-		closeWindowOnTargetSelect := createOnSubmitTargetSelect(battleSelectWindow, input)
+		closeWindowOnTargetSelect := createOnSubmitTargetSelect(battleSelectWindow, inputManager)
 		onTargetSelect := createOnTargetSelect(
 			closeWindowOnTargetSelect,
 			func(index int) actor.ActorId { return allActorId[index] },
@@ -266,7 +268,7 @@ func createBattleEnemyDisplay(newBattleEnemyDisplay battleenemy.NewBattleEnemyDi
 
 func createBattleSelectWindow(
 	newBattleSelectWindow battleselect.NewBattleSelectWindowFunc,
-	input frontend.InputManager,
+	input input.InputManager,
 	onSubmit func(battle.PlayerCommand),
 ) *battleselect.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
@@ -372,10 +374,10 @@ func createSetPartnerDialogueFunction(subActorDialog *battledialogue.BattlePartn
 
 func createOnSubmitTargetSelect(
 	battleSelectWindow *battleselect.BattleSelectWindow,
-	input frontend.InputManager,
+	inputManager input.InputManager,
 ) func() {
 	return func() {
 		battleSelectWindow.Close()
-		input.Set(frontend.InputReceiverEmptyInstance)
+		inputManager.Set(input.InputReceiverEmptyInstance)
 	}
 }

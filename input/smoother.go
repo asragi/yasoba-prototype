@@ -1,4 +1,4 @@
-package frontend
+package input
 
 type SmoothKey int
 

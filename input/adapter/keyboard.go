@@ -1,27 +1,13 @@
-package frontend
+package adapter
 
 import (
+	"github.com/asragi/yasoba-prototype/input"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-type InputReceiver interface {
-	OnInputSubmit()
-	OnInputCancel()
-	OnInputSubButton()
-	OnInputUp()
-	OnInputDown()
-	OnInputLeft()
-	OnInputRight()
-}
-
-type InputManager interface {
-	Update()
-	Set(InputReceiver)
-}
-
 type KeyBoardInput struct {
-	receiver InputReceiver
+	receiver input.InputReceiver
 }
 
 func (k *KeyBoardInput) Update() {
@@ -55,18 +41,6 @@ func (k *KeyBoardInput) Update() {
 	}
 }
 
-func (k *KeyBoardInput) Set(receiver InputReceiver) {
+func (k *KeyBoardInput) Set(receiver input.InputReceiver) {
 	k.receiver = receiver
 }
-
-type InputReceiverEmpty struct{}
-
-var InputReceiverEmptyInstance = &InputReceiverEmpty{}
-
-func (i *InputReceiverEmpty) OnInputSubmit()    {}
-func (i *InputReceiverEmpty) OnInputCancel()    {}
-func (i *InputReceiverEmpty) OnInputSubButton() {}
-func (i *InputReceiverEmpty) OnInputUp()        {}
-func (i *InputReceiverEmpty) OnInputDown()      {}
-func (i *InputReceiverEmpty) OnInputLeft()      {}
-func (i *InputReceiverEmpty) OnInputRight()     {}

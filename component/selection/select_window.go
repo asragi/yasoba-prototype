@@ -2,7 +2,7 @@ package selection
 
 import (
 	"github.com/asragi/yasoba-prototype/drawing"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/input"
 )
 
 type selectWindowViewInterface interface {
@@ -13,7 +13,7 @@ type selectWindowViewInterface interface {
 
 type smoother interface {
 	Update()
-	Do(frontend.SmoothKey) bool
+	Do(input.SmoothKey) bool
 }
 
 type textInterface interface {
@@ -72,7 +72,7 @@ func (w *SelectWindow) calculateCursorPosition() *drawing.Vector {
 }
 
 func (w *SelectWindow) OnInputUp() {
-	if !w.smoother.Do(frontend.SmoothKeyUp) {
+	if !w.smoother.Do(input.SmoothKeyUp) {
 		return
 	}
 	count := len(w.cursorPositions)
@@ -81,7 +81,7 @@ func (w *SelectWindow) OnInputUp() {
 }
 
 func (w *SelectWindow) OnInputDown() {
-	if !w.smoother.Do(frontend.SmoothKeyDown) {
+	if !w.smoother.Do(input.SmoothKeyDown) {
 		return
 	}
 	count := len(w.cursorPositions)

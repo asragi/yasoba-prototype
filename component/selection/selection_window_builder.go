@@ -3,6 +3,7 @@ package selection
 import (
 	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/input"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -98,7 +99,7 @@ func StandByNewSelectWindow(
 			isActive:        false,
 			isOpen:          false,
 			onSubmit:        onSubmit,
-			smoother:        frontend.NewInputSmoother(),
+			smoother:        input.NewInputSmoother(),
 			closeOnSubmit:   closeOnSubmit,
 			view:            view,
 		}

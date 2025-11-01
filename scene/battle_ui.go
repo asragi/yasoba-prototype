@@ -9,6 +9,7 @@ import (
 	"github.com/asragi/yasoba-prototype/component/selection"
 	"github.com/asragi/yasoba-prototype/drawing"
 	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/input"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -19,7 +20,7 @@ type battleUI struct {
 	subActorDisplay    *battleactor.BattleSubActorDisplay
 	subActorDialog     *battledialogue.BattlePartnerDialogue
 	targetSelectWindow *selection.SelectWindow
-	input              frontend.InputManager
+	input              input.InputManager
 	battleEnemyDisplay *battleenemy.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
 	shake              *frontend.EmitShake
