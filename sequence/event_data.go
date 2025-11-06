@@ -12,6 +12,8 @@ const (
 	hidePlayerCommandWindowEvent   EventType = "hide_player_command_window"
 	startTransitionFadeOutEvent    EventType = "start_transition_fade_out"
 	startTransitionFadeInEvent     EventType = "start_transition_fade_in"
+	switchToBattleSceneEvent       EventType = "switch_to_battle_scene"
+	switchToDebugSceneEvent        EventType = "switch_to_debug_scene"
 )
 
 type EventDataModel struct {

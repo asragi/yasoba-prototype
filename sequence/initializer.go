@@ -1,7 +1,7 @@
 package sequence
 
 import (
-	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
+	"github.com/asragi/yasoba-prototype/sequence/transition"
 	"github.com/asragi/yasoba-prototype/text"
 )
 
@@ -12,8 +12,10 @@ type ProduceCreateSequence func(
 	ClosePartnerMessageWindow,
 	ShowPlayerCommandWindow,
 	HidePlayerCommandWindow,
-	seqtransition.Controller,
-	seqtransition.Controller,
+	SwitchToBattleScene,
+	SwitchToDebugScene,
+	transition.Controller,
+	transition.Controller,
 ) CreateSequence
 
 type PrepareProduceCreateSequence func(text.ServeTextDataFunc) ProduceCreateSequence
@@ -23,7 +25,8 @@ func InitializeProduceCreateSequence(
 	eventDataModelPort EventDataModelPort,
 	partnerDialogueDataPort PartnerDialogueDataPort,
 	changeEmotionDataPort ChangeEmotionDataPort,
-	transitionFadeOptionPort seqtransition.OptionPort,
+	switchToBattleSceneDataPort SwitchToBattleSceneDataPort,
+	transitionFadeOptionPort transition.OptionPort,
 ) PrepareProduceCreateSequence {
 	sequencesDataAdapter := initializeSequenceDataAdapter(
 		sequenceModelPort,
@@ -42,8 +45,10 @@ func InitializeProduceCreateSequence(
 			setClosePartnerMessageWindow ClosePartnerMessageWindow,
 			showPlayerCommandWindow ShowPlayerCommandWindow,
 			hidePlayerCommandWindow HidePlayerCommandWindow,
-			startTransitionFadeOut seqtransition.Controller,
-			startTransitionFadeIn seqtransition.Controller,
+			switchToBattleScene SwitchToBattleScene,
+			switchToDebugScene SwitchToDebugScene,
+			startTransitionFadeOut transition.Controller,
+			startTransitionFadeIn transition.Controller,
 		) CreateSequence {
 			return produceCreateSequence(
 				produceCreatePartnerDialogueEventToUnit(
@@ -74,6 +79,13 @@ func InitializeProduceCreateSequence(
 				produceCreateStartTransitionFadeInEventToUnit(
 					transitionFadeOptionPort,
 					startTransitionFadeIn,
+				),
+				produceCreateSwitchToBattleSceneEventToUnit(
+					switchToBattleSceneDataPort,
+					switchToBattleScene,
+				),
+				produceCreateSwitchToDebugSceneEventToUnit(
+					switchToDebugScene,
 				),
 			)
 		}

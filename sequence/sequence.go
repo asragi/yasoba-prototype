@@ -59,6 +59,8 @@ func initializeProduceCreateSequence(
 	createHidePlayerCommandWindowEvent,
 	createStartTransitionFadeOutEvent,
 	createStartTransitionFadeInEvent,
+	createSwitchToBattleSceneEvent,
+	createSwitchToDebugSceneEvent,
 ) CreateSequence {
 	sequenceDataArray := sequencesDataPort()
 	return func(
@@ -70,6 +72,8 @@ func initializeProduceCreateSequence(
 		createHidePlayerCommandWindowEvent createHidePlayerCommandWindowEvent,
 		createStartTransitionFadeOutEvent createStartTransitionFadeOutEvent,
 		createStartTransitionFadeInEvent createStartTransitionFadeInEvent,
+		createSwitchToBattleSceneEvent createSwitchToBattleSceneEvent,
+		createSwitchToDebugSceneEvent createSwitchToDebugSceneEvent,
 	) CreateSequence {
 		sequences := make(map[SequenceId]*sequence)
 		for _, seqData := range sequenceDataArray {
@@ -92,6 +96,10 @@ func initializeProduceCreateSequence(
 					events = append(events, createStartTransitionFadeOutEvent(event.id))
 				case startTransitionFadeInEvent:
 					events = append(events, createStartTransitionFadeInEvent(event.id))
+				case switchToBattleSceneEvent:
+					events = append(events, createSwitchToBattleSceneEvent(event.id))
+				case switchToDebugSceneEvent:
+					events = append(events, createSwitchToDebugSceneEvent(event.id))
 				}
 			}
 			sequences[seqData.id] = &sequence{

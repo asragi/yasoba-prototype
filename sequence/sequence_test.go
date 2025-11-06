@@ -1,8 +1,10 @@
 package sequence
 
 import (
-	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
 	"testing"
+
+	"github.com/asragi/yasoba-prototype/battle"
+	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
 )
 
 func TestSequence_Update(t *testing.T) {
@@ -108,6 +110,18 @@ func TestProvideCreateSequence(t *testing.T) {
 					ownerId:   mockId,
 					order:     7,
 				},
+				{
+					id:        "event-8",
+					eventType: switchToBattleSceneEvent,
+					ownerId:   mockId,
+					order:     8,
+				},
+				{
+					id:        "event-9",
+					eventType: switchToDebugSceneEvent,
+					ownerId:   mockId,
+					order:     9,
+				},
 			},
 		},
 	}
@@ -150,39 +164,25 @@ func TestProvideCreateSequence(t *testing.T) {
 
 	// initializeProduceCreateSequenceの正しい呼び出し方法に修正
 	produceCreateSequence := initializeProduceCreateSequence(mockSequenceDataPort)
+	createEventUnit := func() *eventUnit {
+		return &eventUnit{
+			start:      func() {},
+			checkIsEnd: func() IsEnd { return false },
+			reset:      func() {},
+		}
+	}
+
 	createSeq := produceCreateSequence(
 		mockCreatePartnerDialogueEvent,
 		mockCreateChangeEmotionEvent,
 		mockCreateOpenPartnerMessageWindowEvent,
 		mockCreateClosePartnerMessageWindowEvent,
-		func(id EventID) *eventUnit {
-			return &eventUnit{
-				start:      func() {},
-				checkIsEnd: func() IsEnd { return false },
-				reset:      func() {},
-			}
-		},
-		func(id EventID) *eventUnit {
-			return &eventUnit{
-				start:      func() {},
-				checkIsEnd: func() IsEnd { return false },
-				reset:      func() {},
-			}
-		},
-		func(id EventID) *eventUnit {
-			return &eventUnit{
-				start:      func() {},
-				checkIsEnd: func() IsEnd { return false },
-				reset:      func() {},
-			}
-		},
-		func(id EventID) *eventUnit {
-			return &eventUnit{
-				start:      func() {},
-				checkIsEnd: func() IsEnd { return false },
-				reset:      func() {},
-			}
-		},
+		func(EventID) *eventUnit { return createEventUnit() },
+		func(EventID) *eventUnit { return createEventUnit() },
+		func(EventID) *eventUnit { return createEventUnit() },
+		func(EventID) *eventUnit { return createEventUnit() },
+		func(EventID) *eventUnit { return createEventUnit() },
+		func(EventID) *eventUnit { return createEventUnit() },
 	)
 
 	// 存在するシーケンスIDでテスト
@@ -193,8 +193,8 @@ func TestProvideCreateSequence(t *testing.T) {
 	if seq.id != mockId {
 		t.Errorf("expected sequence id '%s', got '%s'", mockId, seq.id)
 	}
-	if len(seq.events) != 7 {
-		t.Errorf("expected 7 events, got %d", len(seq.events))
+	if len(seq.events) != 9 {
+		t.Errorf("expected 9 events, got %d", len(seq.events))
 	}
 
 	// 存在しないシーケンスIDでテスト
@@ -327,5 +327,41 @@ func TestStartTransitionFadeInEvent_NoWaitByDefault(t *testing.T) {
 	event.start()
 	if !event.checkIsEnd() {
 		t.Fatal("expected event to finish immediately when wait option is disabled")
+	}
+}
+
+func TestProduceCreateSwitchToBattleSceneEventToUnit(t *testing.T) {
+	called := false
+	dataPort := func(id EventID) *SwitchToBattleSceneModel {
+		if id != EventID("switch-battle") {
+			return nil
+		}
+		return NewSwitchToBattleSceneModel(battle.BattleId("battle-extra"))
+	}
+	createEvent := produceCreateSwitchToBattleSceneEventToUnit(
+		dataPort,
+		func(received battle.BattleId) {
+			if received != battle.BattleId("battle-extra") {
+				t.Fatalf("unexpected battle id: %s", received)
+			}
+			called = true
+		},
+	)
+	event := createEvent(EventID("switch-battle"))
+	event.start()
+	if !called {
+		t.Fatal("expected switchToBattle to be called")
+	}
+}
+
+func TestProduceCreateSwitchToDebugSceneEventToUnit(t *testing.T) {
+	called := false
+	createEvent := produceCreateSwitchToDebugSceneEventToUnit(func() {
+		called = true
+	})
+	event := createEvent(EventID("switch-debug"))
+	event.start()
+	if !called {
+		t.Fatal("expected switchToDebug to be called")
 	}
 }

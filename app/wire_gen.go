@@ -102,11 +102,9 @@ func initializeApp(cfg Config) (*App, error) {
 	produceCreateSequence := makeProduceCreateSequence(prepareProduceCreateSequence, serveTextDataFunc)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
 	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, newTransitionViewFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
-	battleScene := makeBattleScene(cfg, createBattleScene)
 	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
-	debugScene := makeDebugScene(createDebugScene)
 	debugDebug := debug.CreateDrawParameters(newTextFunc)
-	app := buildApp(drawingDrawing, battleScene, debugScene, debugDebug)
+	app := buildApp(drawingDrawing, createBattleScene, createDebugScene, debugDebug, cfg)
 	return app, nil
 }
 
@@ -227,18 +225,6 @@ func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 	}
 }
 
-func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {
-	return create()
-}
-
 func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) actor.NewFaceWindowFunc {
 	return actor.StandByNewFaceWindow(resource, newWindow)
-}
-
-func makeBattleScene(cfg Config, create scene.CreateBattleScene) *scene.BattleScene {
-	return create(&scene.BattleOption{
-		OnEnd:           nil,
-		BattleSettingId: cfg.BattleSettingID,
-		BattleId:        cfg.BattleID,
-	})
 }

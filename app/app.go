@@ -7,10 +7,11 @@ import (
 )
 
 type App struct {
-	Drawing      *drawing.Drawing
-	BattleScene  *scene.BattleScene
-	DebugScene   *scene.DebugScene
-	DebugOverlay *debug.Debug
+	Drawing           *drawing.Drawing
+	CreateBattleScene scene.CreateBattleScene
+	CreateDebugScene  scene.CreateDebugScene
+	DebugOverlay      *debug.Debug
+	Config            Config
 }
 
 func InitializeApp(cfg Config) (*App, error) {
@@ -19,14 +20,16 @@ func InitializeApp(cfg Config) (*App, error) {
 
 func buildApp(
 	drawing *drawing.Drawing,
-	battleScene *scene.BattleScene,
-	debugScene *scene.DebugScene,
+	createBattleScene scene.CreateBattleScene,
+	createDebugScene scene.CreateDebugScene,
 	debugOverlay *debug.Debug,
+	cfg Config,
 ) *App {
 	return &App{
-		Drawing:      drawing,
-		BattleScene:  battleScene,
-		DebugScene:   debugScene,
-		DebugOverlay: debugOverlay,
+		Drawing:           drawing,
+		CreateBattleScene: createBattleScene,
+		CreateDebugScene:  createDebugScene,
+		DebugOverlay:      debugOverlay,
+		Config:            cfg,
 	}
 }

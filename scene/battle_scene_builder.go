@@ -51,6 +51,15 @@ func InitializeCreateBattleScene(
 	produceCheckInvokeSequence invoke.ProduceCheckInvokeSequence,
 ) CreateBattleScene {
 	return func(option *BattleOption) *BattleScene {
+		if option == nil {
+			panic("battle scene option is nil")
+		}
+		if option.SwitchToBattle == nil {
+			panic("battle scene option SwitchToBattle is nil")
+		}
+		if option.SwitchToDebug == nil {
+			panic("battle scene option SwitchToDebug is nil")
+		}
 		// 戦闘設定の取得と初期化
 		battleSetting := getBattleSetting(option.BattleSettingId)
 		enemyIds := extractEnemyIds(battleSetting)
@@ -158,6 +167,8 @@ func InitializeCreateBattleScene(
 			subActorDialog.Close,
 			showPlayerCommandWindow,
 			hidePlayerCommandWindow,
+			option.SwitchToBattle,
+			option.SwitchToDebug,
 			startTransitionFadeOut,
 			startTransitionFadeIn,
 		)

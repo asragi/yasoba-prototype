@@ -46,6 +46,14 @@ events:
     eventType: "partner_dialogue"
     ownerId: "test_sequence_0100"
     order: 3
+  - id: "test0100fadeout"
+    eventType: "start_transition_fade_out"
+    ownerId: "test_sequence_0100"
+    order: 4
+  - id: "test0100switchdebug"
+    eventType: "switch_to_debug_scene"
+    ownerId: "test_sequence_0100"
+    order: 5
   # 主人公の体力低下時のイベント
   - id: "lune_hp_low_open"
     eventType: "open_partner_message_window"
@@ -75,4 +83,12 @@ events:
   - id: "transition_command_show"
     eventType: "show_player_command_window"
     ownerId: "test_sequence_transition_command"
+    order: 2
+  - id: "test_switch_to_battle"
+    eventType: "switch_to_battle_scene"
+    ownerId: "test_sequence_switch_scene"
+    order: 1
+  - id: "test_switch_to_debug"
+    eventType: "switch_to_debug_scene"
+    ownerId: "test_sequence_switch_scene"
     order: 2

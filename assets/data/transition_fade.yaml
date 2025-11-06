@@ -1,3 +1,5 @@
 events:
   - id: "transition_command_fade"
     waitForComplete: true
+  - id: "test0100fadeout"
+    waitForComplete: true

@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/sequence"
 	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
@@ -23,12 +24,15 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 	changeEmotionDataPort := adaptChangeEmotionDataPort(changeEmotionRecords)
 	transitionFadeRecords := TransitionFadeRecordsFromYAML("assets/data/transition_fade.yaml")
 	transitionFadeOptionPort := adaptTransitionFadeOptionPort(transitionFadeRecords)
+	switchToBattleSceneRecords := SwitchToBattleSceneRecordsFromYAML("assets/data/switch_to_battle_scene.yaml")
+	switchToBattleSceneDataPort := adaptSwitchToBattleSceneDataPort(switchToBattleSceneRecords)
 
 	return sequence.InitializeProduceCreateSequence(
 		sequenceModelPort,
 		eventDataModelPort,
 		partnerDialogueDataPort,
 		changeEmotionDataPort,
+		switchToBattleSceneDataPort,
 		transitionFadeOptionPort,
 	)
 }
@@ -96,6 +100,17 @@ func adaptTransitionFadeOptionPort(records map[string]*TransitionFadeRecord) seq
 	}
 	return func(id string) *seqtransition.Option {
 		return options[id]
+	}
+}
+
+func adaptSwitchToBattleSceneDataPort(records map[string]*SwitchToBattleSceneRecord) sequence.SwitchToBattleSceneDataPort {
+	models := make(map[sequence.EventID]*sequence.SwitchToBattleSceneModel, len(records))
+	for _, record := range records {
+		eventID := sequence.EventID(record.EventID)
+		models[eventID] = sequence.NewSwitchToBattleSceneModel(battle.BattleId(record.BattleID))
+	}
+	return func(id sequence.EventID) *sequence.SwitchToBattleSceneModel {
+		return models[id]
 	}
 }
 

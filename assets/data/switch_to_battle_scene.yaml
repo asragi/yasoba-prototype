@@ -1,0 +1,3 @@
+events:
+  - id: "test_switch_to_battle"
+    battleId: "test_battle"

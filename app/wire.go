@@ -46,8 +46,6 @@ func initializeApp(cfg Config) (*App, error) {
 	wire.Build(
 		drawing.NewDrawing,
 		debug.CreateDrawParameters,
-		makeBattleScene,
-		makeDebugScene,
 		buildApp,
 
 		frontend.CreateResourceManager,
@@ -226,18 +224,6 @@ func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 	}
 }
 
-func makeDebugScene(create scene.CreateDebugScene) *scene.DebugScene {
-	return create()
-}
-
 func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) actorview.NewFaceWindowFunc {
 	return actorview.StandByNewFaceWindow(resource, newWindow)
-}
-
-func makeBattleScene(cfg Config, create scene.CreateBattleScene) *scene.BattleScene {
-	return create(&scene.BattleOption{
-		OnEnd:           nil,
-		BattleSettingId: cfg.BattleSettingID,
-		BattleId:        cfg.BattleID,
-	})
 }
