@@ -6,31 +6,26 @@ import (
 	"image"
 
 	"github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
-	"github.com/asragi/yasoba-prototype/assets/font"
+	fontasset "github.com/asragi/yasoba-prototype/assets/font"
 	load "github.com/asragi/yasoba-prototype/assets/image"
 	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	commontexture "github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-type FontId int
-
-const (
-	MaruMinya FontId = iota
-)
-
 type ResourceManager struct {
 	textureDict   map[commontexture.ID]*ebiten.Image
-	fontDict      map[FontId]*text.GoTextFace
+	fontDict      map[commonfont.ID]*text.GoTextFace
 	animationDict map[commonanimation.ID]*commonanimation.AnimationData
 	shaderDict    map[drawing.ShaderId]*ebiten.Shader
 }
 
 type ResourceManagerInterface interface {
 	GetTexture(id commontexture.ID) drawing.Image
-	GetFont(id FontId) *text.GoTextFace
+	GetFont(id commonfont.ID) *text.GoTextFace
 	GetAnimationData(id commonanimation.ID) *commonanimation.AnimationData
 	GetShader(id drawing.ShaderId) *drawing.Shader
 	NewEmptyImage(width, height int) drawing.Image
@@ -44,7 +39,7 @@ func (r *ResourceManager) GetTexture(id commontexture.ID) drawing.Image {
 	return adapter.NewEbitenImage(t)
 }
 
-func (r *ResourceManager) GetFont(id FontId) *text.GoTextFace {
+func (r *ResourceManager) GetFont(id commonfont.ID) *text.GoTextFace {
 	return r.fontDict[id]
 }
 
@@ -114,12 +109,12 @@ func CreateResourceManager() (*ResourceManager, error) {
 		}
 	}
 
-	fontDict := map[FontId]*text.GoTextFace{}
-	s, err := text.NewGoTextFaceSource(bytes.NewReader(font.MaruMinya))
+	fontDict := map[commonfont.ID]*text.GoTextFace{}
+	s, err := text.NewGoTextFaceSource(bytes.NewReader(fontasset.MaruMinya))
 	if err != nil {
 		return handleError(err)
 	}
-	fontDict[MaruMinya] = &text.GoTextFace{Source: s, Size: 12}
+	fontDict[commonfont.MaruMinya] = &text.GoTextFace{Source: s, Size: 12}
 
 	// TODO: 外部ファイルとかから動的に読み込みたい
 	animationDict := map[commonanimation.ID]*commonanimation.AnimationData{

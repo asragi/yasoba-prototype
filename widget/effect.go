@@ -3,11 +3,16 @@ package widget
 import (
 	"fmt"
 
-	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
+	commontexture "github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	viewanimation "github.com/asragi/yasoba-prototype/view/common/animation"
 )
+
+type effectResource interface {
+	GetAnimationData(commonanimation.ID) *commonanimation.AnimationData
+	GetTexture(commontexture.ID) drawing.Image
+}
 
 type EffectId string
 
@@ -34,13 +39,13 @@ func (e *Effect) Draw(drawFunc drawing.DrawFunc) {
 
 type EffectManager struct {
 	serveEffect ServeEffectDataFunc
-	resource    *frontend.ResourceManager
+	resource    effectResource
 	effects     map[EffectId]*Effect
 }
 
 func NewEffectManager(
 	serveEffect ServeEffectDataFunc,
-	resource *frontend.ResourceManager,
+	resource effectResource,
 ) *EffectManager {
 	return &EffectManager{
 		serveEffect: serveEffect,

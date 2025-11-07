@@ -3,8 +3,8 @@ package damage
 import (
 	"image/color"
 
-	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -29,7 +29,7 @@ func CreateNewDisplayDamage(newText widget.NewTextFunc) NewDisplayDamageFunc {
 			&widget.TextOptionsNew{
 				RelativePosition: positionDiff,
 				Pivot:            drawing.PivotCenter,
-				Font:             frontend.MaruMinya,
+				Font:             commonfont.MaruMinya,
 				Speed:            4,
 				Depth:            drawing.DepthDamageText,
 				Color:            damageTextColor,

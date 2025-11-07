@@ -3,8 +3,8 @@ package hp
 import (
 	"image/color"
 
-	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	"github.com/asragi/yasoba-prototype/common/character"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -28,7 +28,7 @@ func (d *BattleHPDisplay) SetHP(afterHp character.HP) {
 type NewBattleHPDisplayFunc func(character.HP) *BattleHPDisplay
 
 func CreateNewBattleHPDisplay(
-	font frontend.FontId,
+	font commonfont.ID,
 	newText widget.NewTextFunc,
 ) NewBattleHPDisplayFunc {
 	const margin float64 = 4

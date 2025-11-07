@@ -21,6 +21,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	texture "github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/scene"
@@ -110,7 +111,7 @@ func initializeApp(cfg Config) (*App, error) {
 }
 
 var (
-	_wireFontIdValue              = frontend.MaruMinya
+	_wireFontIdValue              = commonfont.MaruMinya
 	_wireEmitRandomFuncValue      = util.EmitRandomFunc(rand.Float64)
 	_wireSkillToSequenceFuncValue = event.SkillToSequenceFunc(event.ToEventSequenceId)
 )

@@ -1,7 +1,7 @@
 package message
 
 import (
-	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
@@ -93,7 +93,7 @@ func StandByNewMessageWindow(
 			&widget.TextOptionsNew{
 				RelativePosition: window.GetPadding(),
 				Pivot:            drawing.PivotTopLeft,
-				Font:             frontend.MaruMinya,
+				Font:             commonfont.MaruMinya,
 				Speed:            speed,
 				Depth:            depth,
 			},

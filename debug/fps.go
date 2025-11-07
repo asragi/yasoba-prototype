@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -32,7 +33,7 @@ var (
 func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 	textFPS := newText(&widget.TextOptionsNew{
 		RelativePosition: &drawing.Vector{X: 0, Y: 0},
-		Font:             frontend.MaruMinya,
+		Font:             commonfont.MaruMinya,
 		Scale:            1,
 		Depth:            drawing.DepthDebug,
 		Pivot:            drawing.PivotTopLeft,
@@ -40,7 +41,7 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 	})
 	textTPS := newText(&widget.TextOptionsNew{
 		RelativePosition: &drawing.Vector{X: 0, Y: 16},
-		Font:             frontend.MaruMinya,
+		Font:             commonfont.MaruMinya,
 		Scale:            1,
 		Depth:            drawing.DepthDebug,
 		Pivot:            drawing.PivotTopLeft,
@@ -48,7 +49,7 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 	})
 	textMemory := newText(&widget.TextOptionsNew{
 		RelativePosition: &drawing.Vector{X: 0, Y: 32},
-		Font:             frontend.MaruMinya,
+		Font:             commonfont.MaruMinya,
 		Scale:            1,
 		Depth:            drawing.DepthDebug,
 		Pivot:            drawing.PivotTopLeft,
@@ -56,7 +57,7 @@ func CreateDrawParameters(newText widget.NewTextFunc) *Debug {
 	})
 	textSys := newText(&widget.TextOptionsNew{
 		RelativePosition: &drawing.Vector{X: 0, Y: 48},
-		Font:             frontend.MaruMinya,
+		Font:             commonfont.MaruMinya,
 		Scale:            1,
 		Depth:            drawing.DepthDebug,
 		Pivot:            drawing.PivotTopLeft,

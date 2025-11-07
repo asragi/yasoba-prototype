@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/util"
 )
@@ -56,7 +57,7 @@ func TestText_Size(t *testing.T) {
 			name: "単一行のテキスト",
 			text: "Hello",
 			options: &TextOptionsNew{
-				Font:  frontend.MaruMinya,
+				Font:  commonfont.MaruMinya,
 				Scale: 1,
 			},
 		},
@@ -64,7 +65,7 @@ func TestText_Size(t *testing.T) {
 			name: "複数行のテキスト",
 			text: "Hello\nWorld",
 			options: &TextOptionsNew{
-				Font:  frontend.MaruMinya,
+				Font:  commonfont.MaruMinya,
 				Scale: 1,
 			},
 		},
@@ -72,7 +73,7 @@ func TestText_Size(t *testing.T) {
 			name: "スケール2のテキスト",
 			text: "Test",
 			options: &TextOptionsNew{
-				Font:  frontend.MaruMinya,
+				Font:  commonfont.MaruMinya,
 				Scale: 2,
 			},
 		},
@@ -80,7 +81,7 @@ func TestText_Size(t *testing.T) {
 			name: "日本語テキスト",
 			text: "こんにちは",
 			options: &TextOptionsNew{
-				Font:  frontend.MaruMinya,
+				Font:  commonfont.MaruMinya,
 				Scale: 1,
 			},
 		},
@@ -150,7 +151,7 @@ func TestText_getLineSpacing(t *testing.T) {
 		{
 			name: "MaruMinyaフォントの行間隔",
 			options: &TextOptionsNew{
-				Font: frontend.MaruMinya,
+				Font: commonfont.MaruMinya,
 			},
 			expected: 12.0, // MaruMinyaフォントのサイズ
 		},
@@ -182,7 +183,7 @@ func TestText_DrawBeforeUpdateSkipsRendering(t *testing.T) {
 	text := newText(&TextOptionsNew{
 		RelativePosition: drawing.VectorZero,
 		Pivot:            drawing.PivotTopLeft,
-		Font:             frontend.MaruMinya,
+		Font:             commonfont.MaruMinya,
 		Speed:            1,
 		Depth:            drawing.DepthWindow,
 	})
@@ -209,7 +210,7 @@ func TestText_DrawAfterUpdateRenders(t *testing.T) {
 	textInterface := newText(&TextOptionsNew{
 		RelativePosition: drawing.VectorZero,
 		Pivot:            drawing.PivotTopLeft,
-		Font:             frontend.MaruMinya,
+		Font:             commonfont.MaruMinya,
 		Speed:            1,
 		Depth:            drawing.DepthWindow,
 	})

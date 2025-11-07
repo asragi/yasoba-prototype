@@ -1,7 +1,6 @@
 package enemy
 
 import (
-	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	"github.com/asragi/yasoba-prototype/battle/enemy"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
@@ -14,6 +13,13 @@ import (
 	"github.com/asragi/yasoba-prototype/view/common/shake"
 	"github.com/asragi/yasoba-prototype/widget"
 )
+
+type resourceProvider interface {
+	GetTexture(commontexture.ID) drawing.Image
+	GetAnimationData(commonanimation.ID) *commonanimation.AnimationData
+	NewEmptyImage(width, height int) drawing.Image
+	GetShader(drawing.ShaderId) *drawing.Shader
+}
 
 type BattleEnemyGraphics struct {
 	emotion          viewemotion.Queued
@@ -92,7 +98,7 @@ type NewBattleEnemyGraphicsFunc func(
 ) BattleEnemyGraphicsInterface
 
 func NewBattleActorGraphics(
-	resource frontend.ResourceManagerInterface,
+	resource resourceProvider,
 	getEnemyGraphics GetEnemyGraphicsFunc,
 	newDisplayDamage damage.NewDisplayDamageFunc,
 	screenWidth int,

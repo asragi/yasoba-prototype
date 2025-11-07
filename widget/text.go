@@ -4,7 +4,7 @@ import (
 	"image/color"
 	"strings"
 
-	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -76,7 +76,7 @@ type Text struct {
 }
 
 type FontProvider interface {
-	GetFont(frontend.FontId) *text.GoTextFace
+	GetFont(commonfont.ID) *text.GoTextFace
 }
 
 func (t *Text) ForceComplete() {
@@ -229,7 +229,7 @@ func (t *Text) drawText(
 type TextOptionsNew struct {
 	RelativePosition *drawing.Vector
 	Pivot            *drawing.Pivot
-	Font             frontend.FontId
+	Font             commonfont.ID
 	Speed            int
 	Depth            drawing.Depth
 	Color            color.Color

@@ -1,7 +1,7 @@
 package selection
 
 import (
-	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/toolkit/input"
@@ -79,7 +79,7 @@ func StandByNewSelectWindow(
 					&widget.TextOptionsNew{
 						RelativePosition: relativePositions[i],
 						Pivot:            drawing.PivotTopLeft,
-						Font:             frontend.MaruMinya,
+						Font:             commonfont.MaruMinya,
 						Speed:            1,
 						Depth:            depth,
 					},

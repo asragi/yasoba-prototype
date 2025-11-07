@@ -23,6 +23,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	commonfont "github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/scene"
@@ -107,7 +108,7 @@ func initializeApp(cfg Config) (*App, error) {
 		scene.InitializeCreateBattleScene,
 		scene.InitializeCreateDebugScene,
 
-		wire.Value(frontend.MaruMinya),
+		wire.Value(commonfont.MaruMinya),
 		wire.Bind(new(frontend.ResourceManagerInterface), new(*frontend.ResourceManager)),
 		wire.Bind(new(battle.AllActorServer), new(*actor.InMemoryActorServer)),
 		wire.Bind(new(widget.FontProvider), new(*frontend.ResourceManager)),
