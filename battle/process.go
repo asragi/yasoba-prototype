@@ -26,6 +26,7 @@ type ProcessBattleRequest struct {
 // ProcessBattleResponse contains the set of applied skill results.
 type ProcessBattleResponse struct {
 	SkillApplyResults []*skill.SkillApplyResult
+	IsMainActorBeaten bool
 }
 
 // ProcessBattleFunc advances the battle by one set of actions.
@@ -60,14 +61,21 @@ func StandByCreateProcessBattle(
 		initializeBattleResponse *InitializeBattleResponse,
 		onBattleEndArg func(BattleEndType),
 	) ProcessBattleFunc {
-		onBattleEnd := func(battleState BattleEndType, applyResult []*skill.SkillApplyResult) *ProcessBattleResponse {
-			onBattleEndArg(battleState)
-			return &ProcessBattleResponse{
-				SkillApplyResults: applyResult,
-			}
-		}
 		mainActorId := initializeBattleResponse.MainActorId
 		subActorId := initializeBattleResponse.SubActorId
+
+		onBattleEnd := func(battleState BattleEndType, applyResult []*skill.SkillApplyResult) *ProcessBattleResponse {
+			onBattleEndArg(battleState)
+			mainActor := getActor(mainActorId)
+			if mainActor == nil {
+				panic("main actor not found: " + string(mainActorId))
+			}
+			isBeaten := mainActor.IsBeaten()
+			return &ProcessBattleResponse{
+				SkillApplyResults: applyResult,
+				IsMainActorBeaten: isBeaten,
+			}
+		}
 		actorIdToEnemy := func() map[actor.ActorId]enemy.EnemyId {
 			result := make(map[actor.ActorId]enemy.EnemyId)
 			for _, pair := range initializeBattleResponse.EnemyIds {
@@ -85,38 +93,75 @@ func StandByCreateProcessBattle(
 		}()
 
 		return func(request *ProcessBattleRequest) *ProcessBattleResponse {
-			actualAction := processPlayerCommand(
-				&PostCommandRequest{
-					ActorId:  mainActorId,
-					TargetId: request.TargetId,
-					Command:  request.Command,
-				},
-			)
-			selectedAction := actualAction.SkillApplyArgs
-			partnerPlan := getPartnerPlan()
-			combinationResult := checkCombination(
-				&combination.Request{
-					MainActorSkillId: selectedAction.Id,
-					// TODO: consider multi target
-					MainActorTarget: selectedAction.Target[0],
-					SubActorSkillId: partnerPlan.SkillId,
-					SubActorTarget:  partnerPlan.SelectedTarget,
-				},
-			)
-			resultAction := func() *skill.SelectedAction {
-				if combinationResult.IsCombination {
-					return &skill.SelectedAction{
-						Id:       combinationResult.SkillId,
-						Actor:    selectedAction.Actor,
-						SubActor: subActorId,
-						Target:   []actor.ActorId{combinationResult.TargetId},
-					}
-				}
-				return selectedAction
-			}()
+			result := make([]*skill.SkillApplyResult, 0)
+			mainActor := getActor(mainActorId)
+			if mainActor == nil {
+				panic("main actor not found: " + string(mainActorId))
+			}
+			subActor := getActor(subActorId)
+			subActorAlive := subActor != nil && !subActor.IsBeaten()
 
-			mainActorApplyResult := skillApply(resultAction)
-			result := []*skill.SkillApplyResult{mainActorApplyResult}
+			runPlayerTurn := func(req *ProcessBattleRequest) []*skill.SkillApplyResult {
+				actualAction := processPlayerCommand(
+					&PostCommandRequest{
+						ActorId:  mainActorId,
+						TargetId: req.TargetId,
+						Command:  req.Command,
+					},
+				)
+				selectedAction := actualAction.SkillApplyArgs
+				var partnerPlan *partner.PartnerActionPlan
+				if subActorAlive {
+					partnerPlan = getPartnerPlan()
+				}
+				combinationResult := func() *combination.Response {
+					if partnerPlan == nil {
+						return &combination.Response{
+							IsCombination: false,
+						}
+					}
+					return checkCombination(
+						&combination.Request{
+							MainActorSkillId: selectedAction.Id,
+							// TODO: consider multi target
+							MainActorTarget: selectedAction.Target[0],
+							SubActorSkillId: partnerPlan.SkillId,
+							SubActorTarget:  partnerPlan.SelectedTarget,
+						},
+					)
+				}()
+				resultAction := func() *skill.SelectedAction {
+					if combinationResult.IsCombination {
+						return &skill.SelectedAction{
+							Id:       combinationResult.SkillId,
+							Actor:    selectedAction.Actor,
+							SubActor: subActorId,
+							Target:   []actor.ActorId{combinationResult.TargetId},
+						}
+					}
+					return selectedAction
+				}()
+				return []*skill.SkillApplyResult{skillApply(resultAction)}
+			}
+
+			shouldRunPlayer := func(req *ProcessBattleRequest) bool {
+				if req == nil {
+					return false
+				}
+				if mainActor.IsBeaten() {
+					return false
+				}
+				return true
+			}
+
+			if shouldRunPlayer(request) {
+				playerResults := runPlayerTurn(request)
+				result = append(result, playerResults...)
+				if battleState, battleShouldEnd := checkBattleShouldEnd(); battleShouldEnd {
+					return onBattleEnd(battleState, result)
+				}
+			}
+
 			if battleState, battleShouldEnd := checkBattleShouldEnd(); battleShouldEnd {
 				return onBattleEnd(battleState, result)
 			}
@@ -124,7 +169,7 @@ func StandByCreateProcessBattle(
 			actionOrder := decideActionOrder()
 			for _, actorId := range actionOrder {
 				actionActor := getActor(actorId)
-				if actionActor.IsBeaten() {
+				if actionActor == nil || actionActor.IsBeaten() {
 					continue
 				}
 				state := getState()
@@ -145,8 +190,14 @@ func StandByCreateProcessBattle(
 				}
 			}
 
+			latestMainActor := getActor(mainActorId)
+			if latestMainActor == nil {
+				panic("main actor not found: " + string(mainActorId))
+			}
+
 			return &ProcessBattleResponse{
 				SkillApplyResults: result,
+				IsMainActorBeaten: latestMainActor.IsBeaten(),
 			}
 		}
 	}

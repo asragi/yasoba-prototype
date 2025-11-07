@@ -26,6 +26,8 @@ type BattleScene struct {
 	checkInvokeSequence invoke.CheckInvokeSequence
 	invokedSequences    map[sequence.SequenceId]bool
 	turnCount           battle.TurnCount
+	playerBeaten        bool
+	autoPlayNonPlayer   func()
 }
 
 func (s *BattleScene) onTurnEnd() {
@@ -36,6 +38,14 @@ func (s *BattleScene) onTurnEnd() {
 	}
 	if s.endState == battle.BattleEndTypeLose {
 		s.sequences.AddSequence(s.createSequence("battle_sequence_lose"))
+		return
+	}
+	if s.playerBeaten {
+		if s.autoPlayNonPlayer == nil {
+			panic("auto play func is required when player is beaten")
+		}
+		s.autoPlayNonPlayer()
+		s.checkAndStartSequences(invoke.InvokeTimingStartTurn)
 		return
 	}
 	s.ui.input.Set(s.ui.battleSelectWindow)
@@ -166,6 +176,7 @@ func createOnTargetSelect(
 	resetBattleSequence func(),
 	playSequence func([]*skill.SkillApplyResult),
 	processBattle battle.ProcessBattleFunc,
+	setPlayerBeaten func(bool),
 ) func(int) {
 	return func(index int) {
 		closeWindow()
@@ -178,6 +189,7 @@ func createOnTargetSelect(
 			},
 		)
 
+		setPlayerBeaten(response.IsMainActorBeaten)
 		resetBattleSequence()
 		playSequence(response.SkillApplyResults)
 	}

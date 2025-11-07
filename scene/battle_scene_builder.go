@@ -180,6 +180,11 @@ func InitializeCreateBattleScene(
 		commandWindowSequence := createSequence("test_sequence_transition_command")
 
 		// バトルシーンの作成
+		initialMainActor := serveActor(battleResponse.MainActorId)
+		if initialMainActor == nil {
+			panic("battle main actor not found")
+		}
+
 		battleScene := &BattleScene{
 			ui: battleUI{
 				messageWindow:      messageWindow,
@@ -198,6 +203,7 @@ func InitializeCreateBattleScene(
 			actorNames:     actorNames,
 			createSequence: createSequence,
 			sequences:      sequence.CreateSequenceManager(),
+			playerBeaten:   initialMainActor.IsBeaten(),
 		}
 		battleScene.sequences.AddSequence(seq)
 		battleScene.sequences.AddSequence(commandWindowSequence)
@@ -211,6 +217,12 @@ func InitializeCreateBattleScene(
 			actorIdToEnemy,
 			serveEnemyView,
 		)
+		battleScene.autoPlayNonPlayer = func() {
+			response := processBattle(nil)
+			battleScene.playerBeaten = response.IsMainActorBeaten
+			battleScene.battleSequence.Reset()
+			playSequence(response.SkillApplyResults)
+		}
 
 		// ターゲット選択の設定
 		closeWindowOnTargetSelect := createOnSubmitTargetSelect(battleSelectWindow, inputManager)
@@ -221,6 +233,9 @@ func InitializeCreateBattleScene(
 			battleScene.battleSequence.Reset,
 			playSequence,
 			processBattle,
+			func(beaten bool) {
+				battleScene.playerBeaten = beaten
+			},
 		)
 		targetSelectWindow = newSelectWindow(
 			&drawing.Vector{X: 80, Y: 0},
