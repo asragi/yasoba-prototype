@@ -38,6 +38,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 	"github.com/asragi/yasoba-prototype/view/common/transition"
+	window2 "github.com/asragi/yasoba-prototype/view/common/window"
 	"github.com/asragi/yasoba-prototype/widget"
 	"math/rand"
 )
@@ -59,7 +60,8 @@ func initializeApp(cfg Config) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	newSelectWindowFunc := selection.StandByNewSelectWindow(newCursor, newTextFunc, serveTextDataFunc)
+	newSelectWindowViewFunc := makeSelectWindowViewFunc()
+	newSelectWindowFunc := selection.StandByNewSelectWindow(newCursor, newTextFunc, newWindowFunc, serveTextDataFunc, newSelectWindowViewFunc)
 	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc)
 	newFaceWindowFunc := makeFaceWindowFactory(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := damage.CreateNewDisplayDamage(newTextFunc)
@@ -177,8 +179,8 @@ func makeProcessBattle(
 	)
 }
 
-func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
-	return widget.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
+func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) window2.NewWindowFunc {
+	return window2.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
 }
 
 func makeBattleEnemyGraphics(
@@ -226,6 +228,10 @@ func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 	}
 }
 
-func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) actor.NewFaceWindowFunc {
+func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow window2.NewWindowFunc) actor.NewFaceWindowFunc {
 	return actor.StandByNewFaceWindow(resource, newWindow)
+}
+
+func makeSelectWindowViewFunc() selection.NewSelectWindowViewFunc {
+	return selection.NewSelectWindowView
 }

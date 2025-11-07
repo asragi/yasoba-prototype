@@ -13,10 +13,22 @@ type Config struct {
 	BattleID        battle.BattleId
 }
 
+var sizeMap = map[int]map[int]int{
+	0: {
+		0: 384,
+		1: 288,
+	},
+	1: {
+		0: 416,
+		1: 312,
+	},
+}
+
 func DefaultConfig() Config {
+	sizeType := 1
 	return Config{
-		GameWidth:       384,
-		GameHeight:      288,
+		GameWidth:       sizeMap[sizeType][0],
+		GameHeight:      sizeMap[sizeType][1],
 		TextDataPath:    "assets/data/text_data.yaml",
 		BattleSettingID: config.IdTest,
 		BattleID:        battle.BattleIdTest001,

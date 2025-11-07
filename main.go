@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-const DrawRate = 3
+const DrawRate = 1
 
 func main() {
 	cfg := app.DefaultConfig()

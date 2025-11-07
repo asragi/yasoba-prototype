@@ -8,17 +8,12 @@ import (
 type selectWindowViewInterface interface {
 	update(*drawing.Vector)
 	draw(drawing.DrawFunc)
-	setCursorRelativePosition(*drawing.Vector)
+	onChangeIndex(int)
 }
 
 type smoother interface {
 	Update()
 	Do(input.SmoothKey) bool
-}
-
-type textInterface interface {
-	Update(*drawing.Vector)
-	Draw(drawing.DrawFunc)
 }
 
 type Cursor interface {
@@ -29,14 +24,14 @@ type Cursor interface {
 }
 
 type SelectWindow struct {
-	cursorPositions []*drawing.Vector
-	index           int
-	isActive        bool
-	isOpen          bool
-	onSubmit        func(int)
-	closeOnSubmit   bool
-	smoother        smoother
-	view            selectWindowViewInterface
+	indexSize     int
+	index         int
+	isActive      bool
+	isOpen        bool
+	onSubmit      func(int)
+	closeOnSubmit bool
+	smoother      smoother
+	view          selectWindowViewInterface
 }
 
 func (w *SelectWindow) OnInputCancel() {}
@@ -67,26 +62,22 @@ func (w *SelectWindow) Draw(drawFunc drawing.DrawFunc) {
 	w.view.draw(drawFunc)
 }
 
-func (w *SelectWindow) calculateCursorPosition() *drawing.Vector {
-	return w.cursorPositions[w.index]
-}
-
 func (w *SelectWindow) OnInputUp() {
 	if !w.smoother.Do(input.SmoothKeyUp) {
 		return
 	}
-	count := len(w.cursorPositions)
+	count := w.indexSize
 	w.index = (w.index - 1 + count) % count
-	w.view.setCursorRelativePosition(w.calculateCursorPosition())
+	w.view.onChangeIndex(w.index)
 }
 
 func (w *SelectWindow) OnInputDown() {
 	if !w.smoother.Do(input.SmoothKeyDown) {
 		return
 	}
-	count := len(w.cursorPositions)
+	count := w.indexSize
 	w.index = (w.index + 1) % count
-	w.view.setCursorRelativePosition(w.calculateCursorPosition())
+	w.view.onChangeIndex(w.index)
 }
 
 func (w *SelectWindow) OnInputSubmit() {

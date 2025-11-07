@@ -69,7 +69,7 @@ type DrawArgFunc func(Image)
 type DrawFunc func(DrawArgFunc, Depth)
 type DrawEndFunc func(Image)
 
-const defaultDrawCapacity = 128
+const defaultDrawCapacity = 256
 
 type Drawing struct {
 	manager *Manager

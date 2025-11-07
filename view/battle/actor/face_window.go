@@ -1,21 +1,23 @@
 package actor
 
 import (
-	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
+	"github.com/asragi/yasoba-prototype/common/animation"
 	"github.com/asragi/yasoba-prototype/common/character"
-	commonemotion "github.com/asragi/yasoba-prototype/common/emotion"
-	commontexture "github.com/asragi/yasoba-prototype/common/texture"
+	"github.com/asragi/yasoba-prototype/common/emotion"
+	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	"github.com/asragi/yasoba-prototype/view/battle/constant"
 	viewemotion "github.com/asragi/yasoba-prototype/view/battle/emotion"
 	viewanimation "github.com/asragi/yasoba-prototype/view/common/animation"
+	widgetwindow "github.com/asragi/yasoba-prototype/view/common/window"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type (
 	emotionQueue interface {
-		Current() commonemotion.EmotionType
-		Enqueue(commonemotion.EmotionType)
-		Apply(func(commonemotion.EmotionType) *viewanimation.Animation) *viewanimation.Animation
+		Current() emotion.EmotionType
+		Enqueue(emotion.EmotionType)
+		Apply(func(emotion.EmotionType) *viewanimation.Animation) *viewanimation.Animation
 	}
 
 	window interface {
@@ -28,24 +30,24 @@ type (
 	}
 
 	resourceProvider interface {
-		GetAnimationData(commonanimation.ID) *commonanimation.AnimationData
-		GetTexture(commontexture.ID) drawing.Image
+		GetAnimationData(animation.ID) *animation.AnimationData
+		GetTexture(texture.ID) drawing.Image
 	}
 
-	newWindowFunc    func(*widget.WindowOption) window
+	newWindowFunc    func(*widgetwindow.WindowOption) window
 	newAnimationFunc func(
 		*drawing.Vector,
 		*drawing.Pivot,
 		drawing.Depth,
 		drawing.Image,
-		*commonanimation.AnimationData,
+		*animation.AnimationData,
 	) *viewanimation.Animation
-	newEmotionQueueFunc func(commonemotion.EmotionType) emotionQueue
+	newEmotionQueueFunc func(emotion.EmotionType) emotionQueue
 )
 
 type FaceWindow struct {
 	emotion emotionQueue
-	face    map[commonemotion.EmotionType]*viewanimation.Animation
+	face    map[emotion.EmotionType]*viewanimation.Animation
 	window  window
 }
 
@@ -60,13 +62,13 @@ func (f *FaceWindow) getCurrentAnimation() *viewanimation.Animation {
 	return f.face[f.emotion.Current()]
 }
 
-func (f *FaceWindow) SetEmotion(value commonemotion.EmotionType) {
+func (f *FaceWindow) SetEmotion(value emotion.EmotionType) {
 	f.emotion.Enqueue(value)
 }
 
 func (f *FaceWindow) Update(parentPosition *drawing.Vector) {
 	f.window.Update(parentPosition)
-	animation := f.emotion.Apply(func(value commonemotion.EmotionType) *viewanimation.Animation {
+	animation := f.emotion.Apply(func(value emotion.EmotionType) *viewanimation.Animation {
 		return f.face[value]
 	})
 	animation.Update(f.window.GetPositionCenter())
@@ -95,11 +97,11 @@ func (f *FaceWindow) GetCenterPosition() *drawing.Vector {
 
 func StandByNewFaceWindow(
 	resource resourceProvider,
-	newWindow widget.NewWindowFunc,
+	newWindow widgetwindow.NewWindowFunc,
 ) NewFaceWindowFunc {
 	return standByNewFaceWindow(
 		resource,
-		func(option *widget.WindowOption) window {
+		func(option *widgetwindow.WindowOption) window {
 			return newWindow(option)
 		},
 		func(
@@ -107,7 +109,7 @@ func StandByNewFaceWindow(
 			pivot *drawing.Pivot,
 			depth drawing.Depth,
 			texture drawing.Image,
-			data *commonanimation.AnimationData,
+			data *animation.AnimationData,
 		) *viewanimation.Animation {
 			return viewanimation.New(
 				func(
@@ -126,7 +128,7 @@ func StandByNewFaceWindow(
 				nil,
 			)
 		},
-		func(initial commonemotion.EmotionType) emotionQueue {
+		func(initial emotion.EmotionType) emotionQueue {
 			queue := viewemotion.NewQueued(initial)
 			return &queue
 		},
@@ -148,9 +150,9 @@ func standByNewFaceWindow(
 		characterId character.CharacterId,
 	) *FaceWindow {
 		const padding = 6
-		const faceSize = 74
-		animationMap := func() map[commonemotion.EmotionType]*viewanimation.Animation {
-			result := map[commonemotion.EmotionType]*viewanimation.Animation{}
+		const faceSize = constant.FaceSize
+		animationMap := func() map[emotion.EmotionType]*viewanimation.Animation {
+			result := map[emotion.EmotionType]*viewanimation.Animation{}
 			for emotion, animationId := range allEmotion[characterId] {
 				animationData := resource.GetAnimationData(animationId)
 				texture := resource.GetTexture(animationData.TextureID)
@@ -167,8 +169,8 @@ func standByNewFaceWindow(
 			return result
 		}()
 		window := newWindow(
-			&widget.WindowOption{
-				Texture:          commontexture.Window,
+			&widgetwindow.WindowOption{
+				Texture:          texture.Window,
 				CornerSize:       6,
 				RelativePosition: relativePosition,
 				Size:             drawing.NewVector(faceSize, faceSize).Add(drawing.NewVector(padding, padding)),
@@ -177,30 +179,30 @@ func standByNewFaceWindow(
 			},
 		)
 		return &FaceWindow{
-			emotion: newEmotionQueue(commonemotion.EmotionNormal),
+			emotion: newEmotionQueue(emotion.EmotionNormal),
 			face:    animationMap,
 			window:  window,
 		}
 	}
 }
 
-type getAllEmotionFunc func() map[character.CharacterId]map[commonemotion.EmotionType]commonanimation.ID
+type getAllEmotionFunc func() map[character.CharacterId]map[emotion.EmotionType]animation.ID
 
 func createGetAllEmotionFunc() getAllEmotionFunc {
-	dict := map[character.CharacterId]map[commonemotion.EmotionType]commonanimation.ID{
+	dict := map[character.CharacterId]map[emotion.EmotionType]animation.ID{
 		character.CharacterLuneId: {
-			commonemotion.EmotionNormal: commonanimation.LuneNormal,
-			commonemotion.EmotionDamage: commonanimation.LuneDamage,
+			emotion.EmotionNormal: animation.LuneNormal,
+			emotion.EmotionDamage: animation.LuneDamage,
 		},
 		character.CharacterSunnyId: {
-			commonemotion.EmotionNormal:  commonanimation.SunnyNormal,
-			commonemotion.EmotionDamage:  commonanimation.SunnyDamage,
-			commonemotion.EmotionSmile:   commonanimation.SunnySmile,
-			commonemotion.EmotionAngry:   commonanimation.SunnyAngry,
-			commonemotion.EmotionAnnoyed: commonanimation.SunnyAnnoyed,
+			emotion.EmotionNormal:  animation.SunnyNormal,
+			emotion.EmotionDamage:  animation.SunnyDamage,
+			emotion.EmotionSmile:   animation.SunnySmile,
+			emotion.EmotionAngry:   animation.SunnyAngry,
+			emotion.EmotionAnnoyed: animation.SunnyAnnoyed,
 		},
 	}
-	return func() map[character.CharacterId]map[commonemotion.EmotionType]commonanimation.ID {
+	return func() map[character.CharacterId]map[emotion.EmotionType]animation.ID {
 		return dict
 	}
 }

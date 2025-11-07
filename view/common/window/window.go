@@ -1,11 +1,11 @@
-package widget
+package window
 
 import (
 	"errors"
 	"image"
 	"math"
 
-	commontexture "github.com/asragi/yasoba-prototype/common/texture"
+	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
@@ -17,8 +17,8 @@ type windowRect struct {
 }
 
 type WindowInterface interface {
-	PositionUpdater
-	Drawer
+	Update(*drawing.Vector)
+	Draw(drawing.DrawFunc)
 	Size() *drawing.Vector
 	GetPositionUpperLeft() *drawing.Vector
 	GetPositionTopCenter() *drawing.Vector
@@ -170,10 +170,10 @@ func calculateCornerPosition(
 	cornerSize float64,
 ) []*drawing.Vector {
 	return []*drawing.Vector{
-		{0, 0},
-		{size.X - cornerSize, 0},
-		{0, size.Y - cornerSize},
-		{size.X - cornerSize, size.Y - cornerSize},
+		{X: 0, Y: 0},
+		{X: size.X - cornerSize, Y: 0},
+		{X: 0, Y: size.Y - cornerSize},
+		{X: size.X - cornerSize, Y: size.Y - cornerSize},
 	}
 }
 
@@ -182,10 +182,10 @@ func calculateSidePosition(
 	cornerSize float64,
 ) []*drawing.Vector {
 	return []*drawing.Vector{
-		{cornerSize, 0},
-		{size.X - cornerSize, cornerSize},
-		{0, cornerSize},
-		{cornerSize, size.Y - cornerSize},
+		{X: cornerSize, Y: 0},
+		{X: size.X - cornerSize, Y: cornerSize},
+		{X: 0, Y: cornerSize},
+		{X: cornerSize, Y: size.Y - cornerSize},
 	}
 }
 
@@ -200,15 +200,15 @@ func calculateSideScale(
 	sideYSize := textureHeight - cornerSize*2
 	targetYSize := size.Y - cornerSize*2
 	return []*drawing.Vector{
-		{targetXSize / sideXSize, 1},
-		{1, targetYSize / sideYSize},
-		{1, targetYSize / sideYSize},
-		{targetXSize / sideXSize, 1},
+		{X: targetXSize / sideXSize, Y: 1},
+		{X: 1, Y: targetYSize / sideYSize},
+		{X: 1, Y: targetYSize / sideYSize},
+		{X: targetXSize / sideXSize, Y: 1},
 	}
 }
 
 type WindowOption struct {
-	Texture          commontexture.ID
+	Texture          texture.ID
 	CornerSize       int
 	RelativePosition *drawing.Vector
 	Size             *drawing.Vector
@@ -232,7 +232,7 @@ func (o *WindowOption) Validation() error {
 	return nil
 }
 
-type GetImageFunc func(commontexture.ID) drawing.Image
+type GetImageFunc func(texture.ID) drawing.Image
 
 func CreateNewWindow(
 	getImage GetImageFunc,

@@ -5,12 +5,13 @@ import (
 	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
+	widgetwindow "github.com/asragi/yasoba-prototype/view/common/window"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type MessageWindow struct {
 	text   widget.TextInterface
-	window widget.WindowInterface
+	window widgetwindow.WindowInterface
 	shake  *shake.EmitShake
 	isOpen bool
 }
@@ -20,6 +21,7 @@ func (m *MessageWindow) Shake(amplitude float64, period int) {
 }
 
 func (m *MessageWindow) FitToMessage() {
+	// TODO: content size だけを渡して padding の処理は window 側に任せるべき
 	size := m.text.Size().Add(m.window.GetPadding().Multiply(2))
 	m.window.SetSize(size)
 }
@@ -66,7 +68,7 @@ type NewMessageWindowFunc func(
 
 func StandByNewMessageWindow(
 	newText widget.NewTextFunc,
-	newWindow widget.NewWindowFunc,
+	newWindow widgetwindow.NewWindowFunc,
 ) NewMessageWindowFunc {
 	cornerSize := 6
 	padding := &drawing.Vector{X: 16, Y: 8}
@@ -78,7 +80,7 @@ func StandByNewMessageWindow(
 		pivot *drawing.Pivot,
 	) *MessageWindow {
 		window := newWindow(
-			&widget.WindowOption{
+			&widgetwindow.WindowOption{
 				Texture:          texture.Window,
 				CornerSize:       cornerSize,
 				RelativePosition: relativePosition,

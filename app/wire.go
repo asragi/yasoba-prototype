@@ -40,6 +40,7 @@ import (
 	messageview "github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 	transitionview "github.com/asragi/yasoba-prototype/view/common/transition"
+	widgetwindow "github.com/asragi/yasoba-prototype/view/common/window"
 	"github.com/asragi/yasoba-prototype/widget"
 	"github.com/google/wire"
 )
@@ -56,6 +57,7 @@ func initializeApp(cfg Config) (*App, error) {
 		messageview.StandByNewMessageWindow,
 		makeSelectCursor,
 		selection.StandByNewSelectWindow,
+		makeSelectWindowViewFunc,
 		windowview.StandByNewBattleSelectWindow,
 		makeFaceWindowFactory,
 		makeTransitionView,
@@ -177,8 +179,8 @@ func makeProcessBattle(
 	)
 }
 
-func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widget.NewWindowFunc {
-	return widget.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
+func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widgetwindow.NewWindowFunc {
+	return widgetwindow.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
 }
 
 func makeBattleEnemyGraphics(
@@ -228,6 +230,10 @@ func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 	}
 }
 
-func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widget.NewWindowFunc) actorview.NewFaceWindowFunc {
+func makeFaceWindowFactory(resource *frontend.ResourceManager, newWindow widgetwindow.NewWindowFunc) actorview.NewFaceWindowFunc {
 	return actorview.StandByNewFaceWindow(resource, newWindow)
+}
+
+func makeSelectWindowViewFunc() selection.NewSelectWindowViewFunc {
+	return selection.NewSelectWindowView
 }

@@ -5,12 +5,12 @@ import (
 	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/battle/hp"
-	"github.com/asragi/yasoba-prototype/widget"
+	widgetwindow "github.com/asragi/yasoba-prototype/view/common/window"
 )
 
 type BattleParameterDisplay struct {
 	hpDisplay *hp.BattleHPDisplay
-	window    widget.WindowInterface
+	window    widgetwindow.WindowInterface
 }
 
 func (d *BattleParameterDisplay) GetHeight() float64 {
@@ -30,7 +30,7 @@ func (d *BattleParameterDisplay) Draw(drawFunc drawing.DrawFunc) {
 type NewBattleParameterDisplayFunc func(character.HP, *drawing.Pivot) *BattleParameterDisplay
 
 func CreateNewBattleParameterDisplay(
-	newWindow widget.NewWindowFunc,
+	newWindow widgetwindow.NewWindowFunc,
 	newBattleHPDisplay hp.NewBattleHPDisplayFunc,
 ) NewBattleParameterDisplayFunc {
 	const windowCornerSize = 3
@@ -40,7 +40,7 @@ func CreateNewBattleParameterDisplay(
 		return &BattleParameterDisplay{
 			hpDisplay: newBattleHPDisplay(initialHp),
 			window: newWindow(
-				&widget.WindowOption{
+				&widgetwindow.WindowOption{
 					Texture:          texture.Window,
 					CornerSize:       windowCornerSize,
 					RelativePosition: &drawing.Vector{X: 0, Y: 0},
