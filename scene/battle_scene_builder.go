@@ -1,7 +1,6 @@
 package scene
 
 import (
-	ebiteninput "github.com/asragi/yasoba-prototype/adapter/ebiten/input"
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/config"
@@ -43,6 +42,7 @@ func InitializeCreateBattleScene(
 	createNewBattleSequence battleevent.PrepareBattleEventSequenceFunc,
 	skillToSequence battleevent.SkillToSequenceFunc,
 	newBattleEnemyDisplay battleenemy.NewBattleEnemyDisplayFunc,
+	inputManager input.InputManager,
 	effectManager *widget.EffectManager,
 	serveEnemyView battleenemy.ServeEnemyViewData,
 	serveActor actor.ActorSupplier,
@@ -59,6 +59,9 @@ func InitializeCreateBattleScene(
 		}
 		if option.SwitchToDebug == nil {
 			panic("battle scene option SwitchToDebug is nil")
+		}
+		if inputManager == nil {
+			panic("battle scene input manager is nil")
 		}
 		// 戦闘設定の取得と初期化
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -100,7 +103,6 @@ func InitializeCreateBattleScene(
 		battleEnemyDisplay := createBattleEnemyDisplay(newBattleEnemyDisplay, battleResponse.EnemyIds, battleSetting.Enemies)
 
 		// バトル選択ウィンドウの設定
-		inputManager := &ebiteninput.KeyBoardInput{}
 		var selectedCommand battle.PlayerCommand
 		var targetSelectWindow *selection.SelectWindow
 		onSubmit := func(command battle.PlayerCommand) {

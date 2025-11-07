@@ -21,8 +21,8 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
-	commonfont "github.com/asragi/yasoba-prototype/common/font"
-	texture "github.com/asragi/yasoba-prototype/common/texture"
+	"github.com/asragi/yasoba-prototype/common/font"
+	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
@@ -37,7 +37,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/battle/window"
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
-	transition "github.com/asragi/yasoba-prototype/view/common/transition"
+	"github.com/asragi/yasoba-prototype/view/common/transition"
 	"github.com/asragi/yasoba-prototype/widget"
 	"math/rand"
 )
@@ -63,8 +63,8 @@ func initializeApp(cfg Config) (*App, error) {
 	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc)
 	newFaceWindowFunc := makeFaceWindowFactory(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := damage.CreateNewDisplayDamage(newTextFunc)
-	fontId := _wireFontIdValue
-	newBattleHPDisplayFunc := hp.CreateNewBattleHPDisplay(fontId, newTextFunc)
+	id := _wireIDValue
+	newBattleHPDisplayFunc := hp.CreateNewBattleHPDisplay(id, newTextFunc)
 	newBattleParameterDisplayFunc := actor.CreateNewBattleParameterDisplay(newWindowFunc, newBattleHPDisplayFunc)
 	newBattleActorDisplayFunc := actor.CreateNewBattleActorDisplay(newFaceWindowFunc, newDisplayDamageFunc, newBattleParameterDisplayFunc)
 	newBattleSubActorDisplayFunc := actor.CreateNewBattleSubActorDisplay(newFaceWindowFunc, newDisplayDamageFunc, newBattleParameterDisplayFunc)
@@ -86,6 +86,7 @@ func initializeApp(cfg Config) (*App, error) {
 	getEnemyGraphicsFunc := enemy2.CreateGetEnemyGraphics()
 	newBattleEnemyGraphicsFunc := makeBattleEnemyGraphics(resourceManager, getEnemyGraphicsFunc, newDisplayDamageFunc, cfg)
 	newBattleEnemyDisplayFunc := enemy2.CreateNewBattleEnemyDisplay(newBattleEnemyGraphicsFunc)
+	inputManager := makeInputManager()
 	serveEffectDataFunc := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(serveEffectDataFunc, resourceManager)
 	serveEnemyViewData := enemy2.NewServeEnemyViewData()
@@ -103,7 +104,7 @@ func initializeApp(cfg Config) (*App, error) {
 	prepareProduceCreateSequence := adapter2.InitializeProduceCreateSequence()
 	produceCreateSequence := makeProduceCreateSequence(prepareProduceCreateSequence, serveTextDataFunc)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
-	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, newTransitionViewFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
+	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, newTransitionViewFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, inputManager, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
 	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
 	debugDebug := debug.CreateDrawParameters(newTextFunc)
 	app := buildApp(drawingDrawing, createBattleScene, createDebugScene, debugDebug, cfg)
@@ -111,7 +112,7 @@ func initializeApp(cfg Config) (*App, error) {
 }
 
 var (
-	_wireFontIdValue              = commonfont.MaruMinya
+	_wireIDValue                  = font.MaruMinya
 	_wireEmitRandomFuncValue      = util.EmitRandomFunc(rand.Float64)
 	_wireSkillToSequenceFuncValue = event.SkillToSequenceFunc(event.ToEventSequenceId)
 )
@@ -206,9 +207,7 @@ func makeTransitionView(resource frontend.ResourceManagerInterface, cfg Config) 
 	}
 	return transition.CreateNewView(
 		cfg.GameWidth,
-		cfg.GameHeight,
-		drawing.DepthTransition,
-		createImage,
+		cfg.GameHeight, drawing.DepthTransition, createImage,
 	)
 }
 

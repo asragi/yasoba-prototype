@@ -9,7 +9,7 @@ import (
 	viewanimation "github.com/asragi/yasoba-prototype/view/common/animation"
 )
 
-type effectResource interface {
+type EffectResource interface {
 	GetAnimationData(commonanimation.ID) *commonanimation.AnimationData
 	GetTexture(commontexture.ID) drawing.Image
 }
@@ -39,13 +39,13 @@ func (e *Effect) Draw(drawFunc drawing.DrawFunc) {
 
 type EffectManager struct {
 	serveEffect ServeEffectDataFunc
-	resource    effectResource
+	resource    EffectResource
 	effects     map[EffectId]*Effect
 }
 
 func NewEffectManager(
 	serveEffect ServeEffectDataFunc,
-	resource effectResource,
+	resource EffectResource,
 ) *EffectManager {
 	return &EffectManager{
 		serveEffect: serveEffect,

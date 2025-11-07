@@ -66,6 +66,7 @@ func initializeApp(cfg Config) (*App, error) {
 		actorview.CreateNewBattleSubActorDisplay,
 		makeBattleEnemyGraphics,
 		enemyview.CreateNewBattleEnemyDisplay,
+		makeInputManager,
 		widget.CreateServeEffectData,
 		widget.NewEffectManager,
 		enemyview.NewServeEnemyViewData,
@@ -112,6 +113,7 @@ func initializeApp(cfg Config) (*App, error) {
 		wire.Bind(new(frontend.ResourceManagerInterface), new(*frontend.ResourceManager)),
 		wire.Bind(new(battle.AllActorServer), new(*actor.InMemoryActorServer)),
 		wire.Bind(new(widget.FontProvider), new(*frontend.ResourceManager)),
+		wire.Bind(new(widget.EffectResource), new(*frontend.ResourceManager)),
 		makeWindowFunc,
 	)
 	return nil, nil
