@@ -3,18 +3,20 @@ package enemy
 import (
 	"github.com/asragi/yasoba-prototype/battle/enemy"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/common/emotion"
+	commontexture "github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/battle/damage"
-	"github.com/asragi/yasoba-prototype/view/battle/emotion"
+	viewemotion "github.com/asragi/yasoba-prototype/view/battle/emotion"
 	anim "github.com/asragi/yasoba-prototype/view/common/animation"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
 type BattleEnemyGraphics struct {
-	emotion          emotion.Queued
-	animation        map[emotion.BattleEmotionType]*anim.Animation
+	emotion          viewemotion.Queued
+	animation        map[emotion.EmotionType]*anim.Animation
 	displayDamage    *damage.DisplayDamage
 	shake            *shake.EmitShake
 	disappearShader  *drawing.Shader
@@ -27,7 +29,7 @@ type BattleEnemyGraphicsInterface interface {
 	DoShake()
 	widget.PositionUpdater
 	widget.Drawer
-	SetEmotion(emotion.BattleEmotionType)
+	SetEmotion(emotion.EmotionType)
 	SetDisappear()
 	GetDefinitivePosition() *drawing.Vector
 }
@@ -39,7 +41,7 @@ func (g *BattleEnemyGraphics) GetDefinitivePosition() *drawing.Vector {
 func (g *BattleEnemyGraphics) getCurrentAnimation() *anim.Animation {
 	animation, ok := g.animation[g.emotion.Current()]
 	if !ok {
-		return g.animation[emotion.BattleEmotionNormal]
+		return g.animation[emotion.EmotionNormal]
 	}
 	return animation
 }
@@ -56,8 +58,8 @@ func (g *BattleEnemyGraphics) Update(parentCenterPosition *drawing.Vector) {
 	g.shake.Update()
 	g.displayDamage.Update(parentCenterPosition.Add(g.relativePosition))
 	g.parentPosition = parentCenterPosition
-	animation := g.emotion.Apply(func(emotion emotion.BattleEmotionType) *anim.Animation {
-		return g.animation[emotion]
+	animation := g.emotion.Apply(func(value emotion.EmotionType) *anim.Animation {
+		return g.animation[value]
 	})
 	if animation == nil {
 		return
@@ -71,8 +73,8 @@ func (g *BattleEnemyGraphics) Draw(drawFunc drawing.DrawFunc) {
 	g.getCurrentAnimation().Draw(drawFunc)
 }
 
-func (g *BattleEnemyGraphics) SetEmotion(emotion emotion.BattleEmotionType) {
-	g.emotion.Enqueue(emotion)
+func (g *BattleEnemyGraphics) SetEmotion(value emotion.EmotionType) {
+	g.emotion.Enqueue(value)
 }
 
 func (g *BattleEnemyGraphics) SetDisappear() {
@@ -102,8 +104,8 @@ func NewBattleActorGraphics(
 		enemyId enemy.EnemyId,
 	) BattleEnemyGraphicsInterface {
 		enemyGraphicsData := getEnemyGraphics(enemyId)
-		animations := func() map[emotion.BattleEmotionType]*anim.Animation {
-			result := map[emotion.BattleEmotionType]*anim.Animation{}
+		animations := func() map[emotion.EmotionType]*anim.Animation {
+			result := map[emotion.EmotionType]*anim.Animation{}
 			for _, data := range enemyGraphicsData {
 				texture := resource.GetTexture(data.texture)
 				animation := resource.GetAnimationData(data.animation)
@@ -130,7 +132,7 @@ func NewBattleActorGraphics(
 			return result
 		}()
 		return &BattleEnemyGraphics{
-			emotion:          emotion.NewQueued(emotion.BattleEmotionNormal),
+			emotion:          viewemotion.NewQueued(emotion.EmotionNormal),
 			animation:        animations,
 			shake:            shake.NewShake(),
 			parentPosition:   drawing.VectorZero,
@@ -142,8 +144,8 @@ func NewBattleActorGraphics(
 }
 
 type BattleActorAnimationSet struct {
-	emotion   emotion.BattleEmotionType
-	texture   frontend.TextureId
+	emotion   emotion.EmotionType
+	texture   commontexture.ID
 	animation frontend.AnimationId
 }
 
@@ -153,12 +155,12 @@ func CreateGetEnemyGraphics() GetEnemyGraphicsFunc {
 	dict := map[enemy.EnemyId][]*BattleActorAnimationSet{
 		enemy.EnemyPunchingBagId: {
 			{
-				emotion:   emotion.BattleEmotionNormal,
+				emotion:   emotion.EmotionNormal,
 				texture:   frontend.TextureMarshmallowNormal,
 				animation: frontend.AnimationMarshmallowNormal,
 			},
 			{
-				emotion:   emotion.BattleEmotionDamage,
+				emotion:   emotion.EmotionDamage,
 				texture:   frontend.TextureMarshmallowDamage,
 				animation: frontend.AnimationMarshmallowDamage,
 			},

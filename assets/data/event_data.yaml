@@ -3,92 +3,70 @@ events:
   # パートナーのメッセージウィンドウを開くテスト
   - id: "test0000open"
     eventType: "open_partner_message_window"
-    ownerId: "test_sequence_0000"
-    order: 1
+    nextEventId: "test0000emotion"
   - id: "test0000emotion"
     eventType: "change_emotion"
-    ownerId: "test_sequence_0000"
-    order: 2
+    nextEventId: "test0000"
   - id: "test0000"
     eventType: "partner_dialogue"
-    ownerId: "test_sequence_0000"
-    order: 3
+    nextEventId: "test0001emotion"
   - id: "test0001emotion"
     eventType: "change_emotion"
-    ownerId: "test_sequence_0000"
-    order: 4
+    nextEventId: "test0001"
   - id: "test0001"
     eventType: "partner_dialogue"
-    ownerId: "test_sequence_0000"
-    order: 5
+    nextEventId: "test0002emotion"
   - id: "test0002emotion"
     eventType: "change_emotion"
-    ownerId: "test_sequence_0000"
-    order: 6
+    nextEventId: "test0002"
   - id: "test0002"
     eventType: "partner_dialogue"
-    ownerId: "test_sequence_0000"
-    order: 7
+    nextEventId: "test0000close"
   - id: "test0000close"
     eventType: "close_partner_message_window"
-    ownerId: "test_sequence_0000"
-    order: 8
+    nextEventId: ""
   # 勝利時のイベントシーケンステスト
   - id: "test0100open"
     eventType: "open_partner_message_window"
-    ownerId: "test_sequence_0100"
-    order: 1
+    nextEventId: "test0100emotion"
   - id: "test0100emotion"
     eventType: "change_emotion"
-    ownerId: "test_sequence_0100"
-    order: 2
+    nextEventId: "test0100"
   - id: "test0100"
     eventType: "partner_dialogue"
-    ownerId: "test_sequence_0100"
-    order: 3
+    nextEventId: "test0100fadeout"
   - id: "test0100fadeout"
     eventType: "start_transition_fade_out"
-    ownerId: "test_sequence_0100"
-    order: 4
+    nextEventId: "test0100switchdebug"
   - id: "test0100switchdebug"
     eventType: "switch_to_debug_scene"
-    ownerId: "test_sequence_0100"
-    order: 5
+    nextEventId: ""
   # 主人公の体力低下時のイベント
   - id: "lune_hp_low_open"
     eventType: "open_partner_message_window"
-    ownerId: "lune_hp_low_sequence"
-    order: 1
+    nextEventId: "lune_hp_low_emotion"
   - id: "lune_hp_low_emotion"
     eventType: "change_emotion"
-    ownerId: "lune_hp_low_sequence"
-    order: 2
+    nextEventId: "lune_hp_low_dialogue"
   - id: "lune_hp_low_dialogue"
     eventType: "partner_dialogue"
-    ownerId: "lune_hp_low_sequence"
-    order: 3
+    nextEventId: "lune_hp_low_close"
   - id: "lune_hp_low_close"
     eventType: "close_partner_message_window"
-    ownerId: "lune_hp_low_sequence"
-    order: 4
+    nextEventId: "lune_hp_low_end_emotion"
   - id: "lune_hp_low_end_emotion"
     eventType: "change_emotion"
-    ownerId: "lune_hp_low_sequence"
-    order: 5
+    nextEventId: ""
   # フェードイン後にプレイヤーコマンドウィンドウを開くテストシーケンス
   - id: "transition_command_fade"
     eventType: "start_transition_fade_in"
-    ownerId: "test_sequence_transition_command"
-    order: 1
+    nextEventId: "transition_command_show"
   - id: "transition_command_show"
     eventType: "show_player_command_window"
-    ownerId: "test_sequence_transition_command"
-    order: 2
+    nextEventId: ""
   - id: "test_switch_to_battle"
     eventType: "switch_to_battle_scene"
-    ownerId: "test_sequence_switch_scene"
-    order: 1
+    nextEventId: "test_switch_to_debug"
   - id: "test_switch_to_debug"
     eventType: "switch_to_debug_scene"
-    ownerId: "test_sequence_switch_scene"
-    order: 2
+    nextEventId: ""

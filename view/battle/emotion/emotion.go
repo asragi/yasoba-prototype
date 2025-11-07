@@ -1,49 +1,42 @@
 package emotion
 
-import "github.com/asragi/yasoba-prototype/view/common/animation"
-
-type BattleEmotionType int
-
-const (
-	BattleEmotionNormal BattleEmotionType = iota
-	BattleEmotionDamage
-	BattleEmotionSmile
-	BattleEmotionAngry
-	BattleEmotionAnnoyed
+import (
+	commonemotion "github.com/asragi/yasoba-prototype/common/emotion"
+	"github.com/asragi/yasoba-prototype/view/common/animation"
 )
 
 type Queued struct {
-	currentType BattleEmotionType
-	pending     BattleEmotionType
+	currentType commonemotion.EmotionType
+	pending     commonemotion.EmotionType
 	hasPending  bool
 }
 
-func NewQueued(initial BattleEmotionType) Queued {
+func NewQueued(initial commonemotion.EmotionType) Queued {
 	return Queued{
 		currentType: initial,
 		pending:     initial,
 	}
 }
 
-func (q *Queued) Enqueue(emotion BattleEmotionType) {
-	q.pending = emotion
+func (q *Queued) Enqueue(value commonemotion.EmotionType) {
+	q.pending = value
 	q.hasPending = true
 }
 
-func (q *Queued) Current() BattleEmotionType {
+func (q *Queued) Current() commonemotion.EmotionType {
 	return q.currentType
 }
 
-func (q *Queued) Apply(fetch func(BattleEmotionType) *animation.Animation) *animation.Animation {
-	changed, emotion := q.consume()
-	animation := fetch(emotion)
-	if changed && animation != nil {
-		animation.Reset()
+func (q *Queued) Apply(fetch func(commonemotion.EmotionType) *animation.Animation) *animation.Animation {
+	changed, current := q.consume()
+	anim := fetch(current)
+	if changed && anim != nil {
+		anim.Reset()
 	}
-	return animation
+	return anim
 }
 
-func (q *Queued) consume() (bool, BattleEmotionType) {
+func (q *Queued) consume() (bool, commonemotion.EmotionType) {
 	if !q.hasPending {
 		return false, q.currentType
 	}

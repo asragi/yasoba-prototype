@@ -17,16 +17,16 @@ const (
 )
 
 type EventDataModel struct {
-	id        EventID
-	eventType EventType
-	ownerId   SequenceId
-	order     int
+	id          EventID
+	eventType   EventType
+	nextEventID EventID
 }
 
 type EventDataModelPort func() []*EventDataModel
 
 type SequenceModel struct {
-	id SequenceId
+	id          SequenceId
+	headEventID EventID
 }
 
 type SequenceModelPort func() []*SequenceModel
@@ -43,43 +43,67 @@ func initializeSequenceDataAdapter(
 	sequenceModelPort SequenceModelPort,
 	eventDataPort EventDataModelPort,
 ) sequenceDataPort {
-	groupEventsBySequenceId := func(events []*EventDataModel) map[SequenceId][]*EventDataModel {
-		eventMap := make(map[SequenceId][]*EventDataModel)
+	buildEventMap := func(events []*EventDataModel) map[EventID]*EventDataModel {
+		eventMap := make(map[EventID]*EventDataModel, len(events))
 		for _, event := range events {
-			eventMap[event.ownerId] = append(eventMap[event.ownerId], event)
+			if _, exists := eventMap[event.id]; exists {
+				panic("duplicate event id: " + string(event.id))
+			}
+			eventMap[event.id] = event
 		}
 		return eventMap
 	}
 
-	sortEventsByOrder := func(events []*EventDataModel) []*EventDataModel {
-		for i := 0; i < len(events)-1; i++ {
-			for j := i + 1; j < len(events); j++ {
-				if events[i].order > events[j].order {
-					events[i], events[j] = events[j], events[i]
-				}
-			}
+	orderEventsByNextLink := func(
+		sequenceID SequenceId,
+		head EventID,
+		eventMap map[EventID]*EventDataModel,
+		globalAssignment map[EventID]SequenceId,
+	) []*EventDataModel {
+		if head == "" {
+			return nil
 		}
-		return events
+
+		ordered := []*EventDataModel{}
+		visited := make(map[EventID]struct{})
+		currentID := head
+		for currentID != "" {
+			event, ok := eventMap[currentID]
+			if !ok {
+				panic("sequence " + string(sequenceID) + " references unknown event: " + string(currentID))
+			}
+
+			if _, seen := visited[event.id]; seen {
+				panic("sequence " + string(sequenceID) + " contains a cycle")
+			}
+			visited[event.id] = struct{}{}
+
+			if owner, assigned := globalAssignment[event.id]; assigned && owner != sequenceID {
+				panic("event " + string(event.id) + " already assigned to sequence " + string(owner))
+			}
+			globalAssignment[event.id] = sequenceID
+
+			ordered = append(ordered, event)
+			currentID = event.nextEventID
+		}
+
+		return ordered
 	}
 
 	return func() []*sequenceData {
 		sequences := sequenceModelPort()
 		events := eventDataPort()
 
-		// イベントをsequenceIdでグループ化
-		eventMap := groupEventsBySequenceId(events)
+		eventMap := buildEventMap(events)
+		globalAssignment := make(map[EventID]SequenceId, len(events))
 
-		// sequenceDataを作成
 		var result []*sequenceData
 		for _, sequence := range sequences {
-			sequenceEvents := eventMap[sequence.id]
-
-			// orderに基づいてソート
-			sortedEvents := sortEventsByOrder(sequenceEvents)
+			orderedEvents := orderEventsByNextLink(sequence.id, sequence.headEventID, eventMap, globalAssignment)
 
 			result = append(result, &sequenceData{
 				id:     sequence.id,
-				events: sortedEvents,
+				events: orderedEvents,
 			})
 		}
 
@@ -87,15 +111,14 @@ func initializeSequenceDataAdapter(
 	}
 }
 
-func NewSequenceModel(id SequenceId) *SequenceModel {
-	return &SequenceModel{id: id}
+func NewSequenceModel(id SequenceId, headEventID EventID) *SequenceModel {
+	return &SequenceModel{id: id, headEventID: headEventID}
 }
 
-func NewEventDataModel(id EventID, eventType EventType, ownerId SequenceId, order int) *EventDataModel {
+func NewEventDataModel(id EventID, eventType EventType, nextEventID EventID) *EventDataModel {
 	return &EventDataModel{
-		id:        id,
-		eventType: eventType,
-		ownerId:   ownerId,
-		order:     order,
+		id:          id,
+		eventType:   eventType,
+		nextEventID: nextEventID,
 	}
 }

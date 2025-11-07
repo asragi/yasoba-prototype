@@ -3,10 +3,10 @@ package adapter
 import (
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/sequence"
 	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
 	"github.com/asragi/yasoba-prototype/text"
-	"github.com/asragi/yasoba-prototype/view/battle/emotion"
 )
 
 type ProduceCreateSequence = sequence.ProduceCreateSequence
@@ -42,7 +42,10 @@ func adaptSequenceModelPort(port GetSequenceModelFunc) sequence.SequenceModelPor
 		records := port()
 		result := make([]*sequence.SequenceModel, 0, len(records))
 		for _, record := range records {
-			result = append(result, sequence.NewSequenceModel(sequence.SequenceId(record.ID)))
+			result = append(result, sequence.NewSequenceModel(
+				sequence.SequenceId(record.ID),
+				sequence.EventID(record.HeadEventID),
+			))
 		}
 		return result
 	}
@@ -56,8 +59,7 @@ func adaptEventDataModelPort(port GetEventDataModelFunc) sequence.EventDataModel
 			result = append(result, sequence.NewEventDataModel(
 				sequence.EventID(record.ID),
 				sequence.EventType(record.EventType),
-				sequence.SequenceId(record.OwnerID),
-				record.Order,
+				sequence.EventID(record.NextEventID),
 			))
 		}
 		return result
@@ -81,7 +83,7 @@ func adaptChangeEmotionDataPort(records map[string]*ChangeEmotionRecord) sequenc
 		eventID := sequence.EventID(record.EventID)
 		emotionMap[eventID] = sequence.NewChangeEmotion(
 			actor.ActorId(record.ActorID),
-			toBattleEmotionType(record.Emotion),
+			toEmotionType(record.Emotion),
 		)
 	}
 	return func(id sequence.EventID) *sequence.ChangeEmotion {
@@ -114,19 +116,19 @@ func adaptSwitchToBattleSceneDataPort(records map[string]*SwitchToBattleSceneRec
 	}
 }
 
-func toBattleEmotionType(value string) emotion.BattleEmotionType {
+func toEmotionType(value string) emotion.EmotionType {
 	switch value {
 	case "normal":
-		return emotion.BattleEmotionNormal
+		return emotion.EmotionNormal
 	case "damage":
-		return emotion.BattleEmotionDamage
+		return emotion.EmotionDamage
 	case "smile":
-		return emotion.BattleEmotionSmile
+		return emotion.EmotionSmile
 	case "angry":
-		return emotion.BattleEmotionAngry
+		return emotion.EmotionAngry
 	case "annoyed":
-		return emotion.BattleEmotionAnnoyed
+		return emotion.EmotionAnnoyed
 	default:
-		return emotion.BattleEmotionNormal
+		return emotion.EmotionNormal
 	}
 }

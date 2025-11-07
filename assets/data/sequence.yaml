@@ -1,8 +1,14 @@
 # シーケンスモデルのテストデータ
 sequences:
   - id: "test_sequence_0000"
+    headEventId: "test0000open"
   - id: "test_sequence_0001"
+    headEventId: ""
   - id: "test_sequence_0100"
+    headEventId: "test0100open"
   - id: "lune_hp_low_sequence"
+    headEventId: "lune_hp_low_open"
   - id: "test_sequence_transition_command"
+    headEventId: "transition_command_fade"
   - id: "test_sequence_switch_scene"
+    headEventId: "test_switch_to_battle"

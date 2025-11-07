@@ -6,8 +6,8 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	"github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/text"
-	"github.com/asragi/yasoba-prototype/view/battle/emotion"
 	"github.com/asragi/yasoba-prototype/widget"
 )
 
@@ -24,7 +24,7 @@ type BattleTextDisplay interface {
 }
 
 type ShakeActor func(actor.ActorId)
-type ChangeEmotion func(actor.ActorId, emotion.BattleEmotionType)
+type ChangeEmotion func(actor.ActorId, emotion.EmotionType)
 type ShakeScreen func()
 type DisplayDamageFunc func(actor.ActorId, skill.Damage, character.HP)
 type PlayEffect func(widget.EffectId, actor.ActorId)
@@ -62,11 +62,11 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 		},
 		&ChangeEmotionEvent{
 			Frame:       30,
-			EmotionType: emotion.BattleEmotionDamage,
+			EmotionType: emotion.EmotionDamage,
 		},
 		&ChangeEmotionEvent{
 			Frame:       60,
-			EmotionType: emotion.BattleEmotionNormal,
+			EmotionType: emotion.EmotionNormal,
 		},
 	}
 	register(skill.SkillIdLuneAttack, normalAttack)
@@ -88,11 +88,11 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 		},
 		&ChangeEmotionEvent{
 			Frame:       22,
-			EmotionType: emotion.BattleEmotionDamage,
+			EmotionType: emotion.EmotionDamage,
 		},
 		&ChangeEmotionEvent{
 			Frame:       96,
-			EmotionType: emotion.BattleEmotionNormal,
+			EmotionType: emotion.EmotionNormal,
 		},
 	}
 	register(skill.SkillIdLuneFireEnemy, luneFire)
@@ -107,7 +107,7 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 		},
 		&ChangeEmotionEvent{
 			Frame:       126,
-			EmotionType: emotion.BattleEmotionDamage,
+			EmotionType: emotion.EmotionDamage,
 		},
 		&ShakeActorAnimationEvent{
 			Frame: 126,
@@ -117,14 +117,14 @@ func CreateServeBattleEventSequence() ServeBattleEventSequenceFunc {
 		},
 		&ChangeEmotionEvent{
 			Frame:       180,
-			EmotionType: emotion.BattleEmotionNormal,
+			EmotionType: emotion.EmotionNormal,
 		},
 	}
 	register(skill.SkillIdCombinationThunder, combinationThunder)
 	punchingBagBeaten := []BattleEventRow{
 		&ChangeEmotionEvent{
 			Frame:       1,
-			EmotionType: emotion.BattleEmotionDamage,
+			EmotionType: emotion.EmotionDamage,
 		},
 		&EnemyDisappearEvent{
 			Frame: 1,
@@ -315,7 +315,7 @@ func (e *PlayEffectEvent) IsEnd(frame int) bool {
 
 type ChangeEmotionEvent struct {
 	Frame       int
-	EmotionType emotion.BattleEmotionType
+	EmotionType emotion.EmotionType
 }
 
 func (e *ChangeEmotionEvent) IsActive(frame int) bool {

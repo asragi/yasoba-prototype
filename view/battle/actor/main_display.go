@@ -4,9 +4,9 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	"github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/battle/damage"
-	"github.com/asragi/yasoba-prototype/view/battle/emotion"
 )
 
 type BattleActorDisplay struct {
@@ -40,8 +40,8 @@ func (d *BattleActorDisplay) GetMainCharacterTopLeftPosition() *drawing.Vector {
 	return d.faceWindow.GetTopLeftPosition()
 }
 
-func (d *BattleActorDisplay) SetEmotion(emotion emotion.BattleEmotionType) {
-	d.faceWindow.SetEmotion(emotion)
+func (d *BattleActorDisplay) SetEmotion(value emotion.EmotionType) {
+	d.faceWindow.SetEmotion(value)
 }
 
 type NewBattleActorDisplayFunc func(*actor.Actor) *BattleActorDisplay

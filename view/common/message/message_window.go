@@ -1,6 +1,7 @@
 package message
 
 import (
+	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
@@ -78,7 +79,7 @@ func StandByNewMessageWindow(
 	) *MessageWindow {
 		window := newWindow(
 			&widget.WindowOption{
-				Texture:          frontend.TextureWindow,
+				Texture:          texture.Window,
 				CornerSize:       cornerSize,
 				RelativePosition: relativePosition,
 				Size:             size,

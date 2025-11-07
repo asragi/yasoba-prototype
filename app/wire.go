@@ -22,6 +22,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/scene"
@@ -219,7 +220,7 @@ func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 			relativePosition,
 			pivot,
 			depth,
-			resource.GetTexture(frontend.TextureCursor),
+		resource.GetTexture(texture.Cursor),
 		)
 	}
 }

@@ -4,9 +4,9 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	"github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/battle/damage"
-	"github.com/asragi/yasoba-prototype/view/battle/emotion"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
 )
 
@@ -75,6 +75,6 @@ func (d *BattleSubActorDisplay) GetCenterPosition() *drawing.Vector {
 	return d.faceWindow.GetCenterPosition()
 }
 
-func (d *BattleSubActorDisplay) SetEmotion(emotion emotion.BattleEmotionType) {
-	d.faceWindow.SetEmotion(emotion)
+func (d *BattleSubActorDisplay) SetEmotion(value emotion.EmotionType) {
+	d.faceWindow.SetEmotion(value)
 }

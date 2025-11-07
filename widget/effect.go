@@ -2,10 +2,9 @@ package widget
 
 import (
 	"fmt"
-
 	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
-	"github.com/asragi/yasoba-prototype/view/common/animation"
+	viewanimation "github.com/asragi/yasoba-prototype/view/common/animation"
 )
 
 type EffectId string
@@ -17,7 +16,7 @@ const (
 )
 
 type Effect struct {
-	animation *animation.Animation
+	animation *viewanimation.Animation
 }
 
 func (e *Effect) Update() {
@@ -57,19 +56,19 @@ func (m *EffectManager) CallEffect(
 	effectData := m.serveEffect(effectId)
 	animationData := m.resource.GetAnimationData(effectData.AnimationId)
 	// TODO: インゲーム中にメモリ確保し続けるのは良くないためプールするなどの対策を行う
-	animation := animation.New(
+	animation := viewanimation.New(
 		func(
 			relativePosition *drawing.Vector,
 			pivot *drawing.Pivot,
 			depth drawing.Depth,
 			image drawing.Image,
-		) animation.Sprite {
+		) viewanimation.Sprite {
 			return NewImage(relativePosition, pivot, depth, image)
 		},
 		position,
 		drawing.PivotCenter,
 		drawing.DepthEffect,
-		m.resource.GetTexture(animationData.TextureId),
+		m.resource.GetTexture(animationData.TextureID),
 		animationData,
 		nil,
 	)

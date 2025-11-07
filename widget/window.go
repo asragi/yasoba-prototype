@@ -5,7 +5,7 @@ import (
 	"image"
 	"math"
 
-	"github.com/asragi/yasoba-prototype/frontend"
+	commontexture "github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
@@ -208,7 +208,7 @@ func calculateSideScale(
 }
 
 type WindowOption struct {
-	Texture          frontend.TextureId
+	Texture          commontexture.ID
 	CornerSize       int
 	RelativePosition *drawing.Vector
 	Size             *drawing.Vector
@@ -232,7 +232,7 @@ func (o *WindowOption) Validation() error {
 	return nil
 }
 
-type GetImageFunc func(frontend.TextureId) drawing.Image
+type GetImageFunc func(commontexture.ID) drawing.Image
 
 func CreateNewWindow(
 	getImage GetImageFunc,

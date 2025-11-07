@@ -8,15 +8,15 @@ import (
 	"github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/assets/font"
 	load "github.com/asragi/yasoba-prototype/assets/image"
+	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
+	commontexture "github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-type TextureId int
-
 const (
-	TextureWindow TextureId = iota
+	TextureWindow commontexture.ID = iota
 	TextureCursor
 	TextureFaceLuneNormal
 	TextureFaceLuneDamage
@@ -56,21 +56,21 @@ const (
 )
 
 type ResourceManager struct {
-	textureDict   map[TextureId]*ebiten.Image
+	textureDict   map[commontexture.ID]*ebiten.Image
 	fontDict      map[FontId]*text.GoTextFace
-	animationDict map[AnimationId]*AnimationData
+	animationDict map[AnimationId]*commonanimation.AnimationData
 	shaderDict    map[drawing.ShaderId]*ebiten.Shader
 }
 
 type ResourceManagerInterface interface {
-	GetTexture(id TextureId) drawing.Image
+	GetTexture(id commontexture.ID) drawing.Image
 	GetFont(id FontId) *text.GoTextFace
-	GetAnimationData(id AnimationId) *AnimationData
+	GetAnimationData(id AnimationId) *commonanimation.AnimationData
 	GetShader(id drawing.ShaderId) *drawing.Shader
 	NewEmptyImage(width, height int) drawing.Image
 }
 
-func (r *ResourceManager) GetTexture(id TextureId) drawing.Image {
+func (r *ResourceManager) GetTexture(id commontexture.ID) drawing.Image {
 	t, ok := r.textureDict[id]
 	if !ok {
 		panic(fmt.Sprintf("texture not found: %d", id))
@@ -82,7 +82,7 @@ func (r *ResourceManager) GetFont(id FontId) *text.GoTextFace {
 	return r.fontDict[id]
 }
 
-func (r *ResourceManager) GetAnimationData(id AnimationId) *AnimationData {
+func (r *ResourceManager) GetAnimationData(id AnimationId) *commonanimation.AnimationData {
 	data, ok := r.animationDict[id]
 	if !ok {
 		panic(fmt.Sprintf("animation data not found: %d", id))
@@ -106,8 +106,8 @@ func CreateResourceManager() (*ResourceManager, error) {
 	handleError := func(err error) (*ResourceManager, error) {
 		return nil, fmt.Errorf("failed to create resource manager: %w", err)
 	}
-	textureDict := map[TextureId]*ebiten.Image{}
-	loadTexture := func(data []byte, id TextureId) error {
+	textureDict := map[commontexture.ID]*ebiten.Image{}
+	loadTexture := func(data []byte, id commontexture.ID) error {
 		img, _, err := image.Decode(bytes.NewReader(data))
 		if err != nil {
 			return err
@@ -125,7 +125,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 		return nil
 	}
 	// TODO: この辺の処理go:generateとかで自動生成したいね
-	imageLoadMap := map[TextureId][]byte{
+	imageLoadMap := map[commontexture.ID][]byte{
 		TextureWindow:              load.Window,
 		TextureCursor:              load.Cursor,
 		TextureFaceLuneNormal:      load.FaceLuneNormal,
@@ -156,9 +156,9 @@ func CreateResourceManager() (*ResourceManager, error) {
 	fontDict[MaruMinya] = &text.GoTextFace{Source: s, Size: 12}
 
 	// TODO: 外部ファイルとかから動的に読み込みたい
-	animationDict := map[AnimationId]*AnimationData{
+	animationDict := map[AnimationId]*commonanimation.AnimationData{
 		AnimationIdLuneNormal: {
-			TextureId:      TextureFaceLuneNormal,
+			TextureID:      TextureFaceLuneNormal,
 			RowCount:       1,
 			ColumnCount:    2,
 			AnimationCount: 2,
@@ -166,7 +166,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationIdLuneDamage: {
-			TextureId:      TextureFaceLuneDamage,
+			TextureID:      TextureFaceLuneDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -174,7 +174,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationIdSunnyNormal: {
-			TextureId:      TextureFaceSunnyNormal,
+			TextureID:      TextureFaceSunnyNormal,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -182,7 +182,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationIdSunnyDamage: {
-			TextureId:      TextureFaceSunnyDamage,
+			TextureID:      TextureFaceSunnyDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -190,7 +190,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationIdSunnySmile: {
-			TextureId:      TextureFaceSunnySmile,
+			TextureID:      TextureFaceSunnySmile,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -198,7 +198,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationIdSunnyAngry: {
-			TextureId:      TextureFaceSunnyAngry,
+			TextureID:      TextureFaceSunnyAngry,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -206,7 +206,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationIdSunnyAnnoyed: {
-			TextureId:      TextureFaceSunnyAnnoyed,
+			TextureID:      TextureFaceSunnyAnnoyed,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -214,7 +214,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationMarshmallowNormal: {
-			TextureId:      TextureMarshmallowNormal,
+			TextureID:      TextureMarshmallowNormal,
 			RowCount:       1,
 			ColumnCount:    2,
 			AnimationCount: 2,
@@ -222,7 +222,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationMarshmallowDamage: {
-			TextureId:      TextureMarshmallowDamage,
+			TextureID:      TextureMarshmallowDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -230,7 +230,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		AnimationBattleEffectImpact: {
-			TextureId:      TextureBattleEffectImpact,
+			TextureID:      TextureBattleEffectImpact,
 			RowCount:       4,
 			ColumnCount:    4,
 			AnimationCount: 16,
@@ -238,7 +238,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         false,
 		},
 		AnimationBattleEffectFire: {
-			TextureId:      TextureBattleEffectFire,
+			TextureID:      TextureBattleEffectFire,
 			RowCount:       5,
 			ColumnCount:    6,
 			AnimationCount: 25,
@@ -246,7 +246,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         false,
 		},
 		AnimationBattleEffectExplode: {
-			TextureId:      TextureBattleEffectExplode,
+			TextureID:      TextureBattleEffectExplode,
 			RowCount:       5,
 			ColumnCount:    6,
 			AnimationCount: 30,
@@ -263,13 +263,4 @@ func CreateResourceManager() (*ResourceManager, error) {
 		animationDict: animationDict,
 		shaderDict:    shaderDict,
 	}, nil
-}
-
-type AnimationData struct {
-	TextureId      TextureId
-	RowCount       int
-	ColumnCount    int
-	AnimationCount int
-	Duration       int
-	IsLoop         bool
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	battleemotion "github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/sequence"
 	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
 	"github.com/asragi/yasoba-prototype/text"
@@ -17,7 +18,6 @@ import (
 	"github.com/asragi/yasoba-prototype/toolkit/input"
 	battleactor "github.com/asragi/yasoba-prototype/view/battle/actor"
 	battledialogue "github.com/asragi/yasoba-prototype/view/battle/dialogue"
-	battleemotion "github.com/asragi/yasoba-prototype/view/battle/emotion"
 	battleenemy "github.com/asragi/yasoba-prototype/view/battle/enemy"
 	battleevent "github.com/asragi/yasoba-prototype/view/battle/event"
 	"github.com/asragi/yasoba-prototype/view/battle/window"
@@ -393,8 +393,8 @@ func createSetDamageFunction(
 	}
 }
 
-func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay) func(actor.ActorId, battleemotion.BattleEmotionType) {
-	return func(actorId actor.ActorId, emotion battleemotion.BattleEmotionType) {
+func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay) func(actor.ActorId, battleemotion.EmotionType) {
+	return func(actorId actor.ActorId, emotion battleemotion.EmotionType) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
 			battleEnemyDisplay.SetEmotion(actorId, emotion)

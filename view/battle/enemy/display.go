@@ -6,8 +6,8 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/enemy"
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
-	"github.com/asragi/yasoba-prototype/view/battle/emotion"
 )
 
 type BattleEnemyDisplay struct {
@@ -39,12 +39,12 @@ func (d *BattleEnemyDisplay) DoShake(actorId actor.ActorId) {
 	graphics.DoShake()
 }
 
-func (d *BattleEnemyDisplay) SetEmotion(actorId actor.ActorId, emotion emotion.BattleEmotionType) {
+func (d *BattleEnemyDisplay) SetEmotion(actorId actor.ActorId, value emotion.EmotionType) {
 	graphics, ok := d.actorGraphics[actorId]
 	if !ok {
 		return
 	}
-	graphics.SetEmotion(emotion)
+	graphics.SetEmotion(value)
 }
 
 func (d *BattleEnemyDisplay) GetPosition(id actor.ActorId) *drawing.Vector {

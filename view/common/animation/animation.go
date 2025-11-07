@@ -3,7 +3,7 @@ package animation
 import (
 	"image"
 
-	"github.com/asragi/yasoba-prototype/frontend"
+	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/util"
 )
@@ -28,7 +28,7 @@ type SpriteFactory func(
 type Animation struct {
 	sprite Sprite
 	frame  int
-	data   *frontend.AnimationData
+	data   *commonanimation.AnimationData
 }
 
 func New(
@@ -37,7 +37,7 @@ func New(
 	pivot *drawing.Pivot,
 	depth drawing.Depth,
 	image drawing.Image,
-	data *frontend.AnimationData,
+	data *commonanimation.AnimationData,
 	renderTargetFactory func() drawing.Image,
 ) *Animation {
 	sprite := newSprite(

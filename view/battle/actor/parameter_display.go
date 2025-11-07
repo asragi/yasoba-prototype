@@ -2,7 +2,7 @@ package actor
 
 import (
 	"github.com/asragi/yasoba-prototype/common/character"
-	"github.com/asragi/yasoba-prototype/frontend"
+	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/battle/hp"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -41,7 +41,7 @@ func CreateNewBattleParameterDisplay(
 			hpDisplay: newBattleHPDisplay(initialHp),
 			window: newWindow(
 				&widget.WindowOption{
-					Texture:          frontend.TextureWindow,
+					Texture:          texture.Window,
 					CornerSize:       windowCornerSize,
 					RelativePosition: &drawing.Vector{X: 0, Y: 0},
 					Size:             &drawing.Vector{X: faceSize, Y: height},

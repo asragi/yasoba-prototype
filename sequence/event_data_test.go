@@ -8,26 +8,26 @@ import (
 func Test_createSequenceDataAdapter(t *testing.T) {
 	sequenceModelPort := func() []*SequenceModel {
 		return []*SequenceModel{
-			{id: "sequence1"},
-			{id: "sequence2"},
+			{id: "sequence1", headEventID: "event1"},
+			{id: "sequence2", headEventID: "event3"},
 		}
 	}
 
 	eventDataPort := func() []*EventDataModel {
 		return []*EventDataModel{
-			{id: "event1", ownerId: "sequence1", order: 2},
-			{id: "event2", ownerId: "sequence1", order: 1},
-			{id: "event3", ownerId: "sequence2", order: 1},
+			{id: "event2", nextEventID: ""},
+			{id: "event1", nextEventID: "event2"},
+			{id: "event3", nextEventID: ""},
 		}
 	}
 
 	expected := []*sequenceData{
 		{id: "sequence1", events: []*EventDataModel{
-			{id: "event2", ownerId: "sequence1", order: 1},
-			{id: "event1", ownerId: "sequence1", order: 2},
+			{id: "event1", nextEventID: "event2"},
+			{id: "event2", nextEventID: ""},
 		}},
 		{id: "sequence2", events: []*EventDataModel{
-			{id: "event3", ownerId: "sequence2", order: 1},
+			{id: "event3", nextEventID: ""},
 		}},
 	}
 
