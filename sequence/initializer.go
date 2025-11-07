@@ -7,6 +7,7 @@ import (
 
 type ProduceCreateSequence func(
 	SetPartnerDialogue,
+	SetMessageWindowText,
 	SetEmotion,
 	OpenPartnerMessageWindow,
 	ClosePartnerMessageWindow,
@@ -24,8 +25,10 @@ func InitializeProduceCreateSequence(
 	sequenceModelPort SequenceModelPort,
 	eventDataModelPort EventDataModelPort,
 	partnerDialogueDataPort PartnerDialogueDataPort,
+	messageWindowTextDataPort MessageWindowTextDataPort,
 	changeEmotionDataPort ChangeEmotionDataPort,
 	switchToBattleSceneDataPort SwitchToBattleSceneDataPort,
+	waitFrameDataPort WaitFrameDataPort,
 	transitionFadeOptionPort transition.OptionPort,
 ) PrepareProduceCreateSequence {
 	sequencesDataAdapter := initializeSequenceDataAdapter(
@@ -40,6 +43,7 @@ func InitializeProduceCreateSequence(
 	) ProduceCreateSequence {
 		return func(
 			setPartnerDialogue SetPartnerDialogue,
+			setMessageWindowText SetMessageWindowText,
 			setEmotion SetEmotion,
 			setOpenPartnerMessageWindow OpenPartnerMessageWindow,
 			setClosePartnerMessageWindow ClosePartnerMessageWindow,
@@ -55,6 +59,11 @@ func InitializeProduceCreateSequence(
 					serveTextData,
 					partnerDialogueDataPort,
 					setPartnerDialogue,
+				),
+				produceCreateSetMessageWindowTextEventToUnit(
+					serveTextData,
+					messageWindowTextDataPort,
+					setMessageWindowText,
 				),
 				produceCreateChangeEmotionEventToUnit(
 					changeEmotionDataPort,
@@ -86,6 +95,9 @@ func InitializeProduceCreateSequence(
 				),
 				produceCreateSwitchToDebugSceneEventToUnit(
 					switchToDebugScene,
+				),
+				produceCreateWaitFrameEventToUnit(
+					waitFrameDataPort,
 				),
 			)
 		}

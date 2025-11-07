@@ -20,19 +20,25 @@ func InitializeProduceCreateSequence() PrepareProduceCreateSequence {
 	eventDataModelPort := adaptEventDataModelPort(eventDataRecordsPort)
 	partnerDialogueRecords := PartnerDialogueRecordsFromYAML("assets/data/partner_dialogue.yaml")
 	partnerDialogueDataPort := adaptPartnerDialogueDataPort(partnerDialogueRecords)
+	messageWindowTextRecords := MessageWindowTextRecordsFromYAML("assets/data/message_window_text.yaml")
+	messageWindowTextDataPort := adaptMessageWindowTextDataPort(messageWindowTextRecords)
 	changeEmotionRecords := ChangeEmotionRecordsFromYAML("assets/data/change_emotion.yaml")
 	changeEmotionDataPort := adaptChangeEmotionDataPort(changeEmotionRecords)
 	transitionFadeRecords := TransitionFadeRecordsFromYAML("assets/data/transition_fade.yaml")
 	transitionFadeOptionPort := adaptTransitionFadeOptionPort(transitionFadeRecords)
 	switchToBattleSceneRecords := SwitchToBattleSceneRecordsFromYAML("assets/data/switch_to_battle_scene.yaml")
 	switchToBattleSceneDataPort := adaptSwitchToBattleSceneDataPort(switchToBattleSceneRecords)
+	waitFrameRecords := WaitFrameRecordsFromYAML("assets/data/wait_frame.yaml")
+	waitFrameDataPort := adaptWaitFrameDataPort(waitFrameRecords)
 
 	return sequence.InitializeProduceCreateSequence(
 		sequenceModelPort,
 		eventDataModelPort,
 		partnerDialogueDataPort,
+		messageWindowTextDataPort,
 		changeEmotionDataPort,
 		switchToBattleSceneDataPort,
+		waitFrameDataPort,
 		transitionFadeOptionPort,
 	)
 }
@@ -77,6 +83,25 @@ func adaptPartnerDialogueDataPort(records map[string]*PartnerDialogueRecord) seq
 	}
 }
 
+func adaptMessageWindowTextDataPort(records map[string]*MessageWindowTextRecord) sequence.MessageWindowTextDataPort {
+	models := make(map[sequence.EventID]*sequence.MessageWindowTextModel, len(records))
+	for _, record := range records {
+		eventID := sequence.EventID(record.EventID)
+		models[eventID] = sequence.NewMessageWindowTextModel(
+			eventID,
+			text.TextId(record.TextID),
+			record.WaitForComplete,
+		)
+	}
+	return func(id sequence.EventID) *sequence.MessageWindowTextModel {
+		model := models[id]
+		if model == nil {
+			panic("message window text event not found: " + string(id))
+		}
+		return model
+	}
+}
+
 func adaptChangeEmotionDataPort(records map[string]*ChangeEmotionRecord) sequence.ChangeEmotionDataPort {
 	emotionMap := make(map[sequence.EventID]*sequence.ChangeEmotion, len(records))
 	for _, record := range records {
@@ -113,6 +138,21 @@ func adaptSwitchToBattleSceneDataPort(records map[string]*SwitchToBattleSceneRec
 	}
 	return func(id sequence.EventID) *sequence.SwitchToBattleSceneModel {
 		return models[id]
+	}
+}
+
+func adaptWaitFrameDataPort(records map[string]*WaitFrameRecord) sequence.WaitFrameDataPort {
+	models := make(map[sequence.EventID]*sequence.WaitFrameModel, len(records))
+	for _, record := range records {
+		eventID := sequence.EventID(record.EventID)
+		models[eventID] = sequence.NewWaitFrameModel(eventID, record.Frame)
+	}
+	return func(id sequence.EventID) *sequence.WaitFrameModel {
+		model := models[id]
+		if model == nil {
+			panic("wait frame event not found: " + string(id))
+		}
+		return model
 	}
 }
 

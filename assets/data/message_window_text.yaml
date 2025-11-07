@@ -1,0 +1,4 @@
+messageWindowTexts:
+  - eventId: "battle_lose_message"
+    textId: "battle_lose"
+    waitForComplete: true

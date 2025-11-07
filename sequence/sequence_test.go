@@ -5,6 +5,7 @@ import (
 
 	"github.com/asragi/yasoba-prototype/battle"
 	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
+	"github.com/asragi/yasoba-prototype/text"
 )
 
 func TestSequence_Update(t *testing.T) {
@@ -129,6 +130,14 @@ func TestProvideCreateSequence(t *testing.T) {
 		}
 	}
 
+	mockCreateSetMessageWindowTextEvent := func(id EventID) *eventUnit {
+		return &eventUnit{
+			start:      func() {},
+			checkIsEnd: func() IsEnd { return false },
+			reset:      func() {},
+		}
+	}
+
 	mockCreateChangeEmotionEvent := func(id EventID) *eventUnit {
 		return &eventUnit{
 			start:      func() {},
@@ -165,9 +174,11 @@ func TestProvideCreateSequence(t *testing.T) {
 
 	createSeq := produceCreateSequence(
 		mockCreatePartnerDialogueEvent,
+		mockCreateSetMessageWindowTextEvent,
 		mockCreateChangeEmotionEvent,
 		mockCreateOpenPartnerMessageWindowEvent,
 		mockCreateClosePartnerMessageWindowEvent,
+		func(EventID) *eventUnit { return createEventUnit() },
 		func(EventID) *eventUnit { return createEventUnit() },
 		func(EventID) *eventUnit { return createEventUnit() },
 		func(EventID) *eventUnit { return createEventUnit() },
@@ -240,6 +251,81 @@ func TestClosePartnerMessageWindowEvent(t *testing.T) {
 	result := event.checkIsEnd()
 	if !result {
 		t.Error("expected checkIsEnd to return true")
+	}
+}
+
+func TestSetMessageWindowTextEvent(t *testing.T) {
+	textId := text.TextIdBattleLose
+	dataPort := func(id EventID) *MessageWindowTextModel {
+		return NewMessageWindowTextModel(id, textId, true)
+	}
+	serveTextData := func(id text.TextId) *text.Data {
+		return &text.Data{
+			Id:   id,
+			Text: "lose",
+		}
+	}
+
+	waitCount := 0
+	setter := func(value text.String) *SetMessageWindowTextResponse {
+		if value.String() != "lose" {
+			t.Fatalf("unexpected text: %s", value)
+		}
+		return &SetMessageWindowTextResponse{
+			CheckIsEnd: func() IsEnd {
+				waitCount++
+				return waitCount >= 2
+			},
+		}
+	}
+
+	createEvent := produceCreateSetMessageWindowTextEventToUnit(serveTextData, dataPort, setter)
+	event := createEvent(EventID("battle_lose_message"))
+
+	event.start()
+	if event.checkIsEnd() {
+		t.Fatal("expected event to wait for completion")
+	}
+	if !event.checkIsEnd() {
+		t.Fatal("expected event to finish after completion")
+	}
+}
+
+func TestSetMessageWindowTextEvent_NoWait(t *testing.T) {
+	dataPort := func(id EventID) *MessageWindowTextModel {
+		return NewMessageWindowTextModel(id, text.TextIdBattleLose, false)
+	}
+	serveTextData := func(id text.TextId) *text.Data {
+		return &text.Data{
+			Id:   id,
+			Text: "lose",
+		}
+	}
+	setter := func(value text.String) *SetMessageWindowTextResponse {
+		return &SetMessageWindowTextResponse{
+			CheckIsEnd: func() IsEnd { return false },
+		}
+	}
+	createEvent := produceCreateSetMessageWindowTextEventToUnit(serveTextData, dataPort, setter)
+	event := createEvent(EventID("battle_lose_message"))
+	event.start()
+	if !event.checkIsEnd() {
+		t.Fatal("expected event to finish immediately when waitForComplete is false")
+	}
+}
+
+func TestWaitFrameEvent(t *testing.T) {
+	dataPort := func(id EventID) *WaitFrameModel {
+		return NewWaitFrameModel(id, 2)
+	}
+	createEvent := produceCreateWaitFrameEventToUnit(dataPort)
+	event := createEvent(EventID("wait_event"))
+	event.start()
+	if event.checkIsEnd() {
+		t.Fatal("expected wait to continue on first frame")
+	}
+	if !event.checkIsEnd() {
+		t.Fatal("expected wait to finish on second frame")
 	}
 }
 

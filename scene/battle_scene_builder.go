@@ -7,7 +7,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/enemy"
 	"github.com/asragi/yasoba-prototype/battle/invoke"
 	"github.com/asragi/yasoba-prototype/battle/setup"
-	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
 	battleemotion "github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/sequence"
@@ -100,6 +100,7 @@ func InitializeCreateBattleScene(
 
 		// UIコンポーネントの初期化
 		messageWindow := createMessageWindow(newMessageWindow)
+		setMessageWindowText := createSetMessageWindowTextFunction(messageWindow)
 		battleEnemyDisplay := createBattleEnemyDisplay(newBattleEnemyDisplay, battleResponse.EnemyIds, battleSetting.Enemies)
 
 		// バトル選択ウィンドウの設定
@@ -164,6 +165,7 @@ func InitializeCreateBattleScene(
 		setPartnerDialogue := createSetPartnerDialogueFunction(subActorDialog)
 		createSequence := produceCreateSequence(
 			setPartnerDialogue,
+			setMessageWindowText,
 			setEmotion,
 			subActorDialog.Open,
 			subActorDialog.Close,
@@ -308,6 +310,18 @@ func createMessageWindow(newMessageWindow message.NewMessageWindowFunc) *message
 	return messageWindow
 }
 
+func createSetMessageWindowTextFunction(messageWindow *message.MessageWindow) sequence.SetMessageWindowText {
+	return func(value text.String) *sequence.SetMessageWindowTextResponse {
+		messageWindow.SetText(value.String(), false)
+		messageWindow.Open()
+		return &sequence.SetMessageWindowTextResponse{
+			CheckIsEnd: func() sequence.IsEnd {
+				return sequence.IsEnd(messageWindow.IsTextEnd())
+			},
+		}
+	}
+}
+
 func createBattleEnemyDisplay(newBattleEnemyDisplay battleenemy.NewBattleEnemyDisplayFunc, enemyIds []*setup.EnemyIdPair, enemySettings []*config.EnemySetting) *battleenemy.BattleEnemyDisplay {
 	displayArgs := battleenemy.ToDisplayArgs(enemyIds, enemySettings)
 	return newBattleEnemyDisplay(
@@ -368,7 +382,6 @@ func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *b
 			subActorDisplay.Shake()
 			return
 		}
-		// メインキャラクターのシェイク処理
 		shakeEmitter.Shake(shake.ShakeDefaultAmplitude, shake.ShakeDefaultPeriod)
 	}
 }
@@ -379,8 +392,8 @@ func createSetDamageFunction(
 	subActorDisplay *battleactor.BattleSubActorDisplay,
 	actorDisplay *battleactor.BattleActorDisplay,
 	displayedHp map[actor.ActorId]character.HP,
-) func(actor.ActorId, battleSkill.Damage, character.HP) {
-	return func(actorId actor.ActorId, damage battleSkill.Damage, afterHp character.HP) {
+) func(actor.ActorId, skill.Damage, character.HP) {
+	return func(actorId actor.ActorId, damage skill.Damage, afterHp character.HP) {
 		displayedHp[actorId] = afterHp
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -431,3 +444,5 @@ func createOnSubmitTargetSelect(
 		inputManager.Set(input.InputReceiverEmptyInstance)
 	}
 }
+
+// TODO: View非依存のLogic部分だけ抽出してCoreに移動したい

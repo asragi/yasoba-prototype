@@ -14,6 +14,8 @@ const (
 	startTransitionFadeInEvent     EventType = "start_transition_fade_in"
 	switchToBattleSceneEvent       EventType = "switch_to_battle_scene"
 	switchToDebugSceneEvent        EventType = "switch_to_debug_scene"
+	setMessageWindowTextEvent      EventType = "set_message_window_text"
+	waitFrameEvent                 EventType = "wait_frame"
 )
 
 type EventDataModel struct {

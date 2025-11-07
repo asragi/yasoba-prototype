@@ -35,7 +35,7 @@ func (s *BattleScene) onTurnEnd() {
 		return
 	}
 	if s.endState == battle.BattleEndTypeLose {
-		s.ui.messageWindow.SetText("やられてしまった……", false)
+		s.sequences.AddSequence(s.createSequence("battle_sequence_lose"))
 		return
 	}
 	s.ui.input.Set(s.ui.battleSelectWindow)

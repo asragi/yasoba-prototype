@@ -1,0 +1,3 @@
+waitFrames:
+  - eventId: "battle_lose_wait"
+    frame: 120

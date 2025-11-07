@@ -3,3 +3,5 @@ events:
     waitForComplete: true
   - id: "test0100fadeout"
     waitForComplete: true
+  - id: "battle_lose_fade_out"
+    waitForComplete: true

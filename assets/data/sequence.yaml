@@ -12,3 +12,5 @@ sequences:
     headEventId: "transition_command_fade"
   - id: "test_sequence_switch_scene"
     headEventId: "test_switch_to_battle"
+  - id: "battle_sequence_lose"
+    headEventId: "battle_lose_message"
