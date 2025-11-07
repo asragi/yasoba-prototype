@@ -1,8 +1,8 @@
 package message
 
 import (
+	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	"github.com/asragi/yasoba-prototype/common/texture"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
 	"github.com/asragi/yasoba-prototype/widget"

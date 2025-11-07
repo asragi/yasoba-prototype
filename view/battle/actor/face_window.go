@@ -5,7 +5,6 @@ import (
 	"github.com/asragi/yasoba-prototype/common/character"
 	commonemotion "github.com/asragi/yasoba-prototype/common/emotion"
 	commontexture "github.com/asragi/yasoba-prototype/common/texture"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	viewemotion "github.com/asragi/yasoba-prototype/view/battle/emotion"
 	viewanimation "github.com/asragi/yasoba-prototype/view/common/animation"
@@ -29,7 +28,7 @@ type (
 	}
 
 	resourceProvider interface {
-		GetAnimationData(frontend.AnimationId) *commonanimation.AnimationData
+		GetAnimationData(commonanimation.ID) *commonanimation.AnimationData
 		GetTexture(commontexture.ID) drawing.Image
 	}
 
@@ -169,7 +168,7 @@ func standByNewFaceWindow(
 		}()
 		window := newWindow(
 			&widget.WindowOption{
-				Texture:          frontend.TextureWindow,
+				Texture:          commontexture.Window,
 				CornerSize:       6,
 				RelativePosition: relativePosition,
 				Size:             drawing.NewVector(faceSize, faceSize).Add(drawing.NewVector(padding, padding)),
@@ -185,23 +184,23 @@ func standByNewFaceWindow(
 	}
 }
 
-type getAllEmotionFunc func() map[character.CharacterId]map[commonemotion.EmotionType]frontend.AnimationId
+type getAllEmotionFunc func() map[character.CharacterId]map[commonemotion.EmotionType]commonanimation.ID
 
 func createGetAllEmotionFunc() getAllEmotionFunc {
-	dict := map[character.CharacterId]map[commonemotion.EmotionType]frontend.AnimationId{
+	dict := map[character.CharacterId]map[commonemotion.EmotionType]commonanimation.ID{
 		character.CharacterLuneId: {
-			commonemotion.EmotionNormal: frontend.AnimationIdLuneNormal,
-			commonemotion.EmotionDamage: frontend.AnimationIdLuneDamage,
+			commonemotion.EmotionNormal: commonanimation.LuneNormal,
+			commonemotion.EmotionDamage: commonanimation.LuneDamage,
 		},
 		character.CharacterSunnyId: {
-			commonemotion.EmotionNormal:  frontend.AnimationIdSunnyNormal,
-			commonemotion.EmotionDamage:  frontend.AnimationIdSunnyDamage,
-			commonemotion.EmotionSmile:   frontend.AnimationIdSunnySmile,
-			commonemotion.EmotionAngry:   frontend.AnimationIdSunnyAngry,
-			commonemotion.EmotionAnnoyed: frontend.AnimationIdSunnyAnnoyed,
+			commonemotion.EmotionNormal:  commonanimation.SunnyNormal,
+			commonemotion.EmotionDamage:  commonanimation.SunnyDamage,
+			commonemotion.EmotionSmile:   commonanimation.SunnySmile,
+			commonemotion.EmotionAngry:   commonanimation.SunnyAngry,
+			commonemotion.EmotionAnnoyed: commonanimation.SunnyAnnoyed,
 		},
 	}
-	return func() map[character.CharacterId]map[commonemotion.EmotionType]frontend.AnimationId {
+	return func() map[character.CharacterId]map[commonemotion.EmotionType]commonanimation.ID {
 		return dict
 	}
 }

@@ -3,8 +3,8 @@ package damage
 import (
 	"image/color"
 
+	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/asragi/yasoba-prototype/widget"

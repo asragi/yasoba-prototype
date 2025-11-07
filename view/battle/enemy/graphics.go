@@ -1,11 +1,12 @@
 package enemy
 
 import (
+	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	"github.com/asragi/yasoba-prototype/battle/enemy"
 	battleSkill "github.com/asragi/yasoba-prototype/battle/skill"
+	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
 	"github.com/asragi/yasoba-prototype/common/emotion"
 	commontexture "github.com/asragi/yasoba-prototype/common/texture"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/battle/damage"
 	viewemotion "github.com/asragi/yasoba-prototype/view/battle/emotion"
@@ -146,7 +147,7 @@ func NewBattleActorGraphics(
 type BattleActorAnimationSet struct {
 	emotion   emotion.EmotionType
 	texture   commontexture.ID
-	animation frontend.AnimationId
+	animation commonanimation.ID
 }
 
 type GetEnemyGraphicsFunc func(enemy.EnemyId) []*BattleActorAnimationSet
@@ -156,13 +157,13 @@ func CreateGetEnemyGraphics() GetEnemyGraphicsFunc {
 		enemy.EnemyPunchingBagId: {
 			{
 				emotion:   emotion.EmotionNormal,
-				texture:   frontend.TextureMarshmallowNormal,
-				animation: frontend.AnimationMarshmallowNormal,
+				texture:   commontexture.MarshmallowNormal,
+				animation: commonanimation.MarshmallowNormal,
 			},
 			{
 				emotion:   emotion.EmotionDamage,
-				texture:   frontend.TextureMarshmallowDamage,
-				animation: frontend.AnimationMarshmallowDamage,
+				texture:   commontexture.MarshmallowDamage,
+				animation: commonanimation.MarshmallowDamage,
 			},
 		},
 	}

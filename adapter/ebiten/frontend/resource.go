@@ -15,57 +15,23 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-const (
-	TextureWindow commontexture.ID = iota
-	TextureCursor
-	TextureFaceLuneNormal
-	TextureFaceLuneDamage
-	TextureFaceSunnyNormal
-	TextureFaceSunnyDamage
-	TextureFaceSunnySmile
-	TextureFaceSunnyAngry
-	TextureFaceSunnyAnnoyed
-	TextureMarshmallowNormal
-	TextureMarshmallowDamage
-	TextureBattleEffectImpact
-	TextureBattleEffectFire
-	TextureBattleEffectExplode
-)
-
 type FontId int
 
 const (
 	MaruMinya FontId = iota
 )
 
-type AnimationId int
-
-const (
-	AnimationMarshmallowNormal AnimationId = iota
-	AnimationMarshmallowDamage
-	AnimationBattleEffectImpact
-	AnimationBattleEffectFire
-	AnimationBattleEffectExplode
-	AnimationIdLuneNormal
-	AnimationIdLuneDamage
-	AnimationIdSunnyNormal
-	AnimationIdSunnyDamage
-	AnimationIdSunnySmile
-	AnimationIdSunnyAngry
-	AnimationIdSunnyAnnoyed
-)
-
 type ResourceManager struct {
 	textureDict   map[commontexture.ID]*ebiten.Image
 	fontDict      map[FontId]*text.GoTextFace
-	animationDict map[AnimationId]*commonanimation.AnimationData
+	animationDict map[commonanimation.ID]*commonanimation.AnimationData
 	shaderDict    map[drawing.ShaderId]*ebiten.Shader
 }
 
 type ResourceManagerInterface interface {
 	GetTexture(id commontexture.ID) drawing.Image
 	GetFont(id FontId) *text.GoTextFace
-	GetAnimationData(id AnimationId) *commonanimation.AnimationData
+	GetAnimationData(id commonanimation.ID) *commonanimation.AnimationData
 	GetShader(id drawing.ShaderId) *drawing.Shader
 	NewEmptyImage(width, height int) drawing.Image
 }
@@ -82,7 +48,7 @@ func (r *ResourceManager) GetFont(id FontId) *text.GoTextFace {
 	return r.fontDict[id]
 }
 
-func (r *ResourceManager) GetAnimationData(id AnimationId) *commonanimation.AnimationData {
+func (r *ResourceManager) GetAnimationData(id commonanimation.ID) *commonanimation.AnimationData {
 	data, ok := r.animationDict[id]
 	if !ok {
 		panic(fmt.Sprintf("animation data not found: %d", id))
@@ -126,20 +92,20 @@ func CreateResourceManager() (*ResourceManager, error) {
 	}
 	// TODO: この辺の処理go:generateとかで自動生成したいね
 	imageLoadMap := map[commontexture.ID][]byte{
-		TextureWindow:              load.Window,
-		TextureCursor:              load.Cursor,
-		TextureFaceLuneNormal:      load.FaceLuneNormal,
-		TextureFaceLuneDamage:      load.FaceLuneDamage,
-		TextureFaceSunnyNormal:     load.FaceSunnyNormal,
-		TextureFaceSunnyDamage:     load.FaceSunnyDamage,
-		TextureFaceSunnySmile:      load.FaceSunnySmile,
-		TextureFaceSunnyAngry:      load.FaceSunnyAngry,
-		TextureFaceSunnyAnnoyed:    load.FaceSunnyAnnoyed,
-		TextureMarshmallowNormal:   load.MarshmallowNormal,
-		TextureMarshmallowDamage:   load.MarshmallowDamage,
-		TextureBattleEffectImpact:  load.BattleEffectImpact,
-		TextureBattleEffectFire:    load.BattleEffectFire,
-		TextureBattleEffectExplode: load.BattleEffectExplode,
+		commontexture.Window:              load.Window,
+		commontexture.Cursor:              load.Cursor,
+		commontexture.FaceLuneNormal:      load.FaceLuneNormal,
+		commontexture.FaceLuneDamage:      load.FaceLuneDamage,
+		commontexture.FaceSunnyNormal:     load.FaceSunnyNormal,
+		commontexture.FaceSunnyDamage:     load.FaceSunnyDamage,
+		commontexture.FaceSunnySmile:      load.FaceSunnySmile,
+		commontexture.FaceSunnyAngry:      load.FaceSunnyAngry,
+		commontexture.FaceSunnyAnnoyed:    load.FaceSunnyAnnoyed,
+		commontexture.MarshmallowNormal:   load.MarshmallowNormal,
+		commontexture.MarshmallowDamage:   load.MarshmallowDamage,
+		commontexture.BattleEffectImpact:  load.BattleEffectImpact,
+		commontexture.BattleEffectFire:    load.BattleEffectFire,
+		commontexture.BattleEffectExplode: load.BattleEffectExplode,
 	}
 
 	for id, data := range imageLoadMap {
@@ -156,97 +122,97 @@ func CreateResourceManager() (*ResourceManager, error) {
 	fontDict[MaruMinya] = &text.GoTextFace{Source: s, Size: 12}
 
 	// TODO: 外部ファイルとかから動的に読み込みたい
-	animationDict := map[AnimationId]*commonanimation.AnimationData{
-		AnimationIdLuneNormal: {
-			TextureID:      TextureFaceLuneNormal,
+	animationDict := map[commonanimation.ID]*commonanimation.AnimationData{
+		commonanimation.LuneNormal: {
+			TextureID:      commontexture.FaceLuneNormal,
 			RowCount:       1,
 			ColumnCount:    2,
 			AnimationCount: 2,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationIdLuneDamage: {
-			TextureID:      TextureFaceLuneDamage,
+		commonanimation.LuneDamage: {
+			TextureID:      commontexture.FaceLuneDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationIdSunnyNormal: {
-			TextureID:      TextureFaceSunnyNormal,
+		commonanimation.SunnyNormal: {
+			TextureID:      commontexture.FaceSunnyNormal,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationIdSunnyDamage: {
-			TextureID:      TextureFaceSunnyDamage,
+		commonanimation.SunnyDamage: {
+			TextureID:      commontexture.FaceSunnyDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationIdSunnySmile: {
-			TextureID:      TextureFaceSunnySmile,
+		commonanimation.SunnySmile: {
+			TextureID:      commontexture.FaceSunnySmile,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationIdSunnyAngry: {
-			TextureID:      TextureFaceSunnyAngry,
+		commonanimation.SunnyAngry: {
+			TextureID:      commontexture.FaceSunnyAngry,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationIdSunnyAnnoyed: {
-			TextureID:      TextureFaceSunnyAnnoyed,
+		commonanimation.SunnyAnnoyed: {
+			TextureID:      commontexture.FaceSunnyAnnoyed,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationMarshmallowNormal: {
-			TextureID:      TextureMarshmallowNormal,
+		commonanimation.MarshmallowNormal: {
+			TextureID:      commontexture.MarshmallowNormal,
 			RowCount:       1,
 			ColumnCount:    2,
 			AnimationCount: 2,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationMarshmallowDamage: {
-			TextureID:      TextureMarshmallowDamage,
+		commonanimation.MarshmallowDamage: {
+			TextureID:      commontexture.MarshmallowDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
 			Duration:       20,
 			IsLoop:         true,
 		},
-		AnimationBattleEffectImpact: {
-			TextureID:      TextureBattleEffectImpact,
+		commonanimation.BattleEffectImpact: {
+			TextureID:      commontexture.BattleEffectImpact,
 			RowCount:       4,
 			ColumnCount:    4,
 			AnimationCount: 16,
 			Duration:       4,
 			IsLoop:         false,
 		},
-		AnimationBattleEffectFire: {
-			TextureID:      TextureBattleEffectFire,
+		commonanimation.BattleEffectFire: {
+			TextureID:      commontexture.BattleEffectFire,
 			RowCount:       5,
 			ColumnCount:    6,
 			AnimationCount: 25,
 			Duration:       4,
 			IsLoop:         false,
 		},
-		AnimationBattleEffectExplode: {
-			TextureID:      TextureBattleEffectExplode,
+		commonanimation.BattleEffectExplode: {
+			TextureID:      commontexture.BattleEffectExplode,
 			RowCount:       5,
 			ColumnCount:    6,
 			AnimationCount: 30,

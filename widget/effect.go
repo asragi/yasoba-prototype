@@ -2,7 +2,9 @@ package widget
 
 import (
 	"fmt"
-	"github.com/asragi/yasoba-prototype/frontend"
+
+	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
+	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	viewanimation "github.com/asragi/yasoba-prototype/view/common/animation"
 )
@@ -91,7 +93,7 @@ func (m *EffectManager) Draw(drawFunc drawing.DrawFunc) {
 
 type EffectData struct {
 	EffectId    EffectId
-	AnimationId frontend.AnimationId
+	AnimationId commonanimation.ID
 }
 
 type ServeEffectDataFunc func(EffectId) *EffectData
@@ -100,15 +102,15 @@ func CreateServeEffectData() ServeEffectDataFunc {
 	dict := map[EffectId]*EffectData{
 		EffectIdLuneAttack: {
 			EffectId:    EffectIdLuneAttack,
-			AnimationId: frontend.AnimationBattleEffectImpact,
+			AnimationId: commonanimation.BattleEffectImpact,
 		},
 		EffectIdLuneFire: {
 			EffectId:    EffectIdLuneFire,
-			AnimationId: frontend.AnimationBattleEffectFire,
+			AnimationId: commonanimation.BattleEffectFire,
 		},
 		EffectIdExplode: {
 			EffectId:    EffectIdExplode,
-			AnimationId: frontend.AnimationBattleEffectExplode,
+			AnimationId: commonanimation.BattleEffectExplode,
 		},
 	}
 	return func(effectId EffectId) *EffectData {

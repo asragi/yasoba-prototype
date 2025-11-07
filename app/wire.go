@@ -10,6 +10,7 @@ import (
 	"math/rand"
 
 	drawingadapter "github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
+	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	sequenceadapter "github.com/asragi/yasoba-prototype/adapter/ebiten/sequence/adapter"
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/actor"
@@ -24,7 +25,6 @@ import (
 	"github.com/asragi/yasoba-prototype/common/character"
 	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/debug"
-	"github.com/asragi/yasoba-prototype/frontend"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/text"
@@ -220,7 +220,7 @@ func makeSelectCursor(resource *frontend.ResourceManager) selection.NewCursor {
 			relativePosition,
 			pivot,
 			depth,
-		resource.GetTexture(texture.Cursor),
+			resource.GetTexture(texture.Cursor),
 		)
 	}
 }
