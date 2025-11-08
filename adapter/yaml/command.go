@@ -30,7 +30,8 @@ func CommandModelsFromYAML(path string) []command.Model {
 
 	models := make([]command.Model, 0, len(raw.Commands))
 	for _, entry := range raw.Commands {
-		models = append(models, command.NewModel(entry.ID, command.Cost(entry.Cost)))
+		id := command.Id(entry.ID)
+		models = append(models, command.NewModel(id, command.Cost(entry.Cost)))
 	}
 	return models
 }

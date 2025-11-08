@@ -1,23 +1,25 @@
 package command
 
+type Id string
+
 type Model interface {
-	ID() string
+	ID() Id
 	Cost() Cost
 }
 
 type commandModel struct {
-	id   string
+	id   Id
 	cost Cost
 }
 
-func NewModel(id string, cost Cost) Model {
+func NewModel(id Id, cost Cost) Model {
 	return &commandModel{
 		id:   id,
 		cost: cost,
 	}
 }
 
-func (m *commandModel) ID() string {
+func (m *commandModel) ID() Id {
 	return m.id
 }
 
