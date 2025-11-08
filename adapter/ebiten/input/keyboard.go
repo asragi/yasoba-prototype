@@ -7,7 +7,7 @@ import (
 )
 
 type KeyBoardInput struct {
-	receiver input.InputReceiver
+	receiver input.Receiver
 }
 
 func (k *KeyBoardInput) Update() {
@@ -41,6 +41,6 @@ func (k *KeyBoardInput) Update() {
 	}
 }
 
-func (k *KeyBoardInput) Set(receiver input.InputReceiver) {
+func (k *KeyBoardInput) Set(receiver input.Receiver) {
 	k.receiver = receiver
 }

@@ -5,6 +5,6 @@ import (
 	"github.com/asragi/yasoba-prototype/toolkit/input"
 )
 
-func makeInputManager() input.InputManager {
+func makeInputManager() input.Manager {
 	return &ebiteninput.KeyBoardInput{}
 }

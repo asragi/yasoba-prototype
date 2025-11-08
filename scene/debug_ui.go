@@ -8,7 +8,7 @@ import (
 
 type debugUI struct {
 	selectWindow *selection.SelectWindow
-	input        input.InputManager
+	input        input.Manager
 	anchor       drawing.Vector
 	layout       debugUILayout
 }

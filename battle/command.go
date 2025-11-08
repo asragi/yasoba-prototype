@@ -7,16 +7,16 @@ import (
 )
 
 // PlayerCommand is a command that the player can select in the battle.
-type PlayerCommand int
+type PlayerCommand string
 
 const (
-	PlayerCommandAttack PlayerCommand = iota
-	PlayerCommandFire
-	PlayerCommandThunder
-	PlayerCommandBarrier
-	PlayerCommandWind
-	PlayerCommandFocus
-	PlayerCommandDefend
+	PlayerCommandAttack  PlayerCommand = "attack"
+	PlayerCommandFire    PlayerCommand = "fire"
+	PlayerCommandThunder PlayerCommand = "thunder"
+	PlayerCommandBarrier PlayerCommand = "barrier"
+	PlayerCommandWind    PlayerCommand = "wind"
+	PlayerCommandFocus   PlayerCommand = "focus"
+	PlayerCommandDefend  PlayerCommand = "defend"
 )
 
 // ToTextId converts a player command into the associated text ID.

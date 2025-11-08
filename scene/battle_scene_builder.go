@@ -43,7 +43,7 @@ func InitializeCreateBattleScene(
 	createNewBattleSequence battleevent.PrepareBattleEventSequenceFunc,
 	skillToSequence battleevent.SkillToSequenceFunc,
 	newBattleEnemyDisplay battleenemy.NewBattleEnemyDisplayFunc,
-	inputManager input.InputManager,
+	inputManager input.Manager,
 	effectManager *widget.EffectManager,
 	serveEnemyView battleenemy.ServeEnemyViewData,
 	serveActor actor.ActorSupplier,
@@ -102,7 +102,11 @@ func InitializeCreateBattleScene(
 		// UIコンポーネントの初期化
 		messageWindow := createMessageWindow(newMessageWindow)
 		setMessageWindowText := createSetMessageWindowTextFunction(messageWindow)
-		battleEnemyDisplay := createBattleEnemyDisplay(newBattleEnemyDisplay, battleResponse.EnemyIds, battleSetting.Enemies)
+		battleEnemyDisplay := createBattleEnemyDisplay(
+			newBattleEnemyDisplay,
+			battleResponse.EnemyIds,
+			battleSetting.Enemies,
+		)
 
 		// バトル選択ウィンドウの設定
 		var selectedCommand battle.PlayerCommand
@@ -124,7 +128,13 @@ func InitializeCreateBattleScene(
 		)
 
 		// エフェクト関数の定義
-		playEffect := createPlayEffectFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, effectManager)
+		playEffect := createPlayEffectFunction(
+			serveActor,
+			battleEnemyDisplay,
+			subActorDisplay,
+			actorDisplay,
+			effectManager,
+		)
 		uiShake := shake.NewShake()
 		doShake := createDoShakeFunction(serveActor, battleEnemyDisplay, subActorDisplay, uiShake)
 		setDamage := createSetDamageFunction(serveActor, battleEnemyDisplay, subActorDisplay, actorDisplay, displayedHp)
@@ -149,7 +159,7 @@ func InitializeCreateBattleScene(
 
 		hidePlayerCommandWindow := func() {
 			battleSelectWindow.Close()
-			inputManager.Set(input.InputReceiverEmptyInstance)
+			inputManager.Set(input.EmptyInstance)
 		}
 
 		startTransitionFadeOut := seqtransition.NewController(
@@ -284,7 +294,10 @@ func createActorIdToEnemyMapping(enemyIds []*setup.EnemyIdPair) map[actor.ActorI
 	return result
 }
 
-func createActorNamesMapping(enemyIds []*setup.EnemyIdPair, serveEnemyName enemy.NameServer) map[actor.ActorId]text.TextId {
+func createActorNamesMapping(
+	enemyIds []*setup.EnemyIdPair,
+	serveEnemyName enemy.NameServer,
+) map[actor.ActorId]text.TextId {
 	names := make(map[actor.ActorId]text.TextId)
 	names[actor.ActorLuneId] = text.TextIdLuneName
 	names[actor.ActorSunnyId] = text.TextIdSunnyName
@@ -339,7 +352,11 @@ func createSetMessageWindowTextFunction(messageWindow *message.MessageWindow) se
 	}
 }
 
-func createBattleEnemyDisplay(newBattleEnemyDisplay battleenemy.NewBattleEnemyDisplayFunc, enemyIds []*setup.EnemyIdPair, enemySettings []*config.EnemySetting) *battleenemy.BattleEnemyDisplay {
+func createBattleEnemyDisplay(
+	newBattleEnemyDisplay battleenemy.NewBattleEnemyDisplayFunc,
+	enemyIds []*setup.EnemyIdPair,
+	enemySettings []*config.EnemySetting,
+) *battleenemy.BattleEnemyDisplay {
 	displayArgs := battleenemy.ToDisplayArgs(enemyIds, enemySettings)
 	return newBattleEnemyDisplay(
 		displayArgs,
@@ -349,7 +366,7 @@ func createBattleEnemyDisplay(newBattleEnemyDisplay battleenemy.NewBattleEnemyDi
 
 func createBattleSelectWindow(
 	newBattleSelectWindow window.NewBattleSelectWindowFunc,
-	inputManager input.InputManager,
+	inputManager input.Manager,
 	onSubmit func(battle.PlayerCommand),
 ) *window.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
@@ -368,11 +385,17 @@ func createBattleSelectWindow(
 		onSubmit,
 	)
 	battleSelectWindow.Close()
-	inputManager.Set(input.InputReceiverEmptyInstance)
+	inputManager.Set(input.EmptyInstance)
 	return battleSelectWindow
 }
 
-func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay, effectManager *widget.EffectManager) func(widget.EffectId, actor.ActorId) {
+func createPlayEffectFunction(
+	serveActor actor.ActorSupplier,
+	battleEnemyDisplay *battleenemy.BattleEnemyDisplay,
+	subActorDisplay *battleactor.BattleSubActorDisplay,
+	actorDisplay *battleactor.BattleActorDisplay,
+	effectManager *widget.EffectManager,
+) func(widget.EffectId, actor.ActorId) {
 	return func(effectId widget.EffectId, target actor.ActorId) {
 		targetActor := serveActor(target)
 		position := func() *drawing.Vector {
@@ -388,7 +411,12 @@ func createPlayEffectFunction(serveActor actor.ActorSupplier, battleEnemyDisplay
 	}
 }
 
-func createDoShakeFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, shakeEmitter *shake.EmitShake) func(actor.ActorId) {
+func createDoShakeFunction(
+	serveActor actor.ActorSupplier,
+	battleEnemyDisplay *battleenemy.BattleEnemyDisplay,
+	subActorDisplay *battleactor.BattleSubActorDisplay,
+	shakeEmitter *shake.EmitShake,
+) func(actor.ActorId) {
 	return func(actorId actor.ActorId) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -425,7 +453,12 @@ func createSetDamageFunction(
 	}
 }
 
-func createSetEmotionFunction(serveActor actor.ActorSupplier, battleEnemyDisplay *battleenemy.BattleEnemyDisplay, subActorDisplay *battleactor.BattleSubActorDisplay, actorDisplay *battleactor.BattleActorDisplay) func(actor.ActorId, battleemotion.EmotionType) {
+func createSetEmotionFunction(
+	serveActor actor.ActorSupplier,
+	battleEnemyDisplay *battleenemy.BattleEnemyDisplay,
+	subActorDisplay *battleactor.BattleSubActorDisplay,
+	actorDisplay *battleactor.BattleActorDisplay,
+) func(actor.ActorId, battleemotion.EmotionType) {
 	return func(actorId actor.ActorId, emotion battleemotion.EmotionType) {
 		actor := serveActor(actorId)
 		if actor.IsEnemy() {
@@ -454,11 +487,11 @@ func createSetPartnerDialogueFunction(subActorDialog *battledialogue.BattlePartn
 
 func createOnSubmitTargetSelect(
 	battleSelectWindow *window.BattleSelectWindow,
-	inputManager input.InputManager,
+	inputManager input.Manager,
 ) func() {
 	return func() {
 		battleSelectWindow.Close()
-		inputManager.Set(input.InputReceiverEmptyInstance)
+		inputManager.Set(input.EmptyInstance)
 	}
 }
 

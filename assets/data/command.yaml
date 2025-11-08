@@ -1,0 +1,16 @@
+# プレイヤーコマンド設定
+commands:
+  - id: "attack"
+    cost: 0
+  - id: "fire"
+    cost: 2
+  - id: "thunder"
+    cost: 0
+  - id: "barrier"
+    cost: 0
+  - id: "wind"
+    cost: 0
+  - id: "focus"
+    cost: 0
+  - id: "defend"
+    cost: 0

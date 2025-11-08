@@ -130,14 +130,14 @@ func createPlayBattleSequence(
 				}
 				return result
 			}()
-			sequence := newBattleSequence(
+			battleSequence := newBattleSequence(
 				&event.EventSequenceArgs{
 					SequenceId: sequenceId,
 					Actor:      skillApplyResult.Actor,
 					Target:     damageInformation,
 				},
 			)
-			addBattleSequence(sequence)
+			addBattleSequence(battleSequence)
 			for _, row := range skillApplyResult.Rows {
 				if !row.IsTargetBeaten {
 					continue

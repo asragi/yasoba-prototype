@@ -1,4 +1,4 @@
-package cost
+package command
 
 import "github.com/asragi/yasoba-prototype/common/character/hero"
 

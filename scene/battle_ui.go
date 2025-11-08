@@ -22,7 +22,7 @@ type battleUI struct {
 	subActorDisplay    *actor.BattleSubActorDisplay
 	subActorDialog     *dialogue.BattlePartnerDialogue
 	targetSelectWindow *selection.SelectWindow
-	input              input.InputManager
+	input              input.Manager
 	battleEnemyDisplay *enemy.BattleEnemyDisplay
 	effectManager      *widget.EffectManager
 	shake              *shake.EmitShake
