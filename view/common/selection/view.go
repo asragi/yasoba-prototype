@@ -35,6 +35,7 @@ func NewSelectWindowView(
 	commands []text.TextId,
 	pivot *drawing.Pivot,
 	depth drawing.Depth,
+	marginRight float64,
 	newWindow window.NewWindowFunc,
 	newText widget.NewTextFunc,
 	textServer text.ServeTextDataFunc,
@@ -107,8 +108,7 @@ func NewSelectWindowView(
 		height := float64(lineHeight * len(texts))
 		return &drawing.Vector{X: width, Y: height}
 	}()
-	contentSizeWithPadding := contentSize.Add(
-		padding.Multiply(2)).Add(&drawing.Vector{X: cursorWidth, Y: 0})
+	contentSizeWithPadding := contentSize.Add(padding.Multiply(2)).Add(&drawing.Vector{X: cursorWidth, Y: 0}).Add(&drawing.Vector{X: marginRight, Y: 0})
 	window := newWindow(&window.WindowOption{
 		Texture:          window.WindowOptionDefaultTexture,
 		CornerSize:       window.WindowOptionDefaultCornerSize,

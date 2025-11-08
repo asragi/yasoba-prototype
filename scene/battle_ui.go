@@ -7,6 +7,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/battle/dialogue"
 	"github.com/asragi/yasoba-prototype/view/battle/enemy"
 	"github.com/asragi/yasoba-prototype/view/battle/window"
+	"github.com/asragi/yasoba-prototype/view/common/constant"
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
@@ -75,13 +76,16 @@ func (ui *battleUI) Draw(drawFunc drawing.DrawFunc) {
 func computeBattleUILayout(ui *battleUI, delta *drawing.Vector) battleUILayout {
 	actorAnchor := ui.actorDisplay.GetMainCharacterTopLeftPosition()
 	subActorAnchor := ui.subActorDisplay.GetTopCenterPosition()
+	screenWidth := float64(constant.GameWidth)
+	screenHeight := float64(constant.GameHeight)
 
 	return battleUILayout{
 		messageWindowPosition: drawing.Vector{X: delta.X, Y: delta.Y},
-		actorDisplayPosition:  drawing.Vector{X: delta.X, Y: delta.Y + 288},
-		subActorDisplayPos:    drawing.Vector{X: delta.X + 384, Y: delta.Y + 288},
-		enemyDisplayPosition:  drawing.Vector{X: delta.X + 192, Y: delta.Y + 144},
-		subActorDialogAnchor:  drawing.Vector{X: subActorAnchor.X + delta.X, Y: subActorAnchor.Y + delta.Y},
-		selectAnchor:          drawing.Vector{X: actorAnchor.X + delta.X, Y: actorAnchor.Y + delta.Y},
+		actorDisplayPosition:  drawing.Vector{X: delta.X, Y: delta.Y + screenHeight},
+		subActorDisplayPos:    drawing.Vector{X: delta.X + screenWidth, Y: delta.Y + screenHeight},
+		// TODO: enemy positionはbattle settingから得る
+		enemyDisplayPosition: drawing.Vector{X: delta.X + screenWidth/2, Y: delta.Y + screenHeight/2},
+		subActorDialogAnchor: drawing.Vector{X: subActorAnchor.X + delta.X, Y: subActorAnchor.Y + delta.Y},
+		selectAnchor:         drawing.Vector{X: actorAnchor.X + delta.X, Y: actorAnchor.Y + delta.Y},
 	}
 }

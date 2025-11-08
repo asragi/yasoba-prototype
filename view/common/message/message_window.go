@@ -5,6 +5,7 @@ import (
 	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
+	"github.com/asragi/yasoba-prototype/view/common/window"
 	widgetwindow "github.com/asragi/yasoba-prototype/view/common/window"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -70,8 +71,8 @@ func StandByNewMessageWindow(
 	newText widget.NewTextFunc,
 	newWindow widgetwindow.NewWindowFunc,
 ) NewMessageWindowFunc {
-	cornerSize := 6
-	padding := &drawing.Vector{X: 16, Y: 8}
+	cornerSize := window.WindowOptionDefaultCornerSize
+	padding := window.WindowOptionDefaultPadding
 	speed := 5
 	return func(
 		relativePosition *drawing.Vector,

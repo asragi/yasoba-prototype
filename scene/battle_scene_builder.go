@@ -20,6 +20,7 @@ import (
 	battleenemy "github.com/asragi/yasoba-prototype/view/battle/enemy"
 	battleevent "github.com/asragi/yasoba-prototype/view/battle/event"
 	"github.com/asragi/yasoba-prototype/view/battle/window"
+	"github.com/asragi/yasoba-prototype/view/common/constant"
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
@@ -241,6 +242,7 @@ func InitializeCreateBattleScene(
 			&drawing.Vector{X: 80, Y: 0},
 			drawing.PivotBottomLeft,
 			drawing.DepthWindow,
+			0,
 			allTextId,
 			onTargetSelect,
 			true,
@@ -314,7 +316,7 @@ func createAllTextIdList(allActorId []actor.ActorId, actorNames map[actor.ActorI
 
 func createMessageWindow(newMessageWindow message.NewMessageWindowFunc) *message.MessageWindow {
 	messageWindow := newMessageWindow(
-		&drawing.Vector{X: 192, Y: 0},
+		&drawing.Vector{X: float64(constant.GameWidthHalf), Y: 0},
 		&drawing.Vector{X: 292, Y: 62},
 		drawing.DepthWindow,
 		drawing.PivotTopCenter,

@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/config"
+	"github.com/asragi/yasoba-prototype/view/common/constant"
 )
 
 type Config struct {
@@ -13,22 +14,10 @@ type Config struct {
 	BattleID        battle.BattleId
 }
 
-var sizeMap = map[int]map[int]int{
-	0: {
-		0: 384,
-		1: 288,
-	},
-	1: {
-		0: 416,
-		1: 312,
-	},
-}
-
 func DefaultConfig() Config {
-	sizeType := 1
 	return Config{
-		GameWidth:       sizeMap[sizeType][0],
-		GameHeight:      sizeMap[sizeType][1],
+		GameWidth:       constant.GameWidth,
+		GameHeight:      constant.GameHeight,
 		TextDataPath:    "assets/data/text_data.yaml",
 		BattleSettingID: config.IdTest,
 		BattleID:        battle.BattleIdTest001,

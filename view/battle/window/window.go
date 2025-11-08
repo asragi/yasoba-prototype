@@ -7,6 +7,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 )
 
+// SelectWindowに対する薄いwrapper
 type BattleSelectWindow struct {
 	commands     []battle.PlayerCommand
 	onSubmit     func(battle.PlayerCommand)
@@ -77,10 +78,12 @@ func StandByNewBattleSelectWindow(
 			}
 			return texts
 		}()
+		marginRight := 10.0
 		window := newSelectWindow(
 			relativePosition,
 			pivot,
 			depth,
+			marginRight,
 			commandTexts,
 			onSubmitIndex,
 			false,

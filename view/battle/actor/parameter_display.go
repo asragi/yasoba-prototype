@@ -4,6 +4,7 @@ import (
 	"github.com/asragi/yasoba-prototype/common/character"
 	"github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	"github.com/asragi/yasoba-prototype/view/battle/constant"
 	"github.com/asragi/yasoba-prototype/view/battle/hp"
 	widgetwindow "github.com/asragi/yasoba-prototype/view/common/window"
 )
@@ -34,7 +35,7 @@ func CreateNewBattleParameterDisplay(
 	newBattleHPDisplay hp.NewBattleHPDisplayFunc,
 ) NewBattleParameterDisplayFunc {
 	const windowCornerSize = 3
-	const faceSize = 80
+	const size = constant.FaceSize + windowCornerSize*2
 	height := windowCornerSize*2 + 13.0
 	return func(initialHp character.HP, pivot *drawing.Pivot) *BattleParameterDisplay {
 		return &BattleParameterDisplay{
@@ -44,7 +45,7 @@ func CreateNewBattleParameterDisplay(
 					Texture:          texture.Window,
 					CornerSize:       windowCornerSize,
 					RelativePosition: &drawing.Vector{X: 0, Y: 0},
-					Size:             &drawing.Vector{X: faceSize, Y: height},
+					Size:             &drawing.Vector{X: size, Y: height},
 					Depth:            drawing.DepthPlayer,
 					Pivot:            pivot,
 				},

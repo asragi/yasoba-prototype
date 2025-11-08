@@ -15,6 +15,7 @@ func InitializeCreateDebugScene(newSelectWindow selection.NewSelectWindowFunc) C
 			&anchor,
 			drawing.PivotTopLeft,
 			drawing.DepthWindow,
+			0,
 			[]text.TextId{
 				text.TextIdDebugMenuBattle,
 				text.TextIdDebugMenuSequence,
