@@ -3,6 +3,7 @@ package scene
 import (
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/enemy"
 	"github.com/asragi/yasoba-prototype/battle/invoke"
@@ -109,10 +110,10 @@ func InitializeCreateBattleScene(
 		)
 
 		// バトル選択ウィンドウの設定
-		var selectedCommand battle.PlayerCommand
+		var selectedCommand command.Id
 		var targetSelectWindow *selection.SelectWindow
-		onSubmit := func(command battle.PlayerCommand) {
-			selectedCommand = command
+		onSubmit := func(cmd command.Id) {
+			selectedCommand = cmd
 			targetSelectWindow.Open()
 			inputManager.Set(targetSelectWindow)
 		}
@@ -240,7 +241,7 @@ func InitializeCreateBattleScene(
 		onTargetSelect := createOnTargetSelect(
 			closeWindowOnTargetSelect,
 			func(index int) actor.ActorId { return allActorId[index] },
-			func() battle.PlayerCommand { return selectedCommand },
+			func() command.Id { return selectedCommand },
 			battleScene.battleSequence.Reset,
 			playSequence,
 			processBattle,
@@ -367,20 +368,20 @@ func createBattleEnemyDisplay(
 func createBattleSelectWindow(
 	newBattleSelectWindow window.NewBattleSelectWindowFunc,
 	inputManager input.Manager,
-	onSubmit func(battle.PlayerCommand),
+	onSubmit func(command.Id),
 ) *window.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
 		&drawing.Vector{X: 0, Y: 0},
 		drawing.PivotBottomLeft,
 		drawing.DepthWindow,
-		[]battle.PlayerCommand{
-			battle.PlayerCommandAttack,
-			battle.PlayerCommandFire,
-			battle.PlayerCommandBarrier,
-			battle.PlayerCommandThunder,
-			battle.PlayerCommandWind,
-			battle.PlayerCommandFocus,
-			battle.PlayerCommandDefend,
+		[]command.Id{
+			command.IdAttack,
+			command.IdFire,
+			command.IdBarrier,
+			command.IdThunder,
+			command.IdWind,
+			command.IdFocus,
+			command.IdDefend,
 		},
 		onSubmit,
 	)

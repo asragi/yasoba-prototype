@@ -1,7 +1,6 @@
 package command
 
-type Id string
-
+// Model exposes read-only access to a command definition.
 type Model interface {
 	ID() Id
 	Cost() Cost
@@ -12,6 +11,7 @@ type commandModel struct {
 	cost Cost
 }
 
+// NewModel creates a command model from its identifier and MP cost.
 func NewModel(id Id, cost Cost) Model {
 	return &commandModel{
 		id:   id,

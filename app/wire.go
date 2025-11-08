@@ -12,8 +12,10 @@ import (
 	drawingadapter "github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	sequenceadapter "github.com/asragi/yasoba-prototype/adapter/ebiten/sequence/adapter"
+	commandyaml "github.com/asragi/yasoba-prototype/adapter/yaml"
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/battle/combination"
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/decision"
@@ -58,6 +60,7 @@ func initializeApp(cfg Config) (*App, error) {
 		makeSelectCursor,
 		selection.StandByNewSelectWindow,
 		makeSelectWindowViewFunc,
+		makeCommandModelGetter,
 		windowview.StandByNewBattleSelectWindow,
 		makeFaceWindowFactory,
 		makeTransitionView,
@@ -123,6 +126,14 @@ func initializeApp(cfg Config) (*App, error) {
 
 func loadTextServer(cfg Config) (text.ServeTextDataFunc, error) {
 	return text.LoadFromYAML(cfg.TextDataPath)
+}
+
+func makeCommandModelGetter() command.GetCommandModelFunc {
+	models := commandyaml.CommandModelsFromYAML("assets/data/command.yaml")
+	port := func() []command.Model {
+		return models
+	}
+	return command.CreateGetCommandModel(port)
 }
 
 func makeProduceCreateSequence(prepare sequence.PrepareProduceCreateSequence, textServer text.ServeTextDataFunc) sequence.ProduceCreateSequence {

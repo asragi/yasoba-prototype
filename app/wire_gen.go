@@ -10,9 +10,11 @@ import (
 	"github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/adapter/ebiten/frontend"
 	adapter2 "github.com/asragi/yasoba-prototype/adapter/ebiten/sequence/adapter"
+	"github.com/asragi/yasoba-prototype/adapter/yaml"
 	"github.com/asragi/yasoba-prototype/battle"
 	actor2 "github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/combination"
+	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/decision"
 	"github.com/asragi/yasoba-prototype/battle/enemy"
@@ -62,7 +64,8 @@ func initializeApp(cfg Config) (*App, error) {
 	}
 	newSelectWindowViewFunc := makeSelectWindowViewFunc()
 	newSelectWindowFunc := selection.StandByNewSelectWindow(newCursor, newTextFunc, newWindowFunc, serveTextDataFunc, newSelectWindowViewFunc)
-	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc)
+	getCommandModelFunc := makeCommandModelGetter()
+	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc, getCommandModelFunc)
 	newFaceWindowFunc := makeFaceWindowFactory(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := damage.CreateNewDisplayDamage(newTextFunc)
 	id := _wireIDValue
@@ -88,7 +91,7 @@ func initializeApp(cfg Config) (*App, error) {
 	getEnemyGraphicsFunc := enemy2.CreateGetEnemyGraphics()
 	newBattleEnemyGraphicsFunc := makeBattleEnemyGraphics(resourceManager, getEnemyGraphicsFunc, newDisplayDamageFunc, cfg)
 	newBattleEnemyDisplayFunc := enemy2.CreateNewBattleEnemyDisplay(newBattleEnemyGraphicsFunc)
-	inputManager := makeInputManager()
+	manager := makeInputManager()
 	serveEffectDataFunc := widget.CreateServeEffectData()
 	effectManager := widget.NewEffectManager(serveEffectDataFunc, resourceManager)
 	serveEnemyViewData := enemy2.NewServeEnemyViewData()
@@ -106,7 +109,7 @@ func initializeApp(cfg Config) (*App, error) {
 	prepareProduceCreateSequence := adapter2.InitializeProduceCreateSequence()
 	produceCreateSequence := makeProduceCreateSequence(prepareProduceCreateSequence, serveTextDataFunc)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
-	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, newTransitionViewFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, inputManager, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
+	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, newTransitionViewFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, manager, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
 	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
 	debugDebug := debug.CreateDrawParameters(newTextFunc)
 	app := buildApp(drawingDrawing, createBattleScene, createDebugScene, debugDebug, cfg)
@@ -123,6 +126,14 @@ var (
 
 func loadTextServer(cfg Config) (text.ServeTextDataFunc, error) {
 	return text.LoadFromYAML(cfg.TextDataPath)
+}
+
+func makeCommandModelGetter() command.GetCommandModelFunc {
+	models := yaml.CommandModelsFromYAML("assets/data/command.yaml")
+	port := func() []command.Model {
+		return models
+	}
+	return command.CreateGetCommandModel(port)
 }
 
 func makeProduceCreateSequence(prepare sequence.PrepareProduceCreateSequence, textServer text.ServeTextDataFunc) sequence.ProduceCreateSequence {

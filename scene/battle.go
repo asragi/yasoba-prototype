@@ -3,6 +3,7 @@ package scene
 import (
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/enemy"
 	"github.com/asragi/yasoba-prototype/battle/invoke"
@@ -172,7 +173,7 @@ func createPlayBattleSequence(
 func createOnTargetSelect(
 	closeWindow func(),
 	indexToActor func(int) actor.ActorId,
-	serveSelectedCommand func() battle.PlayerCommand,
+	serveSelectedCommand func() command.Id,
 	resetBattleSequence func(),
 	playSequence func([]*skill.SkillApplyResult),
 	processBattle battle.ProcessBattleFunc,

@@ -2,43 +2,9 @@ package battle
 
 import (
 	"github.com/asragi/yasoba-prototype/battle/actor"
+	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/battle/skill"
-	"github.com/asragi/yasoba-prototype/text"
 )
-
-// PlayerCommand is a command that the player can select in the battle.
-type PlayerCommand string
-
-const (
-	PlayerCommandAttack  PlayerCommand = "attack"
-	PlayerCommandFire    PlayerCommand = "fire"
-	PlayerCommandThunder PlayerCommand = "thunder"
-	PlayerCommandBarrier PlayerCommand = "barrier"
-	PlayerCommandWind    PlayerCommand = "wind"
-	PlayerCommandFocus   PlayerCommand = "focus"
-	PlayerCommandDefend  PlayerCommand = "defend"
-)
-
-// ToTextId converts a player command into the associated text ID.
-func (b *PlayerCommand) ToTextId() text.TextId {
-	switch *b {
-	case PlayerCommandAttack:
-		return text.TextIdBattleCommandAttack
-	case PlayerCommandFire:
-		return text.TextIdBattleCommandFire
-	case PlayerCommandThunder:
-		return text.TextIdBattleCommandThunder
-	case PlayerCommandBarrier:
-		return text.TextIdBattleCommandBarrier
-	case PlayerCommandWind:
-		return text.TextIdBattleCommandWind
-	case PlayerCommandFocus:
-		return text.TextIdBattleCommandFocus
-	case PlayerCommandDefend:
-		return text.TextIdBattleCommandDefend
-	}
-	return ""
-}
 
 // BattlePlayerCommandResult holds the SelectedAction triggered by a command.
 type BattlePlayerCommandResult struct {
@@ -57,13 +23,13 @@ func CreateProcessPlayerCommand(supplyActor actor.ActorSupplier) ProcessPlayerCo
 		target := supplyActor(targets[0])
 		return target.Side == actor.ActorSideEnemy
 	}
-	return func(command *PostCommandRequest) *BattlePlayerCommandResult {
+	return func(commandReq *PostCommandRequest) *BattlePlayerCommandResult {
 		decidedSkillId := func() skill.SkillId {
-			if isToEnemy(command.TargetId) {
-				switch command.Command {
-				case PlayerCommandAttack:
+			if isToEnemy(commandReq.TargetId) {
+				switch commandReq.Command {
+				case command.IdAttack:
 					return skill.SkillIdLuneAttack
-				case PlayerCommandFire:
+				case command.IdFire:
 					return skill.SkillIdLuneFireEnemy
 				default:
 					panic("not implemented")
@@ -75,9 +41,9 @@ func CreateProcessPlayerCommand(supplyActor actor.ActorSupplier) ProcessPlayerCo
 		return &BattlePlayerCommandResult{
 			SkillApplyArgs: &skill.SelectedAction{
 				Id:       decidedSkillId,
-				Actor:    command.ActorId,
+				Actor:    commandReq.ActorId,
 				SubActor: actor.ActorEmptyId,
-				Target:   command.TargetId,
+				Target:   commandReq.TargetId,
 			},
 		}
 	}

@@ -3,6 +3,7 @@ package battle
 import (
 	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/combination"
+	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/battle/decision"
 	"github.com/asragi/yasoba-prototype/battle/enemy"
 	"github.com/asragi/yasoba-prototype/battle/partner"
@@ -14,13 +15,13 @@ import (
 type PostCommandRequest struct {
 	ActorId  actor.ActorId
 	TargetId []actor.ActorId
-	Command  PlayerCommand
+	Command  command.Id
 }
 
 // ProcessBattleRequest is the input for executing a turn.
 type ProcessBattleRequest struct {
 	TargetId []actor.ActorId
-	Command  PlayerCommand
+	Command  command.Id
 }
 
 // ProcessBattleResponse contains the set of applied skill results.
