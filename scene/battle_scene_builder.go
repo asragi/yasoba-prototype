@@ -10,6 +10,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	"github.com/asragi/yasoba-prototype/common/character/hero"
 	battleemotion "github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/sequence"
 	seqtransition "github.com/asragi/yasoba-prototype/sequence/transition"
@@ -30,6 +31,13 @@ import (
 )
 
 const battleTransitionFrameCount = 15
+
+type mpPort interface {
+	CurrentMP() hero.MP
+	Recover()
+	Consume(cost command.Cost)
+	MaxMP() hero.MaxMP
+}
 
 func InitializeCreateBattleScene(
 	newMessageWindow message.NewMessageWindowFunc,
@@ -151,10 +159,10 @@ func InitializeCreateBattleScene(
 			battleEnemyDisplay.SetDisappear,
 		)
 
-		battleSelectWindow := createBattleSelectWindow(newBattleSelectWindow, inputManager, onSubmit)
-
+		mpManager := option.MpManager
+		battleSelectWindow := createBattleSelectWindow(newBattleSelectWindow, inputManager, onSubmit, mpManager)
 		showPlayerCommandWindow := func() {
-			battleSelectWindow.Open()
+			battleSelectWindow.Open(mpManager.CurrentMP())
 			inputManager.Set(battleSelectWindow)
 		}
 
@@ -216,6 +224,7 @@ func InitializeCreateBattleScene(
 			createSequence: createSequence,
 			sequences:      sequence.CreateSequenceManager(),
 			playerBeaten:   initialMainActor.IsBeaten(),
+			mpManager:      mpManager,
 		}
 		battleScene.sequences.AddSequence(seq)
 		battleScene.sequences.AddSequence(commandWindowSequence)
@@ -369,8 +378,10 @@ func createBattleSelectWindow(
 	newBattleSelectWindow window.NewBattleSelectWindowFunc,
 	inputManager input.Manager,
 	onSubmit func(command.Id),
+	mpManager mpPort,
 ) *window.BattleSelectWindow {
 	battleSelectWindow := newBattleSelectWindow(
+		mpManager.CurrentMP(),
 		&drawing.Vector{X: 0, Y: 0},
 		drawing.PivotBottomLeft,
 		drawing.DepthWindow,

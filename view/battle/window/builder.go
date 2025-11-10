@@ -2,11 +2,13 @@ package window
 
 import (
 	"github.com/asragi/yasoba-prototype/battle/command"
+	"github.com/asragi/yasoba-prototype/common/character/hero"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 )
 
 type NewBattleSelectWindowFunc func(
+	hero.MP,
 	*drawing.Vector,
 	*drawing.Pivot,
 	drawing.Depth,
@@ -20,19 +22,22 @@ func StandByNewBattleSelectWindow(
 ) NewBattleSelectWindowFunc {
 	newView := createNewView(newSelectWindow)
 	return func(
+		playerMp hero.MP,
 		position *drawing.Vector,
 		pivot *drawing.Pivot,
 		depth drawing.Depth,
 		commands []command.Id,
-		onSubmit func(command.Id),
+		outerOnSubmit func(command.Id),
 	) *BattleSelectWindow {
-		view := newView(
-			position,
-			pivot,
-			depth,
-			commands,
-			onSubmit,
-		)
-		return newBattleSelectWindow(commands, commandPort, view)
+		createView := func(onSubmit func(command.Id)) viewInterface {
+			return newView(
+				position,
+				pivot,
+				depth,
+				commands,
+				onSubmit,
+			)
+		}
+		return newBattleSelectWindow(playerMp, commands, commandPort, createView, outerOnSubmit)
 	}
 }

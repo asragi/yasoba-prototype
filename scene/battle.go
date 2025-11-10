@@ -9,12 +9,15 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/invoke"
 	"github.com/asragi/yasoba-prototype/battle/setup"
 	"github.com/asragi/yasoba-prototype/battle/skill"
+	"github.com/asragi/yasoba-prototype/common/character/hero"
 	"github.com/asragi/yasoba-prototype/sequence"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	battleenemy "github.com/asragi/yasoba-prototype/view/battle/enemy"
 	"github.com/asragi/yasoba-prototype/view/battle/event"
 )
+
+type getMpFunc func() hero.MP
 
 type BattleScene struct {
 	ui                  battleUI
@@ -27,6 +30,7 @@ type BattleScene struct {
 	checkInvokeSequence invoke.CheckInvokeSequence
 	invokedSequences    map[sequence.SequenceId]bool
 	turnCount           battle.TurnCount
+	mpManager           mpPort
 	playerBeaten        bool
 	autoPlayNonPlayer   func()
 }
@@ -50,7 +54,7 @@ func (s *BattleScene) onTurnEnd() {
 		return
 	}
 	s.ui.input.Set(s.ui.battleSelectWindow)
-	s.ui.battleSelectWindow.Open()
+	s.ui.battleSelectWindow.Open(s.mpManager.CurrentMP())
 	s.checkAndStartSequences(invoke.InvokeTimingStartTurn)
 }
 
@@ -94,7 +98,26 @@ func advanceBattleSequence(sequence *event.BattleEventSequencer) bool {
 type BattleResult struct{}
 type OnEndBattle func(BattleResult)
 
+func NewBattleOption(
+	mpManager mpPort,
+	onEnd OnEndBattle,
+	battleSettingId config.Id,
+	battleId battle.BattleId,
+	switchToBattle func(battle.BattleId),
+	switchToDebug func(),
+) *BattleOption {
+	return &BattleOption{
+		MpManager:       mpManager,
+		OnEnd:           onEnd,
+		BattleSettingId: battleSettingId,
+		BattleId:        battleId,
+		SwitchToBattle:  switchToBattle,
+		SwitchToDebug:   switchToDebug,
+	}
+}
+
 type BattleOption struct {
+	MpManager       mpPort
 	OnEnd           OnEndBattle
 	BattleSettingId config.Id
 	BattleId        battle.BattleId

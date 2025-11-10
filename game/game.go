@@ -4,30 +4,57 @@ import (
 	"github.com/asragi/yasoba-prototype/adapter/ebiten/drawing/adapter"
 	"github.com/asragi/yasoba-prototype/app"
 	"github.com/asragi/yasoba-prototype/battle"
+	"github.com/asragi/yasoba-prototype/battle/command"
+	"github.com/asragi/yasoba-prototype/common/character/hero"
 	"github.com/asragi/yasoba-prototype/debug"
 	"github.com/asragi/yasoba-prototype/scene"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type mpPort interface {
+	InitialMP() hero.InitialMP
+	RecoverMP() hero.RecoverMP
+	MaxMP() hero.MaxMP
+}
+
+type commonManager interface {
+	GetMPManager() mpPort
+}
+
+type commonManagerImpl struct {
+	mpManager mpPort
+}
+
+func (c *commonManagerImpl) GetMPManager() mpPort {
+	return c.mpManager
+}
+
 type Game struct {
-	app          *app.App
-	cfg          app.Config
-	activeScene  scene.Scene
-	debugOverlay *debug.Debug
-	drawing      *drawing.Drawing
-	width        int
-	height       int
+	app           *app.App
+	cfg           app.Config
+	activeScene   scene.Scene
+	debugOverlay  *debug.Debug
+	drawing       *drawing.Drawing
+	width         int
+	height        int
+	commonManager commonManager
 }
 
 func New(appInstance *app.App, cfg app.Config) *Game {
+	commonMPManager := hero.NewCommonMPManager(
+		hero.InitialMP(1),
+		hero.RecoverMP(1),
+		hero.MaxMP(4),
+	)
 	game := &Game{
-		app:          appInstance,
-		cfg:          cfg,
-		debugOverlay: appInstance.DebugOverlay,
-		drawing:      appInstance.Drawing,
-		width:        cfg.GameWidth,
-		height:       cfg.GameHeight,
+		app:           appInstance,
+		cfg:           cfg,
+		debugOverlay:  appInstance.DebugOverlay,
+		drawing:       appInstance.Drawing,
+		width:         cfg.GameWidth,
+		height:        cfg.GameHeight,
+		commonManager: &commonManagerImpl{mpManager: commonMPManager},
 	}
 	debugScene := game.newDebugScene()
 	game.activeScene = debugScene
@@ -66,13 +93,16 @@ func (g *Game) newBattleScene(battleID battle.BattleId) *scene.BattleScene {
 	if g.app == nil {
 		panic("game: app is nil")
 	}
-	battleScene := g.app.CreateBattleScene(&scene.BattleOption{
-		OnEnd:           nil,
-		BattleSettingId: g.cfg.BattleSettingID,
-		BattleId:        battleID,
-		SwitchToBattle:  g.SwitchToBattleScene,
-		SwitchToDebug:   g.SwitchToDebugScene,
-	})
+	battleMpManager := command.NewMpManager(g.commonManager.GetMPManager())
+	option := scene.NewBattleOption(
+		battleMpManager,
+		nil,
+		g.cfg.BattleSettingID,
+		battleID,
+		g.SwitchToBattleScene,
+		g.SwitchToDebugScene,
+	)
+	battleScene := g.app.CreateBattleScene(option)
 	if battleScene == nil {
 		panic("game: failed to create battle scene")
 	}
