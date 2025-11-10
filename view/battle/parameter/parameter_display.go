@@ -11,7 +11,7 @@ import (
 )
 
 type mpDisplay interface {
-	SetCurrentMP(hero.MP)
+	Refresh(hero.MP)
 	Update(*drawing.Vector)
 	Draw(drawing.DrawFunc)
 }
@@ -24,6 +24,14 @@ type BattleParameterDisplay struct {
 
 func (d *BattleParameterDisplay) SetHP(hp character.HP) {
 	d.hpDisplay.SetHP(hp)
+}
+
+func (d *BattleParameterDisplay) SetMP(mp hero.MP) {
+	if d.mpDisplay == nil {
+		// mpDisplay は optional なので nil でも panic しない
+		return
+	}
+	d.mpDisplay.Refresh(mp)
 }
 
 func (d *BattleParameterDisplay) GetHeight() float64 {

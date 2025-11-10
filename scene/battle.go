@@ -54,7 +54,9 @@ func (s *BattleScene) onTurnEnd() {
 		return
 	}
 	s.ui.input.Set(s.ui.battleSelectWindow)
-	s.ui.battleSelectWindow.Open(s.mpManager.CurrentMP())
+	currentMp := s.mpManager.CurrentMP()
+	s.ui.actorDisplay.RefreshMp(currentMp)
+	s.ui.battleSelectWindow.Open(currentMp)
 	s.checkAndStartSequences(invoke.InvokeTimingStartTurn)
 }
 

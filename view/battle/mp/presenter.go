@@ -13,6 +13,7 @@ type newViewFunc func(
 type viewInterface interface {
 	update(*drawing.Vector, int)
 	draw(drawing.DrawFunc)
+	refresh(int, int)
 }
 
 type mpDisplay struct {
@@ -20,7 +21,11 @@ type mpDisplay struct {
 	view      viewInterface
 }
 
-func (m *mpDisplay) SetCurrentMP(mp hero.MP) {
+func (m *mpDisplay) Refresh(mp hero.MP) {
+	if m.currentMP == mp {
+		return
+	}
+	m.view.refresh(m.currentMP.ToInt(), mp.ToInt())
 	m.currentMP = mp
 }
 

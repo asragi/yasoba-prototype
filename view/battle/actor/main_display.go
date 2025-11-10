@@ -18,6 +18,10 @@ type BattleActorDisplay struct {
 	parameterDisplay *parameter.BattleParameterDisplay
 }
 
+func (d *BattleActorDisplay) RefreshMp(mp hero.MP) {
+	d.parameterDisplay.SetMP(mp)
+}
+
 func (d *BattleActorDisplay) SetDamage(damage skill.Damage, afterHP character.HP) {
 	d.displayDamage.DisplayDamage(damage)
 	d.parameterDisplay.SetHP(afterHP)

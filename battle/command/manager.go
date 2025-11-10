@@ -14,8 +14,10 @@ type battleMPManagerImpl struct {
 }
 
 func NewMpManager(commonManager commonMPManager) *battleMPManagerImpl {
+	initialMp := commonManager.InitialMP().ToMP()
 	return &battleMPManagerImpl{
 		commonMPManager: commonManager,
+		currentMP:       initialMp,
 	}
 }
 

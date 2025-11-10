@@ -88,3 +88,7 @@ func (m *view) draw(drawFunc drawing.DrawFunc) {
 		m.emptyIcons[i].Draw(drawFunc)
 	}
 }
+
+func (m *view) refresh(before int, after int) {
+	m.currentMp = after
+}
