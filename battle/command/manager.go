@@ -19,6 +19,10 @@ func NewMpManager(commonManager commonMPManager) *battleMPManagerImpl {
 	}
 }
 
+func (m *battleMPManagerImpl) InitialMP() hero.InitialMP {
+	return m.commonMPManager.InitialMP()
+}
+
 func (m *battleMPManagerImpl) CurrentMP() hero.MP {
 	return m.currentMP
 }

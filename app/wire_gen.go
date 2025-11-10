@@ -36,6 +36,8 @@ import (
 	enemy2 "github.com/asragi/yasoba-prototype/view/battle/enemy"
 	"github.com/asragi/yasoba-prototype/view/battle/event"
 	"github.com/asragi/yasoba-prototype/view/battle/hp"
+	"github.com/asragi/yasoba-prototype/view/battle/mp"
+	"github.com/asragi/yasoba-prototype/view/battle/parameter"
 	"github.com/asragi/yasoba-prototype/view/battle/window"
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
@@ -68,10 +70,11 @@ func initializeApp(cfg Config) (*App, error) {
 	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc, getCommandModelFunc)
 	newFaceWindowFunc := makeFaceWindowFactory(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := damage.CreateNewDisplayDamage(newTextFunc)
+	newMPDisplayFunc := makeMPDisplay(resourceManager)
 	id := _wireIDValue
 	newBattleHPDisplayFunc := hp.CreateNewBattleHPDisplay(id, newTextFunc)
-	newBattleParameterDisplayFunc := actor.CreateNewBattleParameterDisplay(newWindowFunc, newBattleHPDisplayFunc)
-	newBattleActorDisplayFunc := actor.CreateNewBattleActorDisplay(newFaceWindowFunc, newDisplayDamageFunc, newBattleParameterDisplayFunc)
+	newBattleParameterDisplayFunc := parameter.CreateNewBattleParameterDisplay(newWindowFunc, newBattleHPDisplayFunc)
+	newBattleActorDisplayFunc := actor.CreateNewBattleActorDisplay(newFaceWindowFunc, newDisplayDamageFunc, newMPDisplayFunc, newBattleParameterDisplayFunc)
 	newBattleSubActorDisplayFunc := actor.CreateNewBattleSubActorDisplay(newFaceWindowFunc, newDisplayDamageFunc, newBattleParameterDisplayFunc)
 	newTransitionViewFunc := makeTransitionView(resourceManager, cfg)
 	nameServer := enemy.CreateNameServer()
@@ -192,6 +195,23 @@ func makeProcessBattle(
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) window2.NewWindowFunc {
 	return window2.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
+}
+
+func makeMPDisplay(resource *frontend.ResourceManager) mp.NewMPDisplayFunc {
+	newImage := func(
+		relativePosition *drawing.Vector,
+		pivot *drawing.Pivot,
+		depth drawing.Depth,
+		imageData drawing.Image,
+	) mp.Image {
+		return widget.NewImage(
+			relativePosition,
+			pivot,
+			depth,
+			imageData,
+		)
+	}
+	return mp.CreateNewMPDisplay(newImage, resource.GetTexture)
 }
 
 func makeBattleEnemyGraphics(

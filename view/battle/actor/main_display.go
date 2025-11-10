@@ -4,20 +4,23 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/actor"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	"github.com/asragi/yasoba-prototype/common/character/hero"
 	"github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/battle/damage"
+	"github.com/asragi/yasoba-prototype/view/battle/mp"
+	"github.com/asragi/yasoba-prototype/view/battle/parameter"
 )
 
 type BattleActorDisplay struct {
 	faceWindow       *FaceWindow
 	displayDamage    *damage.DisplayDamage
-	parameterDisplay *BattleParameterDisplay
+	parameterDisplay *parameter.BattleParameterDisplay
 }
 
 func (d *BattleActorDisplay) SetDamage(damage skill.Damage, afterHP character.HP) {
 	d.displayDamage.DisplayDamage(damage)
-	d.parameterDisplay.hpDisplay.SetHP(afterHP)
+	d.parameterDisplay.SetHP(afterHP)
 }
 
 func (d *BattleActorDisplay) Update(bottomLeftPosition *drawing.Vector) {
@@ -44,16 +47,18 @@ func (d *BattleActorDisplay) SetEmotion(value emotion.EmotionType) {
 	d.faceWindow.SetEmotion(value)
 }
 
-type NewBattleActorDisplayFunc func(*actor.Actor) *BattleActorDisplay
+type NewBattleActorDisplayFunc func(*actor.Actor, hero.InitialMP, hero.MaxMP) *BattleActorDisplay
 
 func CreateNewBattleActorDisplay(
 	newFaceWindow NewFaceWindowFunc,
 	newDisplayDamage damage.NewDisplayDamageFunc,
-	newParameterDisplay NewBattleParameterDisplayFunc,
+	newMpDisplay mp.NewMPDisplayFunc,
+	newParameterDisplay parameter.NewBattleParameterDisplayFunc,
 ) NewBattleActorDisplayFunc {
-	return func(actor *actor.Actor) *BattleActorDisplay {
+	return func(actor *actor.Actor, initialMp hero.InitialMP, maxMp hero.MaxMP) *BattleActorDisplay {
 		initialHp := actor.HP
-		parameter := newParameterDisplay(initialHp, drawing.PivotBottomLeft)
+		mpDisplay := newMpDisplay(initialMp, maxMp)
+		parameter := newParameterDisplay(initialHp, drawing.PivotBottomLeft, mpDisplay)
 
 		return &BattleActorDisplay{
 			faceWindow: newFaceWindow(

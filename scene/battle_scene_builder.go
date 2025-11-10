@@ -33,6 +33,7 @@ import (
 const battleTransitionFrameCount = 15
 
 type mpPort interface {
+	InitialMP() hero.InitialMP
 	CurrentMP() hero.MP
 	Recover()
 	Consume(cost command.Cost)
@@ -72,6 +73,10 @@ func InitializeCreateBattleScene(
 		}
 		if inputManager == nil {
 			panic("battle scene input manager is nil")
+		}
+		mpManager := option.MpManager
+		if mpManager == nil {
+			panic("battle scene mp manager is nil")
 		}
 		// 戦闘設定の取得と初期化
 		battleSetting := getBattleSetting(option.BattleSettingId)
@@ -126,7 +131,7 @@ func InitializeCreateBattleScene(
 			inputManager.Set(targetSelectWindow)
 		}
 
-		actorDisplay := newBattleActorDisplay(mainActor)
+		actorDisplay := newBattleActorDisplay(mainActor, mpManager.InitialMP(), mpManager.MaxMP())
 		subActorDisplay := newBattleSubActorDisplay(subActor)
 		subActorDialog := battledialogue.CreateNewBattlePartnerDialogue(newMessageWindow)()
 		transitionView := newTransitionView()
@@ -159,7 +164,6 @@ func InitializeCreateBattleScene(
 			battleEnemyDisplay.SetDisappear,
 		)
 
-		mpManager := option.MpManager
 		battleSelectWindow := createBattleSelectWindow(newBattleSelectWindow, inputManager, onSubmit, mpManager)
 		showPlayerCommandWindow := func() {
 			battleSelectWindow.Open(mpManager.CurrentMP())
@@ -230,7 +234,7 @@ func InitializeCreateBattleScene(
 		battleScene.sequences.AddSequence(commandWindowSequence)
 
 		// バトル処理の設定
-		processBattle := newProcessBattle(battleResponse, battleScene.onBattleEnd)
+		processBattle := newProcessBattle(battleResponse, battleScene.onBattleEnd, mpManager)
 		playSequence := createPlayBattleSequence(
 			skillToSequence,
 			newBattleSequence,

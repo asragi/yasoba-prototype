@@ -18,4 +18,6 @@ const (
 	BattleEffectImpact
 	BattleEffectFire
 	BattleEffectExplode
+	MPIcon
+	MPIconEmpty
 )

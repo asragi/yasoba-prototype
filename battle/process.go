@@ -9,6 +9,7 @@ import (
 	"github.com/asragi/yasoba-prototype/battle/partner"
 	"github.com/asragi/yasoba-prototype/battle/skill"
 	"github.com/asragi/yasoba-prototype/common/character"
+	"github.com/asragi/yasoba-prototype/common/character/hero"
 )
 
 // PostCommandRequest captures the player's chosen command.
@@ -28,13 +29,25 @@ type ProcessBattleRequest struct {
 type ProcessBattleResponse struct {
 	SkillApplyResults []*skill.SkillApplyResult
 	IsMainActorBeaten bool
+	DidRecoverMp      bool
+	CurrentMp         hero.MP
+}
+
+// MpStatus reports the current MP and recovers it when needed.
+type MpStatus interface {
+	Recover()
+	CurrentMP() hero.MP
 }
 
 // ProcessBattleFunc advances the battle by one set of actions.
 type ProcessBattleFunc func(*ProcessBattleRequest) *ProcessBattleResponse
 
 // NewProcessBattleFunc constructs a ProcessBattleFunc for a prepared battle.
-type NewProcessBattleFunc func(res *InitializeBattleResponse, onBattleEnd func(BattleEndType)) ProcessBattleFunc
+type NewProcessBattleFunc func(
+	res *InitializeBattleResponse,
+	onBattleEnd func(BattleEndType),
+	mpStatus MpStatus,
+) ProcessBattleFunc
 
 // StandByCreateProcessBattle wires all dependencies to handle battle progression.
 func StandByCreateProcessBattle(
@@ -61,7 +74,11 @@ func StandByCreateProcessBattle(
 	return func(
 		initializeBattleResponse *InitializeBattleResponse,
 		onBattleEndArg func(BattleEndType),
+		mpStatus MpStatus,
 	) ProcessBattleFunc {
+		if mpStatus == nil {
+			panic("mp status is nil")
+		}
 		mainActorId := initializeBattleResponse.MainActorId
 		subActorId := initializeBattleResponse.SubActorId
 
@@ -75,6 +92,8 @@ func StandByCreateProcessBattle(
 			return &ProcessBattleResponse{
 				SkillApplyResults: applyResult,
 				IsMainActorBeaten: isBeaten,
+				DidRecoverMp:      false,
+				CurrentMp:         mpStatus.CurrentMP(),
 			}
 		}
 		actorIdToEnemy := func() map[actor.ActorId]enemy.EnemyId {
@@ -95,12 +114,16 @@ func StandByCreateProcessBattle(
 
 		return func(request *ProcessBattleRequest) *ProcessBattleResponse {
 			result := make([]*skill.SkillApplyResult, 0)
+			didRecoverMp := false
 			mainActor := getActor(mainActorId)
 			if mainActor == nil {
 				panic("main actor not found: " + string(mainActorId))
 			}
 			subActor := getActor(subActorId)
-			subActorAlive := subActor != nil && !subActor.IsBeaten()
+			if subActor == nil {
+				panic("sub actor not found: " + string(subActorId))
+			}
+			subActorAlive := !subActor.IsBeaten()
 
 			runPlayerTurn := func(req *ProcessBattleRequest) []*skill.SkillApplyResult {
 				actualAction := processPlayerCommand(
@@ -170,11 +193,17 @@ func StandByCreateProcessBattle(
 			actionOrder := decideActionOrder()
 			for _, actorId := range actionOrder {
 				actionActor := getActor(actorId)
-				if actionActor == nil || actionActor.IsBeaten() {
+				if actionActor == nil {
+					panic("action actor not found: " + string(actorId))
+				}
+				if actionActor.IsBeaten() {
 					continue
 				}
 				state := getState()
-				decideActionFunction := choiceActionList[actorId]
+				decideActionFunction, ok := choiceActionList[actorId]
+				if !ok || decideActionFunction == nil {
+					panic("choice action not found: " + string(actorId))
+				}
 				decidedAction := decideActionFunction(actionActor, state)
 				applyResult := skillApply(
 					&skill.SelectedAction{
@@ -195,10 +224,16 @@ func StandByCreateProcessBattle(
 			if latestMainActor == nil {
 				panic("main actor not found: " + string(mainActorId))
 			}
+			if !latestMainActor.IsBeaten() {
+				mpStatus.Recover()
+				didRecoverMp = true
+			}
 
 			return &ProcessBattleResponse{
 				SkillApplyResults: result,
 				IsMainActorBeaten: latestMainActor.IsBeaten(),
+				DidRecoverMp:      didRecoverMp,
+				CurrentMp:         mpStatus.CurrentMP(),
 			}
 		}
 	}

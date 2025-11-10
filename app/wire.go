@@ -15,8 +15,8 @@ import (
 	commandyaml "github.com/asragi/yasoba-prototype/adapter/yaml"
 	"github.com/asragi/yasoba-prototype/battle"
 	"github.com/asragi/yasoba-prototype/battle/actor"
-	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/battle/combination"
+	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/battle/config"
 	"github.com/asragi/yasoba-prototype/battle/decision"
 	"github.com/asragi/yasoba-prototype/battle/enemy"
@@ -38,6 +38,8 @@ import (
 	enemyview "github.com/asragi/yasoba-prototype/view/battle/enemy"
 	eventview "github.com/asragi/yasoba-prototype/view/battle/event"
 	hpview "github.com/asragi/yasoba-prototype/view/battle/hp"
+	mpview "github.com/asragi/yasoba-prototype/view/battle/mp"
+	"github.com/asragi/yasoba-prototype/view/battle/parameter"
 	windowview "github.com/asragi/yasoba-prototype/view/battle/window"
 	messageview "github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
@@ -65,7 +67,8 @@ func initializeApp(cfg Config) (*App, error) {
 		makeFaceWindowFactory,
 		makeTransitionView,
 		hpview.CreateNewBattleHPDisplay,
-		actorview.CreateNewBattleParameterDisplay,
+		makeMPDisplay,
+		parameter.CreateNewBattleParameterDisplay,
 		damageview.CreateNewDisplayDamage,
 		actorview.CreateNewBattleActorDisplay,
 		actorview.CreateNewBattleSubActorDisplay,
@@ -192,6 +195,23 @@ func makeProcessBattle(
 
 func makeWindowFunc(resource *frontend.ResourceManager, cfg Config) widgetwindow.NewWindowFunc {
 	return widgetwindow.CreateNewWindow(resource.GetTexture, cfg.GameWidth, cfg.GameHeight)
+}
+
+func makeMPDisplay(resource *frontend.ResourceManager) mpview.NewMPDisplayFunc {
+	newImage := func(
+		relativePosition *drawing.Vector,
+		pivot *drawing.Pivot,
+		depth drawing.Depth,
+		imageData drawing.Image,
+	) mpview.Image {
+		return widget.NewImage(
+			relativePosition,
+			pivot,
+			depth,
+			imageData,
+		)
+	}
+	return mpview.CreateNewMPDisplay(newImage, resource.GetTexture)
 }
 
 func makeBattleEnemyGraphics(

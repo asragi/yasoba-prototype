@@ -10,28 +10,28 @@ import (
 	load "github.com/asragi/yasoba-prototype/assets/image"
 	commonanimation "github.com/asragi/yasoba-prototype/common/animation"
 	commonfont "github.com/asragi/yasoba-prototype/common/font"
-	commontexture "github.com/asragi/yasoba-prototype/common/texture"
+	tex "github.com/asragi/yasoba-prototype/common/texture"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 type ResourceManager struct {
-	textureDict   map[commontexture.ID]*ebiten.Image
+	textureDict   map[tex.ID]*ebiten.Image
 	fontDict      map[commonfont.ID]*text.GoTextFace
 	animationDict map[commonanimation.ID]*commonanimation.AnimationData
 	shaderDict    map[drawing.ShaderId]*ebiten.Shader
 }
 
 type ResourceManagerInterface interface {
-	GetTexture(id commontexture.ID) drawing.Image
+	GetTexture(id tex.ID) drawing.Image
 	GetFont(id commonfont.ID) *text.GoTextFace
 	GetAnimationData(id commonanimation.ID) *commonanimation.AnimationData
 	GetShader(id drawing.ShaderId) *drawing.Shader
 	NewEmptyImage(width, height int) drawing.Image
 }
 
-func (r *ResourceManager) GetTexture(id commontexture.ID) drawing.Image {
+func (r *ResourceManager) GetTexture(id tex.ID) drawing.Image {
 	t, ok := r.textureDict[id]
 	if !ok {
 		panic(fmt.Sprintf("texture not found: %d", id))
@@ -67,8 +67,8 @@ func CreateResourceManager() (*ResourceManager, error) {
 	handleError := func(err error) (*ResourceManager, error) {
 		return nil, fmt.Errorf("failed to create resource manager: %w", err)
 	}
-	textureDict := map[commontexture.ID]*ebiten.Image{}
-	loadTexture := func(data []byte, id commontexture.ID) error {
+	textureDict := map[tex.ID]*ebiten.Image{}
+	loadTexture := func(data []byte, id tex.ID) error {
 		img, _, err := image.Decode(bytes.NewReader(data))
 		if err != nil {
 			return err
@@ -86,21 +86,23 @@ func CreateResourceManager() (*ResourceManager, error) {
 		return nil
 	}
 	// TODO: この辺の処理go:generateとかで自動生成したいね
-	imageLoadMap := map[commontexture.ID][]byte{
-		commontexture.Window:              load.Window,
-		commontexture.Cursor:              load.Cursor,
-		commontexture.FaceLuneNormal:      load.FaceLuneNormal,
-		commontexture.FaceLuneDamage:      load.FaceLuneDamage,
-		commontexture.FaceSunnyNormal:     load.FaceSunnyNormal,
-		commontexture.FaceSunnyDamage:     load.FaceSunnyDamage,
-		commontexture.FaceSunnySmile:      load.FaceSunnySmile,
-		commontexture.FaceSunnyAngry:      load.FaceSunnyAngry,
-		commontexture.FaceSunnyAnnoyed:    load.FaceSunnyAnnoyed,
-		commontexture.MarshmallowNormal:   load.MarshmallowNormal,
-		commontexture.MarshmallowDamage:   load.MarshmallowDamage,
-		commontexture.BattleEffectImpact:  load.BattleEffectImpact,
-		commontexture.BattleEffectFire:    load.BattleEffectFire,
-		commontexture.BattleEffectExplode: load.BattleEffectExplode,
+	imageLoadMap := map[tex.ID][]byte{
+		tex.Window:              load.Window,
+		tex.Cursor:              load.Cursor,
+		tex.FaceLuneNormal:      load.FaceLuneNormal,
+		tex.FaceLuneDamage:      load.FaceLuneDamage,
+		tex.FaceSunnyNormal:     load.FaceSunnyNormal,
+		tex.FaceSunnyDamage:     load.FaceSunnyDamage,
+		tex.FaceSunnySmile:      load.FaceSunnySmile,
+		tex.FaceSunnyAngry:      load.FaceSunnyAngry,
+		tex.FaceSunnyAnnoyed:    load.FaceSunnyAnnoyed,
+		tex.MarshmallowNormal:   load.MarshmallowNormal,
+		tex.MarshmallowDamage:   load.MarshmallowDamage,
+		tex.BattleEffectImpact:  load.BattleEffectImpact,
+		tex.BattleEffectFire:    load.BattleEffectFire,
+		tex.BattleEffectExplode: load.BattleEffectExplode,
+		tex.MPIcon:              load.Cursor, // TODO: tmp
+		tex.MPIconEmpty:         load.Window, // TODO: tmp
 	}
 
 	for id, data := range imageLoadMap {
@@ -119,7 +121,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 	// TODO: 外部ファイルとかから動的に読み込みたい
 	animationDict := map[commonanimation.ID]*commonanimation.AnimationData{
 		commonanimation.LuneNormal: {
-			TextureID:      commontexture.FaceLuneNormal,
+			TextureID:      tex.FaceLuneNormal,
 			RowCount:       1,
 			ColumnCount:    2,
 			AnimationCount: 2,
@@ -127,7 +129,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.LuneDamage: {
-			TextureID:      commontexture.FaceLuneDamage,
+			TextureID:      tex.FaceLuneDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -135,7 +137,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.SunnyNormal: {
-			TextureID:      commontexture.FaceSunnyNormal,
+			TextureID:      tex.FaceSunnyNormal,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -143,7 +145,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.SunnyDamage: {
-			TextureID:      commontexture.FaceSunnyDamage,
+			TextureID:      tex.FaceSunnyDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -151,7 +153,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.SunnySmile: {
-			TextureID:      commontexture.FaceSunnySmile,
+			TextureID:      tex.FaceSunnySmile,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -159,7 +161,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.SunnyAngry: {
-			TextureID:      commontexture.FaceSunnyAngry,
+			TextureID:      tex.FaceSunnyAngry,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -167,7 +169,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.SunnyAnnoyed: {
-			TextureID:      commontexture.FaceSunnyAnnoyed,
+			TextureID:      tex.FaceSunnyAnnoyed,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -175,7 +177,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.MarshmallowNormal: {
-			TextureID:      commontexture.MarshmallowNormal,
+			TextureID:      tex.MarshmallowNormal,
 			RowCount:       1,
 			ColumnCount:    2,
 			AnimationCount: 2,
@@ -183,7 +185,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.MarshmallowDamage: {
-			TextureID:      commontexture.MarshmallowDamage,
+			TextureID:      tex.MarshmallowDamage,
 			RowCount:       1,
 			ColumnCount:    1,
 			AnimationCount: 1,
@@ -191,7 +193,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         true,
 		},
 		commonanimation.BattleEffectImpact: {
-			TextureID:      commontexture.BattleEffectImpact,
+			TextureID:      tex.BattleEffectImpact,
 			RowCount:       4,
 			ColumnCount:    4,
 			AnimationCount: 16,
@@ -199,7 +201,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         false,
 		},
 		commonanimation.BattleEffectFire: {
-			TextureID:      commontexture.BattleEffectFire,
+			TextureID:      tex.BattleEffectFire,
 			RowCount:       5,
 			ColumnCount:    6,
 			AnimationCount: 25,
@@ -207,7 +209,7 @@ func CreateResourceManager() (*ResourceManager, error) {
 			IsLoop:         false,
 		},
 		commonanimation.BattleEffectExplode: {
-			TextureID:      commontexture.BattleEffectExplode,
+			TextureID:      tex.BattleEffectExplode,
 			RowCount:       5,
 			ColumnCount:    6,
 			AnimationCount: 30,

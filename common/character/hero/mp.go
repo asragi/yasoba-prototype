@@ -14,6 +14,14 @@ func (max MaxMP) Clamp(m MP) MP {
 	return m
 }
 
+func (max MaxMP) ToInt() int {
+	return int(max)
+}
+
+func (m MP) ToInt() int {
+	return int(m)
+}
+
 type RecoverMP MP
 
 func (m MP) Recover(recover RecoverMP, maxMP MaxMP) MP {
@@ -24,4 +32,8 @@ type InitialMP MP
 
 func (m InitialMP) ToMP() MP {
 	return MP(m)
+}
+
+func (m InitialMP) ToInt() int {
+	return int(m)
 }

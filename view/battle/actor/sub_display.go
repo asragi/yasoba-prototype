@@ -7,13 +7,14 @@ import (
 	"github.com/asragi/yasoba-prototype/common/emotion"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/battle/damage"
+	"github.com/asragi/yasoba-prototype/view/battle/parameter"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
 )
 
 type BattleSubActorDisplay struct {
 	faceWindow       *FaceWindow
 	displayDamage    *damage.DisplayDamage
-	parameterDisplay *BattleParameterDisplay
+	parameterDisplay *parameter.BattleParameterDisplay
 	shake            *shake.EmitShake
 }
 
@@ -22,10 +23,10 @@ type NewBattleSubActorDisplayFunc func(*actor.Actor) *BattleSubActorDisplay
 func CreateNewBattleSubActorDisplay(
 	newFaceWindow NewFaceWindowFunc,
 	newDisplayDamage damage.NewDisplayDamageFunc,
-	newParameterDisplay NewBattleParameterDisplayFunc,
+	newParameterDisplay parameter.NewBattleParameterDisplayFunc,
 ) NewBattleSubActorDisplayFunc {
 	return func(actor *actor.Actor) *BattleSubActorDisplay {
-		parameterDisplay := newParameterDisplay(actor.HP, drawing.PivotBottomRight)
+		parameterDisplay := newParameterDisplay(actor.HP, drawing.PivotBottomRight, nil)
 		height := parameterDisplay.GetHeight()
 		return &BattleSubActorDisplay{
 			faceWindow: newFaceWindow(
@@ -43,7 +44,7 @@ func CreateNewBattleSubActorDisplay(
 
 func (d *BattleSubActorDisplay) SetDamage(damage skill.Damage, afterHP character.HP) {
 	d.displayDamage.DisplayDamage(damage)
-	d.parameterDisplay.hpDisplay.SetHP(afterHP)
+	d.parameterDisplay.SetHP(afterHP)
 }
 
 func (d *BattleSubActorDisplay) Shake() {
