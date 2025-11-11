@@ -36,6 +36,7 @@ type ProcessBattleResponse struct {
 // MpStatus reports the current MP and recovers it when needed.
 type MpStatus interface {
 	Recover()
+	Consume(cost command.Cost)
 	CurrentMP() hero.MP
 }
 
@@ -54,12 +55,16 @@ func StandByCreateProcessBattle(
 	getActor actor.ActorSupplier,
 	getState decision.ServeBattleState,
 	processPlayerCommand ProcessPlayerCommandFunc,
+	getCommandModel command.GetCommandModelFunc,
 	getPartnerPlan partner.GetPartnerPlanFunc,
 	checkCombination combination.CheckFunc,
 	skillApply skill.SkillApplyFunc,
 	decideActionOrder DecideActionOrderFunc,
 	newChoiceAction decision.NewChoiceActionFunc,
 ) NewProcessBattleFunc {
+	if getCommandModel == nil {
+		panic("command model getter is nil")
+	}
 	checkBattleShouldEnd := func() (BattleEndType, bool) {
 		state := getState()
 		if state.IsAllBeaten(actor.ActorSidePlayer) {
@@ -125,6 +130,18 @@ func StandByCreateProcessBattle(
 			}
 			subActorAlive := !subActor.IsBeaten()
 
+			consumeCommandCost := func(commandId command.Id) {
+				model := getCommandModel(commandId)
+				if model == nil {
+					panic("command model not found: " + string(commandId))
+				}
+				cost := model.Cost()
+				if cost <= 0 {
+					return
+				}
+				mpStatus.Consume(cost)
+			}
+
 			runPlayerTurn := func(req *ProcessBattleRequest) []*skill.SkillApplyResult {
 				actualAction := processPlayerCommand(
 					&PostCommandRequest{
@@ -165,6 +182,7 @@ func StandByCreateProcessBattle(
 					}
 					return selectedAction
 				}()
+				consumeCommandCost(req.Command)
 				return []*skill.SkillApplyResult{skillApply(resultAction)}
 			}
 

@@ -108,7 +108,7 @@ func initializeApp(cfg Config) (*App, error) {
 	choiceSkillTargetFunc := decision.CreateChoiceSkillTarget(emitRandomFunc)
 	newChoiceRandomActionFunc := decision.StandByCreateRandomAction(emitRandomFunc, serveSkillData, choiceSkillTargetFunc)
 	newChoiceActionFunc := decision.CreateNewChoiceAction(newChoiceRandomActionFunc)
-	newProcessBattleFunc := makeProcessBattle(actorSupplier, serveBattleState, processPlayerCommandFunc, partnerActionServer, checkFunc, skillApplyFunc, decideActionOrderFunc, newChoiceActionFunc)
+	newProcessBattleFunc := makeProcessBattle(actorSupplier, serveBattleState, processPlayerCommandFunc, getCommandModelFunc, partnerActionServer, checkFunc, skillApplyFunc, decideActionOrderFunc, newChoiceActionFunc)
 	prepareProduceCreateSequence := adapter2.InitializeProduceCreateSequence()
 	produceCreateSequence := makeProduceCreateSequence(prepareProduceCreateSequence, serveTextDataFunc)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
@@ -175,6 +175,7 @@ func makeProcessBattle(
 	getActor actor2.ActorSupplier,
 	serveBattleState decision.ServeBattleState,
 	processCommand battle.ProcessPlayerCommandFunc,
+	getCommandModel command.GetCommandModelFunc,
 	partnerServer *partner.PartnerActionServer,
 	checkCombination combination.CheckFunc,
 	skillApply skill.SkillApplyFunc,
@@ -185,6 +186,7 @@ func makeProcessBattle(
 		getActor,
 		serveBattleState,
 		processCommand,
+		getCommandModel,
 		partnerServer.GetPlan,
 		checkCombination,
 		skillApply,
