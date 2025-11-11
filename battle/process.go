@@ -120,6 +120,7 @@ func StandByCreateProcessBattle(
 		return func(request *ProcessBattleRequest) *ProcessBattleResponse {
 			result := make([]*skill.SkillApplyResult, 0)
 			didRecoverMp := false
+			mpAfterPlayerAction := mpStatus.CurrentMP()
 			mainActor := getActor(mainActorId)
 			if mainActor == nil {
 				panic("main actor not found: " + string(mainActorId))
@@ -142,7 +143,7 @@ func StandByCreateProcessBattle(
 				mpStatus.Consume(cost)
 			}
 
-			runPlayerTurn := func(req *ProcessBattleRequest) []*skill.SkillApplyResult {
+			runPlayerTurn := func(req *ProcessBattleRequest) ([]*skill.SkillApplyResult, hero.MP) {
 				actualAction := processPlayerCommand(
 					&PostCommandRequest{
 						ActorId:  mainActorId,
@@ -183,7 +184,7 @@ func StandByCreateProcessBattle(
 					return selectedAction
 				}()
 				consumeCommandCost(req.Command)
-				return []*skill.SkillApplyResult{skillApply(resultAction)}
+				return []*skill.SkillApplyResult{skillApply(resultAction)}, mpStatus.CurrentMP()
 			}
 
 			shouldRunPlayer := func(req *ProcessBattleRequest) bool {
@@ -197,7 +198,8 @@ func StandByCreateProcessBattle(
 			}
 
 			if shouldRunPlayer(request) {
-				playerResults := runPlayerTurn(request)
+				playerResults, afterMp := runPlayerTurn(request)
+				mpAfterPlayerAction = afterMp
 				result = append(result, playerResults...)
 				if battleState, battleShouldEnd := checkBattleShouldEnd(); battleShouldEnd {
 					return onBattleEnd(battleState, result)
@@ -251,7 +253,7 @@ func StandByCreateProcessBattle(
 				SkillApplyResults: result,
 				IsMainActorBeaten: latestMainActor.IsBeaten(),
 				DidRecoverMp:      didRecoverMp,
-				CurrentMp:         mpStatus.CurrentMP(),
+				CurrentMp:         mpAfterPlayerAction,
 			}
 		}
 	}

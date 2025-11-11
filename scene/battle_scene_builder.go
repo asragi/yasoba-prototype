@@ -261,6 +261,9 @@ func InitializeCreateBattleScene(
 			func(beaten bool) {
 				battleScene.playerBeaten = beaten
 			},
+			func(mp hero.MP) {
+				battleScene.ui.actorDisplay.RefreshMp(mp)
+			},
 		)
 		targetSelectWindow = newSelectWindow(
 			&drawing.Vector{X: 80, Y: 0},

@@ -203,6 +203,7 @@ func createOnTargetSelect(
 	playSequence func([]*skill.SkillApplyResult),
 	processBattle battle.ProcessBattleFunc,
 	setPlayerBeaten func(bool),
+	updateMp func(hero.MP),
 ) func(int) {
 	return func(index int) {
 		closeWindow()
@@ -216,6 +217,7 @@ func createOnTargetSelect(
 		)
 
 		setPlayerBeaten(response.IsMainActorBeaten)
+		updateMp(response.CurrentMp)
 		resetBattleSequence()
 		playSequence(response.SkillApplyResults)
 	}
