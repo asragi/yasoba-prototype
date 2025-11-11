@@ -1,6 +1,8 @@
 package selection
 
 import (
+	"image/color"
+
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/toolkit/input"
 )
@@ -9,6 +11,7 @@ type selectWindowViewInterface interface {
 	update(*drawing.Vector)
 	draw(drawing.DrawFunc)
 	onChangeIndex(int)
+	setTextColor(int, color.Color)
 }
 
 type smoother interface {
@@ -86,4 +89,11 @@ func (w *SelectWindow) OnInputSubmit() {
 		return
 	}
 	w.Close()
+}
+
+func (w *SelectWindow) SetTextColor(index int, color color.Color) {
+	if index < 0 || index >= w.indexSize {
+		return
+	}
+	w.view.setTextColor(index, color)
 }

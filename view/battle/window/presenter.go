@@ -1,8 +1,11 @@
 package window
 
 import (
+	"image/color"
+
 	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/common/character/hero"
+	"github.com/asragi/yasoba-prototype/global"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
@@ -14,13 +17,15 @@ type viewInterface interface {
 	OnInputUp()
 	OnInputDown()
 	OnInputSubmit()
+	SetCommandColor(index int, color color.Color)
 }
 
 // SelectWindowに対する薄いwrapper
 type BattleSelectWindow struct {
-	view     viewInterface
-	commands map[command.Id]command.Cost
-	playerMp hero.MP
+	view       viewInterface
+	commands   map[command.Id]command.Cost
+	commandIds []command.Id
+	playerMp   hero.MP
 }
 
 func newBattleSelectWindow(
@@ -42,8 +47,9 @@ func newBattleSelectWindow(
 		return m
 	}()
 	window := &BattleSelectWindow{
-		commands: commandsDict,
-		playerMp: playerMp,
+		commands:   commandsDict,
+		commandIds: commands,
+		playerMp:   playerMp,
 	}
 	onSubmit := func(id command.Id) {
 		if !window.canSelectCommand(id) {
@@ -52,6 +58,7 @@ func newBattleSelectWindow(
 		outerOnSubmit(id)
 	}
 	window.view = createView(onSubmit)
+	window.updateCommandColors()
 	return window
 }
 
@@ -74,6 +81,7 @@ func (w *BattleSelectWindow) OnInputRight() {}
 
 func (w *BattleSelectWindow) Open(mp hero.MP) {
 	w.playerMp = mp
+	w.updateCommandColors()
 	w.view.Open()
 }
 
@@ -95,4 +103,14 @@ func (w *BattleSelectWindow) OnInputUp() {
 
 func (w *BattleSelectWindow) OnInputDown() {
 	w.view.OnInputDown()
+}
+
+func (w *BattleSelectWindow) updateCommandColors() {
+	for idx, id := range w.commandIds {
+		var textColor color.Color = color.White
+		if !w.canSelectCommand(id) {
+			textColor = global.DisableColor
+		}
+		w.view.SetCommandColor(idx, textColor)
+	}
 }

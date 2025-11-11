@@ -1,6 +1,8 @@
 package selection
 
 import (
+	"image/color"
+
 	"github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
@@ -21,6 +23,7 @@ type textInterface interface {
 	Update(*drawing.Vector)
 	Draw(drawing.DrawFunc)
 	Size() *drawing.Vector
+	SetTextColor(color color.Color)
 }
 
 type selectWindowView struct {
@@ -147,4 +150,11 @@ func (w *selectWindowView) draw(drawFunc drawing.DrawFunc) {
 
 func (w *selectWindowView) onChangeIndex(index int) {
 	w.cursor.SetRelativePosition(w.cursorPositions[index])
+}
+
+func (w *selectWindowView) setTextColor(index int, color color.Color) {
+	if index < 0 || index >= len(w.texts) {
+		return
+	}
+	w.texts[index].SetTextColor(color)
 }

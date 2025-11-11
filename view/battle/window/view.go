@@ -1,6 +1,8 @@
 package window
 
 import (
+	"image/color"
+
 	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
@@ -37,6 +39,10 @@ func (v *view) OnInputDown() {
 
 func (v *view) OnInputSubmit() {
 	v.selectWindow.OnInputSubmit()
+}
+
+func (v *view) SetCommandColor(index int, color color.Color) {
+	v.selectWindow.SetTextColor(index, color)
 }
 
 type newViewFunc func(
