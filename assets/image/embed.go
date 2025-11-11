@@ -25,6 +25,10 @@ var (
 	MarshmallowNormal []byte
 	//go:embed marshmallow_damage.png
 	MarshmallowDamage []byte
+	//go:embed mp_icon.png
+	MPIcon []byte
+	//go:embed mp_icon_empty.png
+	MPIconEmpty []byte
 	//go:embed battle_effect_impact.png
 	BattleEffectImpact []byte
 	//go:embed battle_effect_fire.png

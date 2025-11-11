@@ -24,6 +24,7 @@ type WindowInterface interface {
 	GetPositionTopCenter() *drawing.Vector
 	GetPositionCenter() *drawing.Vector
 	GetPositionLowerRight() *drawing.Vector
+	GetPositionCenterLeft() *drawing.Vector
 	GetPadding() *drawing.Vector
 	SetSize(size *drawing.Vector)
 }
@@ -69,6 +70,14 @@ func (w *Window) GetPositionUpperLeft() *drawing.Vector {
 
 func (w *Window) GetPositionTopCenter() *drawing.Vector {
 	return w.GetPositionUpperLeft().Add(&drawing.Vector{X: w.size.X / 2, Y: 0})
+}
+
+func (w *Window) GetPositionCenterLeft() *drawing.Vector {
+	pivotDiff := w.pivot.ApplyToSize(w.size)
+	return &drawing.Vector{
+		X: w.relativePosition.X + w.parentPosition.X - pivotDiff.X,
+		Y: w.relativePosition.Y + w.parentPosition.Y - pivotDiff.Y + w.size.Y/2,
+	}
 }
 
 func (w *Window) GetPositionCenter() *drawing.Vector {

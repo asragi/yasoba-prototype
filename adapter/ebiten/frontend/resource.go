@@ -101,8 +101,8 @@ func CreateResourceManager() (*ResourceManager, error) {
 		tex.BattleEffectImpact:  load.BattleEffectImpact,
 		tex.BattleEffectFire:    load.BattleEffectFire,
 		tex.BattleEffectExplode: load.BattleEffectExplode,
-		tex.MPIcon:              load.Cursor, // TODO: tmp
-		tex.MPIconEmpty:         load.Window, // TODO: tmp
+		tex.MPIcon:              load.MPIcon,
+		tex.MPIconEmpty:         load.MPIconEmpty,
 	}
 
 	for id, data := range imageLoadMap {

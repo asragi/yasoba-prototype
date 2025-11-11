@@ -10,6 +10,17 @@ import (
 	"github.com/asragi/yasoba-prototype/view/common/window"
 )
 
+// TODO: to be constant
+var mpOffset = &drawing.Vector{X: 6, Y: 0}
+
+type windowInterface interface {
+	Update(*drawing.Vector)
+	Draw(drawing.DrawFunc)
+	Size() *drawing.Vector
+	GetPositionLowerRight() *drawing.Vector
+	GetPositionCenterLeft() *drawing.Vector
+}
+
 type mpDisplay interface {
 	Refresh(hero.MP)
 	Update(*drawing.Vector)
@@ -19,7 +30,7 @@ type mpDisplay interface {
 type BattleParameterDisplay struct {
 	mpDisplay mpDisplay
 	hpDisplay *hp.BattleHPDisplay
-	window    window.WindowInterface
+	window    windowInterface
 }
 
 func (d *BattleParameterDisplay) SetHP(hp character.HP) {
@@ -45,7 +56,7 @@ func (d *BattleParameterDisplay) Update(parentPosition *drawing.Vector) {
 		// mpDisplay は optional なので nil でも panic しない
 		return
 	}
-	d.mpDisplay.Update(d.window.GetPositionCenter())
+	d.mpDisplay.Update(d.window.GetPositionCenterLeft().Add(mpOffset))
 }
 
 func (d *BattleParameterDisplay) Draw(drawFunc drawing.DrawFunc) {

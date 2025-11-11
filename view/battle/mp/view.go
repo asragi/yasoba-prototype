@@ -30,7 +30,7 @@ type ImageFactory func(
 
 var pivot = drawing.PivotCenterLeft
 var depth = drawing.DepthDebug
-var margin = 4
+var margin = 1
 
 func newView(
 	newImage ImageFactory,
