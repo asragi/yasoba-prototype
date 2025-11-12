@@ -40,6 +40,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/battle/parameter"
 	"github.com/asragi/yasoba-prototype/view/battle/window"
 	"github.com/asragi/yasoba-prototype/view/battle/window/cost"
+	"github.com/asragi/yasoba-prototype/view/battle/window/line"
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 	"github.com/asragi/yasoba-prototype/view/common/selection/option"
@@ -68,10 +69,11 @@ func initializeApp(cfg Config) (*App, error) {
 	}
 	newSelectWindowViewFunc := makeSelectWindowViewFunc()
 	newSelectWindowFunc := selection.StandByNewSelectWindow(newCursor, newTextFunc, newWindowFunc, serveTextDataFunc, newSelectWindowViewFunc)
-	newTextItemFunc := option.CreateNewTextItem(newTextFunc, serveTextDataFunc)
 	newCostDisplayFunc := makeCostDisplay(resourceManager)
+	newTextItemFunc := option.CreateNewTextItem(newTextFunc, serveTextDataFunc)
+	newTextWithCostOptionFunc := makeTextLineWithCostOption(newCostDisplayFunc, newTextItemFunc)
 	getCommandModelFunc := makeCommandModelGetter()
-	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc, newTextItemFunc, newCostDisplayFunc, getCommandModelFunc)
+	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc, newTextWithCostOptionFunc, getCommandModelFunc)
 	newFaceWindowFunc := makeFaceWindowFactory(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := damage.CreateNewDisplayDamage(newTextFunc)
 	newMPDisplayFunc := makeMPDisplay(resourceManager)
@@ -235,6 +237,28 @@ func makeCostDisplay(resource *frontend.ResourceManager) cost.NewCostDisplayFunc
 		)
 	}
 	return cost.CreateNewCostDisplay(newImage, resource.GetTexture, 0)
+}
+
+func makeTextLineWithCostOption(
+	newCostDisplay cost.NewCostDisplayFunc,
+	newTextItem option.NewTextItemFunc,
+) line.NewTextWithCostOptionFunc {
+	costAdapter := func(cost2 int) interface {
+		Update(*drawing.Vector)
+		Draw(drawing.DrawFunc)
+	} {
+		return newCostDisplay(cost2)
+	}
+	textAdapter := func(textId text.TextId) interface {
+		Update(*drawing.Vector)
+		Draw(drawing.DrawFunc)
+		Size() *drawing.Vector
+		SetDisable(bool)
+		IsDisabled() bool
+	} {
+		return newTextItem(textId)
+	}
+	return line.CreateNewTextWithCostOption(costAdapter, textAdapter)
 }
 
 func makeBattleEnemyGraphics(

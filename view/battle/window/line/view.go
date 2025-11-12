@@ -1,4 +1,4 @@
-package text
+package line
 
 import "github.com/asragi/yasoba-prototype/toolkit/drawing"
 
@@ -12,23 +12,26 @@ type base = item
 type costView = item
 
 type view struct {
-	baseItem base
-	costView costView
+	baseItem   base
+	lineHeight float64
+	costView   costView
 }
 
 func newView(
 	baseItem base,
+	lineHeight float64,
 	costView costView,
 ) viewInterface {
 	return &view{
-		baseItem: baseItem,
-		costView: costView,
+		baseItem:   baseItem,
+		lineHeight: lineHeight,
+		costView:   costView,
 	}
 }
 
 func (v *view) update(parentPosition *drawing.Vector, width float64) {
 	v.baseItem.Update(parentPosition)
-	v.costView.Update(parentPosition.Add(&drawing.Vector{X: width, Y: 0}))
+	v.costView.Update(parentPosition.Add(&drawing.Vector{X: width, Y: v.lineHeight / 2}))
 }
 
 func (v *view) draw(drawFunc drawing.DrawFunc) {

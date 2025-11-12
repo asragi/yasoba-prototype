@@ -5,11 +5,11 @@ commands:
   - id: "fire"
     cost: 2
   - id: "thunder"
-    cost: 0
+    cost: 3
   - id: "barrier"
-    cost: 0
+    cost: 2
   - id: "wind"
-    cost: 0
+    cost: 1
   - id: "focus"
     cost: 0
   - id: "defend"

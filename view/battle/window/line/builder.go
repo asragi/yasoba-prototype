@@ -1,4 +1,4 @@
-package text
+package line
 
 import (
 	"github.com/asragi/yasoba-prototype/battle/command"
@@ -36,6 +36,7 @@ func CreateNewTextWithCostOption(
 		costDisplay := newCostDisplay(cost.ToInt())
 		view := newView(
 			textLine,
+			textLine.Size().Y,
 			costDisplay,
 		)
 		return newPresenter(

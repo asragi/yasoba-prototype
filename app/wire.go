@@ -42,6 +42,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/battle/parameter"
 	windowview "github.com/asragi/yasoba-prototype/view/battle/window"
 	windowcost "github.com/asragi/yasoba-prototype/view/battle/window/cost"
+	windowline "github.com/asragi/yasoba-prototype/view/battle/window/line"
 	messageview "github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 	selectionoption "github.com/asragi/yasoba-prototype/view/common/selection/option"
@@ -64,6 +65,7 @@ func initializeApp(cfg Config) (*App, error) {
 		messageview.StandByNewMessageWindow,
 		makeSelectCursor,
 		selection.StandByNewSelectWindow,
+		makeTextLineWithCostOption,
 		makeSelectWindowViewFunc,
 		makeCommandModelGetter,
 		windowview.StandByNewBattleSelectWindow,
@@ -235,6 +237,28 @@ func makeCostDisplay(resource *frontend.ResourceManager) windowcost.NewCostDispl
 		)
 	}
 	return windowcost.CreateNewCostDisplay(newImage, resource.GetTexture, 0)
+}
+
+func makeTextLineWithCostOption(
+	newCostDisplay windowcost.NewCostDisplayFunc,
+	newTextItem selectionoption.NewTextItemFunc,
+) windowline.NewTextWithCostOptionFunc {
+	costAdapter := func(cost int) interface {
+		Update(*drawing.Vector)
+		Draw(drawing.DrawFunc)
+	} {
+		return newCostDisplay(cost)
+	}
+	textAdapter := func(textId text.TextId) interface {
+		Update(*drawing.Vector)
+		Draw(drawing.DrawFunc)
+		Size() *drawing.Vector
+		SetDisable(bool)
+		IsDisabled() bool
+	} {
+		return newTextItem(textId)
+	}
+	return windowline.CreateNewTextWithCostOption(costAdapter, textAdapter)
 }
 
 func makeBattleEnemyGraphics(

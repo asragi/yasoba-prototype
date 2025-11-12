@@ -57,6 +57,7 @@ var (
 	PivotTopRight     = &Pivot{1, 0}
 	PivotCenterLeft   = &Pivot{0, 0.5}
 	PivotCenter       = &Pivot{0.5, 0.5}
+	PivotCenterRight  = &Pivot{1, 0.5}
 	PivotBottomLeft   = &Pivot{0, 1}
 	PivotBottomCenter = &Pivot{0.5, 1}
 	PivotBottomRight  = &Pivot{1, 1}

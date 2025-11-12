@@ -41,7 +41,7 @@ func newView(
 	icons := make([]Image, cost)
 	for i := 0; i < cost; i++ {
 		relative := &drawing.Vector{
-			X: float64(i*iconImgData.Bounds().Dx()) + margin.X,
+			X: float64(i * (iconImgData.Bounds().Dx() + int(margin.X))),
 			Y: margin.Y,
 		}
 		icons[i] = newImage(

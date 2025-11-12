@@ -1,4 +1,4 @@
-package text
+package line
 
 import "github.com/asragi/yasoba-prototype/toolkit/drawing"
 
@@ -29,6 +29,10 @@ func newPresenter(
 		textLine: textLine,
 		view:     view,
 	}
+}
+
+func (t *textOptionWithCost) Update(parentPosition *drawing.Vector) {
+	t.view.update(parentPosition, t.width)
 }
 
 func (t *textOptionWithCost) Draw(drawFunc drawing.DrawFunc) {

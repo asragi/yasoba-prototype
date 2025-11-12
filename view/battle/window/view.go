@@ -2,8 +2,10 @@ package window
 
 import (
 	"github.com/asragi/yasoba-prototype/battle/command"
+	"github.com/asragi/yasoba-prototype/global"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	"github.com/asragi/yasoba-prototype/view/battle/window/line"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 )
 
@@ -57,18 +59,20 @@ type newViewFunc func(
 	*drawing.Pivot,
 	drawing.Depth,
 	[]command.Id,
+	map[command.Id]command.Cost,
 	func(command.Id),
 ) *view
 
 func createNewView(
 	newSelectWindow selection.NewSelectWindowFunc,
-	newTextItem func(text.TextId) itemInterface,
+	newTextWithCost line.NewTextWithCostOptionFunc,
 ) newViewFunc {
 	return func(
 		relativePosition *drawing.Vector,
 		pivot *drawing.Pivot,
 		depth drawing.Depth,
 		commands []command.Id,
+		costList map[command.Id]command.Cost,
 		onSubmit func(command.Id),
 	) *view {
 		onSubmitIndex := func(index int) {
@@ -84,7 +88,7 @@ func createNewView(
 		items := func() []itemInterface {
 			items := make([]itemInterface, len(commandTexts))
 			for i, textId := range commandTexts {
-				items[i] = newTextItem(textId)
+				items[i] = newTextWithCost(global.SelectionWindowWidth, textId, costList[commands[i]])
 			}
 			return items
 		}()

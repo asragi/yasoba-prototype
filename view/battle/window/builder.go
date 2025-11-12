@@ -3,11 +3,9 @@ package window
 import (
 	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/common/character/hero"
-	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
-	"github.com/asragi/yasoba-prototype/view/battle/window/cost"
+	"github.com/asragi/yasoba-prototype/view/battle/window/line"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
-	"github.com/asragi/yasoba-prototype/view/common/selection/option"
 )
 
 type NewBattleSelectWindowFunc func(
@@ -21,14 +19,10 @@ type NewBattleSelectWindowFunc func(
 
 func StandByNewBattleSelectWindow(
 	newSelectWindow selection.NewSelectWindowFunc,
-	newTextItem option.NewTextItemFunc,
-	newCostDisplay cost.NewCostDisplayFunc,
+	newTextItemWithCost line.NewTextWithCostOptionFunc,
 	commandPort command.GetCommandModelFunc,
 ) NewBattleSelectWindowFunc {
-	newTextItemWrapper := func(textId text.TextId) itemInterface {
-		return newTextItem(textId)
-	}
-	newView := createNewView(newSelectWindow, newTextItemWrapper)
+	newView := createNewView(newSelectWindow, newTextItemWithCost)
 	return func(
 		playerMp hero.MP,
 		position *drawing.Vector,
@@ -38,11 +32,23 @@ func StandByNewBattleSelectWindow(
 		outerOnSubmit func(command.Id),
 	) *BattleSelectWindow {
 		createView := func(onSubmit func(command.Id)) viewInterface {
+			costList := func() map[command.Id]command.Cost {
+				m := make(map[command.Id]command.Cost, len(commands))
+				for _, id := range commands {
+					model := commandPort(id)
+					if model == nil {
+						panic("command model not found: " + string(id))
+					}
+					m[id] = model.Cost()
+				}
+				return m
+			}()
 			return newView(
 				position,
 				pivot,
 				depth,
 				commands,
+				costList,
 				onSubmit,
 			)
 		}
