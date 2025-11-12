@@ -1,6 +1,7 @@
 package selection
 
 import (
+	"github.com/asragi/yasoba-prototype/global"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/common/window"
@@ -20,6 +21,9 @@ type selectWindowView struct {
 	window          windowInterface
 	items           []Item
 	cursor          Cursor
+	padding         *drawing.Vector
+	lineHeight      float64
+	lineMargin      float64
 }
 
 func NewSelectWindowView(
@@ -36,6 +40,7 @@ func NewSelectWindowView(
 	count := len(options)
 	// TODO: Use actual values
 	lineHeight := options[0].Size().Y
+	lineMargin := global.LineMargin
 	//const marginX = 4
 	//const offsetY = -1
 	cursorWidth := 4.0
@@ -47,8 +52,8 @@ func NewSelectWindowView(
 		for i := 0; i < count; i++ {
 			positions[i] = &drawing.Vector{
 				// TODO: たまたま2.0で割るといい感じなだけ
-				X: padding.X / 2.0,
-				Y: padding.Y + lineHeight*float64(i),
+				X: padding.X / 3.0,
+				Y: padding.Y + (lineHeight+lineMargin)*float64(i),
 			}
 		}
 		return positions
@@ -72,11 +77,12 @@ func NewSelectWindowView(
 		return &drawing.Vector{X: width, Y: height}
 	}()
 	contentSizeWithPadding := contentSize.Add(padding.Multiply(2)).Add(&drawing.Vector{X: cursorWidth, Y: 0}).Add(&drawing.Vector{X: marginRight, Y: 0})
+	sizeWithMargin := contentSizeWithPadding.Add(&drawing.Vector{X: 0, Y: lineMargin * float64(count-1)})
 	window := newWindow(&window.WindowOption{
 		Texture:          window.WindowOptionDefaultTexture,
 		CornerSize:       window.WindowOptionDefaultCornerSize,
 		RelativePosition: relativePosition,
-		Size:             contentSizeWithPadding,
+		Size:             sizeWithMargin,
 		Depth:            depth,
 		Pivot:            pivot,
 		Padding:          padding,
@@ -87,15 +93,18 @@ func NewSelectWindowView(
 		window:          window,
 		items:           options,
 		cursor:          cursor,
+		padding:         padding,
+		lineHeight:      lineHeight,
+		lineMargin:      lineMargin,
 	}
 }
 
 func (w *selectWindowView) update(parentPosition *drawing.Vector) {
 	w.window.Update(parentPosition)
 	windowPos := w.window.GetPositionUpperLeft()
-	for _, text := range w.items {
+	for i, text := range w.items {
 		// text.Update(parentPosition)
-		text.Update(windowPos)
+		text.Update(windowPos.Add(w.padding).Add(&drawing.Vector{X: 0, Y: (w.lineHeight + w.lineMargin) * float64(i)}))
 	}
 	w.cursor.Update(windowPos)
 }

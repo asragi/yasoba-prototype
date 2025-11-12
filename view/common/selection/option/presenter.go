@@ -38,7 +38,7 @@ func CreateNewTextItem(
 		text := newText(
 			&widget.TextOptionsNew{
 				RelativePosition: &drawing.Vector{X: 0, Y: 0},
-				Pivot:            drawing.PivotCenterLeft,
+				Pivot:            drawing.PivotTopLeft,
 				Font:             global.PrimaryFont,
 				Speed:            1,
 				Depth:            drawing.DepthWindow,

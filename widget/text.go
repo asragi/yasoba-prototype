@@ -5,14 +5,14 @@ import (
 	"strings"
 
 	commonfont "github.com/asragi/yasoba-prototype/common/font"
+	"github.com/asragi/yasoba-prototype/global"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/util"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 const (
-	lineMargin = 4
-	marginX    = 1
+	marginX = 1
 )
 
 type TextInterface interface {
@@ -149,6 +149,7 @@ func (t *Text) Size() *drawing.Vector {
 	}
 	// 最後の文字のmarginXを引く
 	maxWidth -= marginX
+	lineMargin := global.LineMargin
 	height := characterHeight*float64(len(t.characterSet)) + lineMargin*float64(len(t.characterSet)-1)
 	return &drawing.Vector{
 		X: maxWidth * scale,
