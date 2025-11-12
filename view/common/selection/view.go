@@ -1,12 +1,8 @@
 package selection
 
 import (
-	"image/color"
-
-	"github.com/asragi/yasoba-prototype/common/font"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
-	"github.com/asragi/yasoba-prototype/view/battle/constant"
 	"github.com/asragi/yasoba-prototype/view/common/window"
 	"github.com/asragi/yasoba-prototype/widget"
 )
@@ -19,23 +15,16 @@ type windowInterface interface {
 	GetPositionUpperLeft() *drawing.Vector
 }
 
-type textInterface interface {
-	Update(*drawing.Vector)
-	Draw(drawing.DrawFunc)
-	Size() *drawing.Vector
-	SetTextColor(color color.Color)
-}
-
 type selectWindowView struct {
 	cursorPositions []*drawing.Vector
 	window          windowInterface
-	texts           []textInterface
+	items           []Item
 	cursor          Cursor
 }
 
 func NewSelectWindowView(
 	relativePosition *drawing.Vector,
-	commands []text.TextId,
+	options []Item,
 	pivot *drawing.Pivot,
 	depth drawing.Depth,
 	marginRight float64,
@@ -43,10 +32,10 @@ func NewSelectWindowView(
 	newText widget.NewTextFunc,
 	textServer text.ServeTextDataFunc,
 	newCursor NewCursor,
-) selectWindowViewInterface {
-	count := len(commands)
+) viewInterface {
+	count := len(options)
 	// TODO: Use actual values
-	lineHeight := constant.CommandLineHeight
+	lineHeight := options[0].Size().Y
 	//const marginX = 4
 	//const offsetY = -1
 	cursorWidth := 4.0
@@ -54,12 +43,12 @@ func NewSelectWindowView(
 	// size := &drawing.Vector{X: width, Y: float64(lineHeight * count)}
 	// pivotModification := pivot.ApplyToSize(size)
 	cursorPositions := func() []*drawing.Vector {
-		positions := make([]*drawing.Vector, len(commands))
+		positions := make([]*drawing.Vector, count)
 		for i := 0; i < count; i++ {
 			positions[i] = &drawing.Vector{
 				// TODO: たまたま2.0で割るといい感じなだけ
 				X: padding.X / 2.0,
-				Y: padding.Y + float64(lineHeight*i),
+				Y: padding.Y + lineHeight*float64(i),
 			}
 		}
 		return positions
@@ -69,46 +58,17 @@ func NewSelectWindowView(
 		drawing.PivotTopLeft,
 		depth,
 	)
-	texts := func() []textInterface {
-		relativePositions := func() []*drawing.Vector {
-			var positions []*drawing.Vector
-			for i := 0; i < count; i++ {
-				positions = append(
-					positions, &drawing.Vector{
-						X: cursorWidth + padding.X,           //relativePosition.X - pivotModification.X + cursorWidth + marginX,
-						Y: float64(lineHeight*i) + padding.Y, //relativePosition.Y - pivotModification.Y + float64(lineHeight*i) + offsetY,
-					},
-				)
-			}
-			return positions
-		}()
-		var texts []textInterface
-		for i, command := range commands {
-			text := newText(
-				&widget.TextOptionsNew{
-					RelativePosition: relativePositions[i],
-					Pivot:            drawing.PivotTopLeft,
-					Font:             font.MaruMinya,
-					Speed:            1,
-					Depth:            depth,
-				},
-			)
-			text.SetText(textServer(command).Text.String(), true)
-			texts = append(texts, text)
-		}
-		return texts
-	}()
 	contentSize := func() *drawing.Vector {
 		width := func() float64 {
 			var maxWidth float64
-			for _, text := range texts {
-				if text.Size().X > maxWidth {
-					maxWidth = text.Size().X
+			for _, option := range options {
+				if option.Size().X > maxWidth {
+					maxWidth = option.Size().X
 				}
 			}
 			return maxWidth
 		}()
-		height := float64(lineHeight * len(texts))
+		height := lineHeight * float64(count)
 		return &drawing.Vector{X: width, Y: height}
 	}()
 	contentSizeWithPadding := contentSize.Add(padding.Multiply(2)).Add(&drawing.Vector{X: cursorWidth, Y: 0}).Add(&drawing.Vector{X: marginRight, Y: 0})
@@ -125,7 +85,7 @@ func NewSelectWindowView(
 	return &selectWindowView{
 		cursorPositions: cursorPositions,
 		window:          window,
-		texts:           texts,
+		items:           options,
 		cursor:          cursor,
 	}
 }
@@ -133,7 +93,7 @@ func NewSelectWindowView(
 func (w *selectWindowView) update(parentPosition *drawing.Vector) {
 	w.window.Update(parentPosition)
 	windowPos := w.window.GetPositionUpperLeft()
-	for _, text := range w.texts {
+	for _, text := range w.items {
 		// text.Update(parentPosition)
 		text.Update(windowPos)
 	}
@@ -143,18 +103,11 @@ func (w *selectWindowView) update(parentPosition *drawing.Vector) {
 func (w *selectWindowView) draw(drawFunc drawing.DrawFunc) {
 	w.window.Draw(drawFunc)
 	w.cursor.Draw(drawFunc)
-	for _, text := range w.texts {
-		text.Draw(drawFunc)
+	for _, item := range w.items {
+		item.Draw(drawFunc)
 	}
 }
 
 func (w *selectWindowView) onChangeIndex(index int) {
 	w.cursor.SetRelativePosition(w.cursorPositions[index])
-}
-
-func (w *selectWindowView) setTextColor(index int, color color.Color) {
-	if index < 0 || index >= len(w.texts) {
-		return
-	}
-	w.texts[index].SetTextColor(color)
 }

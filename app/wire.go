@@ -41,8 +41,10 @@ import (
 	mpview "github.com/asragi/yasoba-prototype/view/battle/mp"
 	"github.com/asragi/yasoba-prototype/view/battle/parameter"
 	windowview "github.com/asragi/yasoba-prototype/view/battle/window"
+	windowcost "github.com/asragi/yasoba-prototype/view/battle/window/cost"
 	messageview "github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
+	selectionoption "github.com/asragi/yasoba-prototype/view/common/selection/option"
 	transitionview "github.com/asragi/yasoba-prototype/view/common/transition"
 	widgetwindow "github.com/asragi/yasoba-prototype/view/common/window"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -58,6 +60,7 @@ func initializeApp(cfg Config) (*App, error) {
 		frontend.CreateResourceManager,
 		drawingadapter.NewDrawTextFunc,
 		widget.CreateNewText,
+		selectionoption.CreateNewTextItem,
 		messageview.StandByNewMessageWindow,
 		makeSelectCursor,
 		selection.StandByNewSelectWindow,
@@ -68,6 +71,7 @@ func initializeApp(cfg Config) (*App, error) {
 		makeTransitionView,
 		hpview.CreateNewBattleHPDisplay,
 		makeMPDisplay,
+		makeCostDisplay,
 		parameter.CreateNewBattleParameterDisplay,
 		damageview.CreateNewDisplayDamage,
 		actorview.CreateNewBattleActorDisplay,
@@ -214,6 +218,23 @@ func makeMPDisplay(resource *frontend.ResourceManager) mpview.NewMPDisplayFunc {
 		)
 	}
 	return mpview.CreateNewMPDisplay(newImage, resource.GetTexture)
+}
+
+func makeCostDisplay(resource *frontend.ResourceManager) windowcost.NewCostDisplayFunc {
+	newImage := func(
+		relativePosition *drawing.Vector,
+		pivot *drawing.Pivot,
+		depth drawing.Depth,
+		imageData drawing.Image,
+	) windowcost.Image {
+		return widget.NewImage(
+			relativePosition,
+			pivot,
+			depth,
+			imageData,
+		)
+	}
+	return windowcost.CreateNewCostDisplay(newImage, resource.GetTexture, 0)
 }
 
 func makeBattleEnemyGraphics(

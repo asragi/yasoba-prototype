@@ -1,16 +1,23 @@
 package window
 
 import (
-	"image/color"
-
 	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
 )
 
+type itemInterface interface {
+	Update(*drawing.Vector)
+	Draw(drawing.DrawFunc)
+	Size() *drawing.Vector
+	IsDisabled() bool
+	SetDisable(bool)
+}
+
 type view struct {
 	selectWindow *selection.SelectWindow
+	items        []itemInterface
 }
 
 func (v *view) Open() {
@@ -41,8 +48,8 @@ func (v *view) OnInputSubmit() {
 	v.selectWindow.OnInputSubmit()
 }
 
-func (v *view) SetCommandColor(index int, color color.Color) {
-	v.selectWindow.SetTextColor(index, color)
+func (v *view) SetDisable(index int, disable bool) {
+	v.items[index].SetDisable(disable)
 }
 
 type newViewFunc func(
@@ -55,6 +62,7 @@ type newViewFunc func(
 
 func createNewView(
 	newSelectWindow selection.NewSelectWindowFunc,
+	newTextItem func(text.TextId) itemInterface,
 ) newViewFunc {
 	return func(
 		relativePosition *drawing.Vector,
@@ -73,18 +81,33 @@ func createNewView(
 			}
 			return texts
 		}()
+		items := func() []itemInterface {
+			items := make([]itemInterface, len(commandTexts))
+			for i, textId := range commandTexts {
+				items[i] = newTextItem(textId)
+			}
+			return items
+		}()
+		itemsToArg := func() []selection.Item {
+			result := make([]selection.Item, len(items))
+			for i, item := range items {
+				result[i] = item
+			}
+			return result
+		}()
 		marginRight := 10.0
 		window := newSelectWindow(
 			relativePosition,
 			pivot,
 			depth,
 			marginRight,
-			commandTexts,
+			itemsToArg,
 			onSubmitIndex,
 			false,
 		)
 
 		return &view{
+			items:        items,
 			selectWindow: window,
 		}
 	}

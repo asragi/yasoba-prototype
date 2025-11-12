@@ -14,3 +14,7 @@ func (c Cost) Consume(mp hero.MP) hero.MP {
 	}
 	return mp - hero.MP(c)
 }
+
+func (c Cost) ToInt() int {
+	return int(c)
+}

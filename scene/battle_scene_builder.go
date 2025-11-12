@@ -25,6 +25,7 @@ import (
 	"github.com/asragi/yasoba-prototype/view/common/constant"
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
+	"github.com/asragi/yasoba-prototype/view/common/selection/option"
 	"github.com/asragi/yasoba-prototype/view/common/shake"
 	transitionview "github.com/asragi/yasoba-prototype/view/common/transition"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -60,6 +61,7 @@ func InitializeCreateBattleScene(
 	newProcessBattle battle.NewProcessBattleFunc,
 	produceCreateSequence sequence.ProduceCreateSequence,
 	produceCheckInvokeSequence invoke.ProduceCheckInvokeSequence,
+	newTextItem option.NewTextItemFunc,
 ) CreateBattleScene {
 	return func(option *BattleOption) *BattleScene {
 		if option == nil {
@@ -99,7 +101,6 @@ func InitializeCreateBattleScene(
 		actorIdToEnemy := createActorIdToEnemyMapping(battleResponse.EnemyIds)
 		actorNames := createActorNamesMapping(battleResponse.EnemyIds, serveEnemyName)
 		allActorId := createAllActorIdList(battleResponse)
-		allTextId := createAllTextIdList(allActorId, actorNames)
 
 		displayedHp := func() map[actor.ActorId]character.HP {
 			hp := make(map[actor.ActorId]character.HP, len(allActorId))
@@ -265,12 +266,19 @@ func InitializeCreateBattleScene(
 				battleScene.ui.actorDisplay.RefreshMp(mp)
 			},
 		)
+		textItems := func() []selection.Item {
+			items := make([]selection.Item, len(allActorId))
+			for i, id := range allActorId {
+				items[i] = newTextItem(actorNames[id])
+			}
+			return items
+		}()
 		targetSelectWindow = newSelectWindow(
 			&drawing.Vector{X: 80, Y: 0},
 			drawing.PivotBottomLeft,
 			drawing.DepthWindow,
 			0,
-			allTextId,
+			textItems,
 			onTargetSelect,
 			true,
 		)

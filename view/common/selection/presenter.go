@@ -1,17 +1,14 @@
 package selection
 
 import (
-	"image/color"
-
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 	"github.com/asragi/yasoba-prototype/toolkit/input"
 )
 
-type selectWindowViewInterface interface {
+type viewInterface interface {
 	update(*drawing.Vector)
 	draw(drawing.DrawFunc)
 	onChangeIndex(int)
-	setTextColor(int, color.Color)
 }
 
 type smoother interface {
@@ -27,14 +24,14 @@ type Cursor interface {
 }
 
 type SelectWindow struct {
-	indexSize     int
+	items         []Item
 	index         int
 	isActive      bool
 	isOpen        bool
 	onSubmit      func(int)
 	closeOnSubmit bool
 	smoother      smoother
-	view          selectWindowViewInterface
+	view          viewInterface
 }
 
 func (w *SelectWindow) OnInputCancel() {}
@@ -69,7 +66,7 @@ func (w *SelectWindow) OnInputUp() {
 	if !w.smoother.Do(input.SmoothKeyUp) {
 		return
 	}
-	count := w.indexSize
+	count := len(w.items)
 	w.index = (w.index - 1 + count) % count
 	w.view.onChangeIndex(w.index)
 }
@@ -78,22 +75,18 @@ func (w *SelectWindow) OnInputDown() {
 	if !w.smoother.Do(input.SmoothKeyDown) {
 		return
 	}
-	count := w.indexSize
+	count := len(w.items)
 	w.index = (w.index + 1) % count
 	w.view.onChangeIndex(w.index)
 }
 
 func (w *SelectWindow) OnInputSubmit() {
+	if w.items[w.index].IsDisabled() {
+		return
+	}
 	w.onSubmit(w.index)
 	if !w.closeOnSubmit {
 		return
 	}
 	w.Close()
-}
-
-func (w *SelectWindow) SetTextColor(index int, color color.Color) {
-	if index < 0 || index >= w.indexSize {
-		return
-	}
-	w.view.setTextColor(index, color)
 }

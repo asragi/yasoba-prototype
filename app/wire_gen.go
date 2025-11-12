@@ -39,8 +39,10 @@ import (
 	"github.com/asragi/yasoba-prototype/view/battle/mp"
 	"github.com/asragi/yasoba-prototype/view/battle/parameter"
 	"github.com/asragi/yasoba-prototype/view/battle/window"
+	"github.com/asragi/yasoba-prototype/view/battle/window/cost"
 	"github.com/asragi/yasoba-prototype/view/common/message"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
+	"github.com/asragi/yasoba-prototype/view/common/selection/option"
 	"github.com/asragi/yasoba-prototype/view/common/transition"
 	window2 "github.com/asragi/yasoba-prototype/view/common/window"
 	"github.com/asragi/yasoba-prototype/widget"
@@ -66,8 +68,10 @@ func initializeApp(cfg Config) (*App, error) {
 	}
 	newSelectWindowViewFunc := makeSelectWindowViewFunc()
 	newSelectWindowFunc := selection.StandByNewSelectWindow(newCursor, newTextFunc, newWindowFunc, serveTextDataFunc, newSelectWindowViewFunc)
+	newTextItemFunc := option.CreateNewTextItem(newTextFunc, serveTextDataFunc)
+	newCostDisplayFunc := makeCostDisplay(resourceManager)
 	getCommandModelFunc := makeCommandModelGetter()
-	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc, getCommandModelFunc)
+	newBattleSelectWindowFunc := window.StandByNewBattleSelectWindow(newSelectWindowFunc, newTextItemFunc, newCostDisplayFunc, getCommandModelFunc)
 	newFaceWindowFunc := makeFaceWindowFactory(resourceManager, newWindowFunc)
 	newDisplayDamageFunc := damage.CreateNewDisplayDamage(newTextFunc)
 	newMPDisplayFunc := makeMPDisplay(resourceManager)
@@ -112,8 +116,8 @@ func initializeApp(cfg Config) (*App, error) {
 	prepareProduceCreateSequence := adapter2.InitializeProduceCreateSequence()
 	produceCreateSequence := makeProduceCreateSequence(prepareProduceCreateSequence, serveTextDataFunc)
 	produceCheckInvokeSequence := invoke.InitializeProduceCheckInvokeSequence()
-	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, newTransitionViewFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, manager, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence)
-	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc)
+	createBattleScene := scene.InitializeCreateBattleScene(newMessageWindowFunc, newSelectWindowFunc, newBattleSelectWindowFunc, newBattleActorDisplayFunc, newBattleSubActorDisplayFunc, newTransitionViewFunc, nameServer, initializeBattleFunc, serveFunc, prepareBattleEventSequenceFunc, skillToSequenceFunc, newBattleEnemyDisplayFunc, manager, effectManager, serveEnemyViewData, actorSupplier, newProcessBattleFunc, produceCreateSequence, produceCheckInvokeSequence, newTextItemFunc)
+	createDebugScene := scene.InitializeCreateDebugScene(newSelectWindowFunc, newTextItemFunc)
 	debugDebug := debug.CreateDrawParameters(newTextFunc)
 	app := buildApp(drawingDrawing, createBattleScene, createDebugScene, debugDebug, cfg)
 	return app, nil
@@ -214,6 +218,23 @@ func makeMPDisplay(resource *frontend.ResourceManager) mp.NewMPDisplayFunc {
 		)
 	}
 	return mp.CreateNewMPDisplay(newImage, resource.GetTexture)
+}
+
+func makeCostDisplay(resource *frontend.ResourceManager) cost.NewCostDisplayFunc {
+	newImage := func(
+		relativePosition *drawing.Vector,
+		pivot *drawing.Pivot,
+		depth drawing.Depth,
+		imageData drawing.Image,
+	) cost.Image {
+		return widget.NewImage(
+			relativePosition,
+			pivot,
+			depth,
+			imageData,
+		)
+	}
+	return cost.CreateNewCostDisplay(newImage, resource.GetTexture, 0)
 }
 
 func makeBattleEnemyGraphics(

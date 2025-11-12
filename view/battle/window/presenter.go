@@ -1,11 +1,8 @@
 package window
 
 import (
-	"image/color"
-
 	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/common/character/hero"
-	"github.com/asragi/yasoba-prototype/global"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
 )
 
@@ -17,7 +14,7 @@ type viewInterface interface {
 	OnInputUp()
 	OnInputDown()
 	OnInputSubmit()
-	SetCommandColor(index int, color color.Color)
+	SetDisable(index int, disable bool)
 }
 
 // SelectWindowに対する薄いwrapper
@@ -107,10 +104,6 @@ func (w *BattleSelectWindow) OnInputDown() {
 
 func (w *BattleSelectWindow) updateCommandColors() {
 	for idx, id := range w.commandIds {
-		var textColor color.Color = color.White
-		if !w.canSelectCommand(id) {
-			textColor = global.DisableColor
-		}
-		w.view.SetCommandColor(idx, textColor)
+		w.view.SetDisable(idx, !w.canSelectCommand(id))
 	}
 }

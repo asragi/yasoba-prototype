@@ -1,12 +1,11 @@
 GO ?= go
-GENERATED := app/wire_gen.go
 
-.PHONY: run go-generate
+.PHONY: all gen
 
-run: $(GENERATED)
+all: gen
 	$(GO) run main.go
 
-go-generate: $(GENERATED)
+gen: app/wire_gen.go
 
-$(GENERATED): app/wire.go
-	$(GO) generate ./...
+app/wire_gen.go: app/wire.go
+	$(GO) generate ./app

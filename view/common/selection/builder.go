@@ -13,7 +13,7 @@ type NewSelectWindowFunc func(
 	pivot *drawing.Pivot,
 	depth drawing.Depth,
 	marginRight float64,
-	texts []text.TextId,
+	texts []Item,
 	onSubmit func(int),
 	closeOnSubmit bool,
 ) *SelectWindow
@@ -24,9 +24,16 @@ type NewCursor func(
 	depth drawing.Depth,
 ) Cursor
 
+type Item interface {
+	Update(*drawing.Vector)
+	Draw(drawing.DrawFunc)
+	Size() *drawing.Vector
+	IsDisabled() bool
+}
+
 type NewSelectWindowViewFunc func(
 	relativePosition *drawing.Vector,
-	commands []text.TextId,
+	commands []Item,
 	pivot *drawing.Pivot,
 	depth drawing.Depth,
 	marginRight float64,
@@ -34,7 +41,7 @@ type NewSelectWindowViewFunc func(
 	newText widget.NewTextFunc,
 	textServer text.ServeTextDataFunc,
 	newCursor NewCursor,
-) selectWindowViewInterface
+) viewInterface
 
 func StandByNewSelectWindow(
 	newCursor NewCursor,
@@ -48,7 +55,7 @@ func StandByNewSelectWindow(
 		pivot *drawing.Pivot,
 		depth drawing.Depth,
 		marginRight float64,
-		commands []text.TextId,
+		commands []Item,
 		onSubmit func(int),
 		closeOnSubmit bool,
 	) *SelectWindow {
@@ -66,7 +73,7 @@ func StandByNewSelectWindow(
 		)
 
 		return &SelectWindow{
-			indexSize:     len(commands),
+			items:         commands,
 			index:         0,
 			isActive:      false,
 			isOpen:        false,

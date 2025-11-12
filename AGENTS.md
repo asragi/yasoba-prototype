@@ -7,7 +7,7 @@ agent作業終了後は以下のコマンドを実行してください
 - `go build ./...`
 - `go test ./...`
 - `go generate ./...`
-
+- `go mod tidy`
 
 ## 実装方針
 

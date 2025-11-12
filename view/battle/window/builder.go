@@ -3,8 +3,11 @@ package window
 import (
 	"github.com/asragi/yasoba-prototype/battle/command"
 	"github.com/asragi/yasoba-prototype/common/character/hero"
+	"github.com/asragi/yasoba-prototype/text"
 	"github.com/asragi/yasoba-prototype/toolkit/drawing"
+	"github.com/asragi/yasoba-prototype/view/battle/window/cost"
 	"github.com/asragi/yasoba-prototype/view/common/selection"
+	"github.com/asragi/yasoba-prototype/view/common/selection/option"
 )
 
 type NewBattleSelectWindowFunc func(
@@ -18,9 +21,14 @@ type NewBattleSelectWindowFunc func(
 
 func StandByNewBattleSelectWindow(
 	newSelectWindow selection.NewSelectWindowFunc,
+	newTextItem option.NewTextItemFunc,
+	newCostDisplay cost.NewCostDisplayFunc,
 	commandPort command.GetCommandModelFunc,
 ) NewBattleSelectWindowFunc {
-	newView := createNewView(newSelectWindow)
+	newTextItemWrapper := func(textId text.TextId) itemInterface {
+		return newTextItem(textId)
+	}
+	newView := createNewView(newSelectWindow, newTextItemWrapper)
 	return func(
 		playerMp hero.MP,
 		position *drawing.Vector,
