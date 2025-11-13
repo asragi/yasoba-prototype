@@ -107,6 +107,7 @@ func createNewView(
 			marginRight,
 			itemsToArg,
 			onSubmitIndex,
+			nil,
 			false,
 		)
 

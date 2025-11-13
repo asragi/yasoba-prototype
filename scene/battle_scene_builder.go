@@ -273,6 +273,11 @@ func InitializeCreateBattleScene(
 			}
 			return items
 		}()
+		onCancelTargetSelect := func() {
+			targetSelectWindow.Close()
+			battleSelectWindow.Open(mpManager.CurrentMP())
+			inputManager.Set(battleSelectWindow)
+		}
 		targetSelectWindow = newSelectWindow(
 			&drawing.Vector{X: 80, Y: 0},
 			drawing.PivotBottomLeft,
@@ -280,6 +285,7 @@ func InitializeCreateBattleScene(
 			0,
 			textItems,
 			onTargetSelect,
+			onCancelTargetSelect,
 			true,
 		)
 		battleScene.ui.targetSelectWindow = targetSelectWindow

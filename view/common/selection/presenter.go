@@ -29,12 +29,21 @@ type SelectWindow struct {
 	isActive      bool
 	isOpen        bool
 	onSubmit      func(int)
+	onCancel      func()
 	closeOnSubmit bool
 	smoother      smoother
 	view          viewInterface
 }
 
-func (w *SelectWindow) OnInputCancel() {}
+func (w *SelectWindow) OnInputCancel() {
+	if !w.isOpen {
+		return
+	}
+	if w.onCancel == nil {
+		return
+	}
+	w.onCancel()
+}
 
 func (w *SelectWindow) OnInputSubButton() {}
 

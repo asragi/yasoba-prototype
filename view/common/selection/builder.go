@@ -15,6 +15,7 @@ type NewSelectWindowFunc func(
 	marginRight float64,
 	texts []Item,
 	onSubmit func(int),
+	onCancel func(),
 	closeOnSubmit bool,
 ) *SelectWindow
 
@@ -57,6 +58,7 @@ func StandByNewSelectWindow(
 		marginRight float64,
 		commands []Item,
 		onSubmit func(int),
+		onCancel func(),
 		closeOnSubmit bool,
 	) *SelectWindow {
 
@@ -78,6 +80,7 @@ func StandByNewSelectWindow(
 			isActive:      false,
 			isOpen:        false,
 			onSubmit:      onSubmit,
+			onCancel:      onCancel,
 			smoother:      input.NewInputSmoother(),
 			closeOnSubmit: closeOnSubmit,
 			view:          view,

@@ -35,6 +35,7 @@ func InitializeCreateDebugScene(
 			0,
 			items,
 			scene.handleSelect,
+			nil,
 			false,
 		)
 		selectWindow.Open()
